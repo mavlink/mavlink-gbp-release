@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>mavlink</name>
+  <version>1.0.9</version>
+  <description>MAVLink message marshaling library.
+  This package provides C-headers and pymavlink library.
+  </description>
+
+  <maintainer email="vooon341@gmail.com">Vladimir Ermakov</maintainer>
+  <license>LGPLv3</license>
+
+  <run_depend>catkin</run_depend>
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
