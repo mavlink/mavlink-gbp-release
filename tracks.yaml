@@ -35,7 +35,7 @@ tracks:
     release_inc: '1'
     release_repo_url: git@github.com:vooon/mavlink-gbp-release.git
     release_tag: :{ask}
-    ros_distro: hydro
+    ros_distro: indigo
     vcs_type: git
     vcs_uri: https://github.com/mavlink/mavlink.git
     version: :{ask}
