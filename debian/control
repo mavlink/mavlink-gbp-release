@@ -1,0 +1,12 @@
+Source: ros-indigo-mavlink
+Section: misc
+Priority: extra
+Maintainer: Vladimir Ermakov <vooon341@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), cmake
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-indigo-mavlink
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-catkin
+Description: MAVLink message marshaling library. This package provides C-headers and pymavlink library.
