@@ -15,7 +15,8 @@ set(PROJECT_CONTACT_VENDOR mavlink)
 include(GNUInstallDirs)
 
 # find libraries with cmake modules
-find_package(PythonInterp)
+set(PythonInterp_FIND_VERSION "2")
+find_package(PythonInterp REQUIRED)
 
 # config files
 configure_file(config.h.in config.h)
@@ -30,8 +31,9 @@ macro(generateMavlink version definitions)
         message(STATUS "processing: ${definitionAbsPath}")
         add_custom_command( 
             OUTPUT ${targetName}-stamp
-            COMMAND PYTHONPATH=${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH} ${PYTHON_EXECUTABLE} -m pymavlink.generator.mavgen
-                --lang=C --wire-protocol=${version} --output=include/v${version} ${definitionAbsPath}
+            COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
+                ${PYTHON_EXECUTABLE} -m pymavlink.generator.mavgen --lang=C --wire-protocol=${version}
+                --output=include/v${version} ${definitionAbsPath}
             COMMAND touch ${targetName}-stamp
             DEPENDS ${definitionAbsPath} ${mavgen_path}
             )
