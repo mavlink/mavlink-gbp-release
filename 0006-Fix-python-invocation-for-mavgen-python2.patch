@@ -1,4 +1,4 @@
-From 62c7978db425e97abfcf01bf1db94579fd6d0199 Mon Sep 17 00:00:00 2001
+From 9322fa1768238e3a93520e252c5011d7143ae6e2 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Wed, 18 Jun 2014 16:01:26 +0400
 Subject: [PATCH 6/7] Fix python invocation for mavgen (python2)
