@@ -1,7 +1,7 @@
-From a8988240b68d5f53f97e3d8b4043e7dfd7c749f9 Mon Sep 17 00:00:00 2001
+From eb674c3deb2de296fd7cdec1b3eda6fe0c37084b Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Tue, 17 Jun 2014 02:43:53 +0400
-Subject: [PATCH 5/5] Add install rule for package.xml
+Subject: [PATCH 5/7] Add install rule for package.xml
 
 ---
  CMakeLists.txt | 3 +++
