@@ -1,4 +1,4 @@
-From fe6df0d658fd6be4fec907282a425c6451699bac Mon Sep 17 00:00:00 2001
+From 1725e57e9776a4599e3cff02bd5270a1f53ffca7 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Tue, 17 Jun 2014 01:00:31 +0400
 Subject: [PATCH 2/7] Fix pc.in template

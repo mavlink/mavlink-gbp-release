@@ -1,4 +1,4 @@
-From d396d166ce451959d38cafb073c9297c03893978 Mon Sep 17 00:00:00 2001
+From 05dc8e02af317900a568401b6e8568a76c126575 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Wed, 18 Jun 2014 16:04:58 +0400
 Subject: [PATCH 7/7] Use external script for pymavlink installation (as
