@@ -1,7 +1,7 @@
-From 05dc8e02af317900a568401b6e8568a76c126575 Mon Sep 17 00:00:00 2001
+From fbc5c71ab73c034ac87fda4f4424d68714e14edf Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Wed, 18 Jun 2014 16:04:58 +0400
-Subject: [PATCH 7/7] Use external script for pymavlink installation (as
+Subject: [PATCH 7/8] Use external script for pymavlink installation (as
  catkin).
 
 Some code from catkin build system used to fix installation process.
