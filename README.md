@@ -77,4 +77,4 @@ Versions of tools used:
 mavlink-gbp-release
 ===================
 
-git-buildpackage repository for releasing mavlink as 3-rd party library for ROS
+git-buildpackage repository for releasing [mavlink](https://github.com/mavlink/mavlink) as 3-rd party library for ROS
