@@ -83,6 +83,7 @@ set(PKG_VERSION ${PROJECT_VERSION})
 set(PKG_DESC "mavlink message marshalling library")
 set(PKG_LIBRARIES )
 set(PKG_DEPENDS )
+set(PKG_MAVLINK_DEFINITIONS "${v1.0Definitions}")
 
 configure_file(config.cmake.in ${PROJECT_NAME}-config.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
