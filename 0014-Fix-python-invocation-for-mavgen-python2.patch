@@ -1,7 +1,7 @@
-From 9322fa1768238e3a93520e252c5011d7143ae6e2 Mon Sep 17 00:00:00 2001
+From a99fa50e8eac0908a4930b004864a973b09136aa Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Wed, 18 Jun 2014 16:01:26 +0400
-Subject: [PATCH 06/16] Fix python invocation for mavgen (python2)
+Subject: [PATCH 14/16] Fix python invocation for mavgen (python2)
 
 ---
  CMakeLists.txt | 6 ++++--
