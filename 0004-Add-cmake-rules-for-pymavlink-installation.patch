@@ -1,0 +1,24 @@
+From 7ac9df0caa2b2f479fa51f2f8284eb7007354e0c Mon Sep 17 00:00:00 2001
+From: Vladimir Ermakov <vooon341@gmail.com>
+Date: Tue, 17 Jun 2014 01:14:26 +0400
+Subject: [PATCH 4/8] Add cmake rules for pymavlink installation.
+
+---
+ pymavlink/CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
+ create mode 100644 pymavlink/CMakeLists.txt
+
+diff --git a/pymavlink/CMakeLists.txt b/pymavlink/CMakeLists.txt
+new file mode 100644
+index 0000000..5ba1175
+--- /dev/null
++++ b/pymavlink/CMakeLists.txt
+@@ -0,0 +1,5 @@
++find_package(PythonInterp)
++
++set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
++install(CODE "execute_process(COMMAND \"${PYTHON_EXECUTABLE}\" \"${SETUP_PY}\" build --build-base \"${CMAKE_CURRENT_BINARY_DIR}/pybuild\" install --install-layout deb --prefix \"${CMAKE_INSTALL_PREFIX}\"
++                WORKING_DIRECTORY \"${CMAKE_CURRENT_SOURCE_DIR}\")")
+-- 
+1.9.1
+
