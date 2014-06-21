@@ -1,7 +1,7 @@
 From a8d2e86f3f2710c4082ec3400df879766c6bf92c Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Sat, 21 Jun 2014 15:19:57 +0400
-Subject: [PATCH 8/8] Add libdir hack from urdfdom.
+Subject: [PATCH 8/9] Add libdir hack from urdfdom.
 
 ---
  CMakeLists.txt | 3 +++
