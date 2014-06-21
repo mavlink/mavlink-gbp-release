@@ -24,3 +24,8 @@ foreach(dep @PKG_DEPENDS@)
   list(APPEND @PKG_NAME@_INCLUDE_DIRS ${${dep}_INCLUDE_DIRS})
   list(APPEND @PKG_NAME@_LIBRARIES ${${dep}_LIBRARIES})
 endforeach()
+
+foreach(def @PKG_MAVLINK_DEFINITIONS@)
+  get_filename_component(dialect ${def} NAME_WE)
+  list(APPEND @PKG_NAME@_DIALECTS ${dialect})
+endforeach()
