@@ -14,6 +14,9 @@ set(PROJECT_CONTACT_VENDOR mavlink)
 
 include(GNUInstallDirs)
 
+# hack from urdfdom: by default this would be 'lib/x86_64-linux-gnu'
+set(CMAKE_INSTALL_LIBDIR lib)
+
 # find libraries with cmake modules
 set(PythonInterp_FIND_VERSION "2")
 find_package(PythonInterp REQUIRED)
