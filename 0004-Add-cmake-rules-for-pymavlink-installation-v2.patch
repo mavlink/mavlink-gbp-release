@@ -1,28 +1,23 @@
-From 219dd1139ebb5788df0d43d6943f0d29747eadc9 Mon Sep 17 00:00:00 2001
+From 5d429d6c0443a1a1b199bd51ba07ce44183ecae3 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
-Date: Wed, 18 Jun 2014 16:04:58 +0400
-Subject: [PATCH 7/9] Use external script for pymavlink installation (as
- catkin).
+Date: Tue, 17 Jun 2014 01:14:26 +0400
+Subject: [PATCH 4/7] Add cmake rules for pymavlink installation (v2).
 
+Use external script. (as catkin).
 Some code from catkin build system used to fix installation process.
 ---
- pymavlink/CMakeLists.txt                 | 28 +++++++++++++++++++++++-----
+ pymavlink/CMakeLists.txt                 | 23 +++++++++++++++++++++++
  pymavlink/python_distutils_install.sh.in | 22 ++++++++++++++++++++++
- 2 files changed, 45 insertions(+), 5 deletions(-)
- rewrite pymavlink/CMakeLists.txt (99%)
+ 2 files changed, 45 insertions(+)
+ create mode 100644 pymavlink/CMakeLists.txt
  create mode 100755 pymavlink/python_distutils_install.sh.in
 
 diff --git a/pymavlink/CMakeLists.txt b/pymavlink/CMakeLists.txt
-dissimilarity index 99%
-index 5ba1175..7fb27ed 100644
---- a/pymavlink/CMakeLists.txt
+new file mode 100644
+index 0000000..7fb27ed
+--- /dev/null
 +++ b/pymavlink/CMakeLists.txt
-@@ -1,5 +1,23 @@
--find_package(PythonInterp)
--
--set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
--install(CODE "execute_process(COMMAND \"${PYTHON_EXECUTABLE}\" \"${SETUP_PY}\" build --build-base \"${CMAKE_CURRENT_BINARY_DIR}/pybuild\" install --install-layout deb --prefix \"${CMAKE_INSTALL_PREFIX}\"
--                WORKING_DIRECTORY \"${CMAKE_CURRENT_SOURCE_DIR}\")")
+@@ -0,0 +1,23 @@
 +# pymavlink support's python2 only
 +set(PythonInterp_FIND_VERSION "2")
 +find_package(PythonInterp REQUIRED)
