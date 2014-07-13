@@ -1,7 +1,7 @@
-From 07af2cfab57b7388dacb407bffb031ce60e50512 Mon Sep 17 00:00:00 2001
+From 4c48dd4d3f3fa7bcca2900b9875bc965478f1875 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Tue, 17 Jun 2014 01:01:08 +0400
-Subject: [PATCH 3/9] Add cmake find_package config
+Subject: [PATCH 3/7] Add cmake find_package config
 
 Thanks for urdfdom package for examples.
 ---
