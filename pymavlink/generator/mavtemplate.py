@@ -81,11 +81,7 @@ class MAVTemplate(object):
             a = part2.split(':')
             field_name = a[0]
             rest = ':'.join(a[1:])
-            v = None
-            if isinstance(subvars, dict):
-                v = subvars.get(field_name, None)
-            else:
-                v = getattr(subvars, field_name, None)
+            v = getattr(subvars, field_name, None)
             if v is None:
                 raise MAVParseError('unable to find field %s' % field_name)
             t1 = part1

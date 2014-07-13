@@ -92,29 +92,14 @@ def mavgen(opts, args) :
             from pymavlink.generator import mavgen_c
         mavgen_c.generate(opts.output, xml)
     elif opts.language == 'wlua':
-        try:
-            import mavgen_wlua
-        except Exception:
-            from pymavlink.generator import mavgen_wlua
+        import mavgen_wlua
         mavgen_wlua.generate(opts.output, xml)
     elif opts.language == 'cs':
-        try:
-            import mavgen_cs
-        except Exception:
-            from pymavlink.generator import mavgen_cs
+        import mavgen_cs
         mavgen_cs.generate(opts.output, xml)
     elif opts.language == 'javascript':
-        try:
-            import mavgen_javascript
-        except Exception:
-            from pymavlink.generator import mavgen_javascript
+        import mavgen_javascript
         mavgen_javascript.generate(opts.output, xml)
-    elif opts.language == 'objc':
-        try:
-            import mavgen_objc
-        except Exception:
-            from pymavlink.generator import mavgen_objc
-        mavgen_objc.generate(opts.output, xml)
     else:
         print("Unsupported language %s" % opts.language)
 
@@ -168,7 +153,7 @@ def mavgen_validate(fname, schema, errorLimitNumber) :
 if __name__ == "__main__":
     from optparse import OptionParser
 
-    supportedLanguages = ["C", "CS", "JavaScript", "Python", "WLua", "ObjC"]
+    supportedLanguages = ["C", "CS", "JavaScript", "Python", "WLua"]
     parser = OptionParser("%prog [options] <XML files>")
     parser.add_option("-o", "--output", dest="output", default="mavlink", help="output directory.")
     parser.add_option("--lang", dest="language", choices=supportedLanguages, default="Python", help="language of generated code, one of: {0} [default: %default]".format(supportedLanguages))
