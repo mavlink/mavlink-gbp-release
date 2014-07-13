@@ -1,17 +1,17 @@
-From 7a0c7c353e400f6444b237e014d2a53fb75f4122 Mon Sep 17 00:00:00 2001
+From 00af930d1ac87e9c029eb08d5b4cc1f80757e443 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Tue, 17 Jun 2014 02:43:53 +0400
-Subject: [PATCH 5/7] Add install rule for package.xml
+Subject: [PATCH 5/9] Add install rule for package.xml
 
 ---
  CMakeLists.txt | 3 +++
  1 file changed, 3 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3651b58..3e4c45b 100644
+index 74a0b54..7ea8d5e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -94,4 +94,7 @@ configure_file("COPYING" "COPYING.txt" COPYONLY)
+@@ -92,4 +92,7 @@ configure_file("COPYING" "COPYING.txt" COPYONLY)
  install(FILES ${PROJECT_BINARY_DIR}/COPYING.txt
      DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/ COMPONENT license)
  
