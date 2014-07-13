@@ -14,6 +14,9 @@ set(PROJECT_CONTACT_VENDOR mavlink)
 
 include(GNUInstallDirs)
 
+# hack from urdfdom: by default this would be 'lib/x86_64-linux-gnu'
+set(CMAKE_INSTALL_LIBDIR lib)
+
 # find libraries with cmake modules
 set(PythonInterp_FIND_VERSION "2")
 find_package(PythonInterp REQUIRED)
@@ -31,7 +34,7 @@ macro(generateMavlink version definitions)
         message(STATUS "processing: ${definitionAbsPath}")
         add_custom_command( 
             OUTPUT ${targetName}-stamp
-            COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$$PYTHONPATH"
+            COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
                 ${PYTHON_EXECUTABLE} -m pymavlink.generator.mavgen --lang=C --wire-protocol=${version}
                 --output=include/v${version} ${definitionAbsPath}
             COMMAND touch ${targetName}-stamp
@@ -80,6 +83,7 @@ set(PKG_VERSION ${PROJECT_VERSION})
 set(PKG_DESC "mavlink message marshalling library")
 set(PKG_LIBRARIES )
 set(PKG_DEPENDS )
+set(PKG_MAVLINK_DEFINITIONS "${v1.0Definitions}")
 
 configure_file(config.cmake.in ${PROJECT_NAME}-config.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
