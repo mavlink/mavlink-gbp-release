@@ -1,19 +1,21 @@
-From 623b2e75111bd6973228ec2e46223f83a95917e7 Mon Sep 17 00:00:00 2001
+From 43fd83b430678cb13cabd7934b1631ce6ebc44c7 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Tue, 17 Jun 2014 00:59:15 +0400
-Subject: [PATCH 1/9] Fix root cmake for building as ros 3-rd party library
+Subject: [PATCH 1/7] Fix root cmake for building as ros 3-rd party library
+ (v2)
 
+With fixed invocation of mavgen.
 ---
- CMakeLists.txt | 306 ++++++++++++++++++---------------------------------------
- 1 file changed, 95 insertions(+), 211 deletions(-)
- rewrite CMakeLists.txt (69%)
+ CMakeLists.txt | 308 ++++++++++++++++++---------------------------------------
+ 1 file changed, 97 insertions(+), 211 deletions(-)
+ rewrite CMakeLists.txt (70%)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-dissimilarity index 69%
-index eb38415..74a0b54 100644
+dissimilarity index 70%
+index eab656e..3651b58 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,211 +1,95 @@
+@@ -1,211 +1,97 @@
 -project (mavlink NONE)
 -
 -# settings
@@ -134,7 +136,7 @@ index eb38415..74a0b54 100644
 -        message(STATUS "processing: ${definitionAbsPath}")
 -        add_custom_command( 
 -            OUTPUT ${targetName}-stamp
--            COMMAND ${PYTHON_EXECUTABLE} ${mavgen} --lang=C --wire-protocol=${version}
+-            COMMAND PYTHONPATH=$ENV{PYTHONPATH}:${CMAKE_CURRENT_SOURCE_DIR} ${PYTHON_EXECUTABLE} ${mavgen} --lang=C --wire-protocol=${version}
 -                --output=include/v${version} ${definitionAbsPath}
 -            COMMAND touch ${targetName}-stamp
 -            DEPENDS ${definitionAbsPath} ${mavgen}
@@ -242,7 +244,8 @@ index eb38415..74a0b54 100644
 +include(GNUInstallDirs)
 +
 +# find libraries with cmake modules
-+find_package(PythonInterp)
++set(PythonInterp_FIND_VERSION "2")
++find_package(PythonInterp REQUIRED)
 +
 +# config files
 +configure_file(config.h.in config.h)
@@ -257,7 +260,8 @@ index eb38415..74a0b54 100644
 +        message(STATUS "processing: ${definitionAbsPath}")
 +        add_custom_command( 
 +            OUTPUT ${targetName}-stamp
-+            COMMAND PYTHONPATH=${CMAKE_SOURCE_DIR} ${PYTHON_EXECUTABLE} -m pymavlink.generator.mavgen --lang=C --wire-protocol=${version}
++            COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
++                ${PYTHON_EXECUTABLE} -m pymavlink.generator.mavgen --lang=C --wire-protocol=${version}
 +                --output=include/v${version} ${definitionAbsPath}
 +            COMMAND touch ${targetName}-stamp
 +            DEPENDS ${definitionAbsPath} ${mavgen_path}

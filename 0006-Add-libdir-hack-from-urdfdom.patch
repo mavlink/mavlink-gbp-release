@@ -1,14 +1,14 @@
-From a8d2e86f3f2710c4082ec3400df879766c6bf92c Mon Sep 17 00:00:00 2001
+From 63b0dfe2fd05a1788c679ed3c3cf0a86ff3ff577 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Sat, 21 Jun 2014 15:19:57 +0400
-Subject: [PATCH 8/9] Add libdir hack from urdfdom.
+Subject: [PATCH 6/7] Add libdir hack from urdfdom.
 
 ---
  CMakeLists.txt | 3 +++
  1 file changed, 3 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index c1d8128..0d828b6 100644
+index 3e4c45b..2f36980 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -14,6 +14,9 @@ set(PROJECT_CONTACT_VENDOR mavlink)

@@ -1,7 +1,7 @@
-From 1054d7c279b74bdd9bbc7bc732703d3988ca3595 Mon Sep 17 00:00:00 2001
+From 62a392242badb82e8e6090e37f1cf9a345851c20 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Sat, 21 Jun 2014 16:21:46 +0400
-Subject: [PATCH 9/9] Add supported dialests list to find_package() script.
+Subject: [PATCH 7/7] Add supported dialests list to find_package() script.
 
 ---
  CMakeLists.txt  | 1 +
@@ -9,7 +9,7 @@ Subject: [PATCH 9/9] Add supported dialests list to find_package() script.
  2 files changed, 6 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0d828b6..7b72ad2 100644
+index 2f36980..c5f2d28 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -83,6 +83,7 @@ set(PKG_VERSION ${PROJECT_VERSION})
