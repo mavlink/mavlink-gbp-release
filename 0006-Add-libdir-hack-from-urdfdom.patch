@@ -1,4 +1,4 @@
-From 63b0dfe2fd05a1788c679ed3c3cf0a86ff3ff577 Mon Sep 17 00:00:00 2001
+From 6e2f42ede52407faaec792db8c22b2e8ca713c39 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Sat, 21 Jun 2014 15:19:57 +0400
 Subject: [PATCH 6/7] Add libdir hack from urdfdom.
