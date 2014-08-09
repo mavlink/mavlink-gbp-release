@@ -1,4 +1,4 @@
-From 6d27d1177d057891a33366433d48ac4e6b1108ac Mon Sep 17 00:00:00 2001
+From 492bd08245abf1609fdcb216ba805525bf76a01a Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Tue, 17 Jun 2014 00:59:15 +0400
 Subject: [PATCH 1/7] Fix root cmake for building as ros 3-rd party library
