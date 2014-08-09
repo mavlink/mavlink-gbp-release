@@ -14,7 +14,7 @@ tracks:
     last_version: 1.0.9
     name: upstream
     patches: patch
-    release_inc: '6'
+    release_inc: '7'
     release_repo_url: git@github.com:vooon/mavlink-gbp-release.git
     release_tag: :{ask}
     ros_distro: hydro
