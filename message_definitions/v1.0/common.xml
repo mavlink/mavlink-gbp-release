@@ -416,12 +416,6 @@
                <entry value="4" name="MAV_FRAME_LOCAL_ENU">
                     <description>Local coordinate frame, Z-down (x: east, y: north, z: up)</description>
                </entry>
-               <entry value="5" name="MAV_FRAME_GLOBAL_INT">
-                   <description>Global coordinate frame with some fields as scaled integers, WGS84 coordinate system. First value / x: latitude, second value / y: longitude, third value / z: positive altitude over mean sea level (MSL). Lat / Lon are scaled * 1E7 to avoid floating point accuracy limitations.</description>
-               </entry>
-               <entry value="6" name="MAV_FRAME_GLOBAL_RELATIVE_ALT_INT">
-                   <description>Global coordinate frame with some fields as scaled integers, WGS84 coordinate system, relative altitude over ground with respect to the home position. First value / x: latitude, second value / y: longitude, third value / z: positive altitude with 0 being at the altitude of the home location. Lat / Lon are scaled * 1E7 to avoid floating point accuracy limitations.</description>
-               </entry>
                <entry value="7" name="MAV_FRAME_LOCAL_OFFSET_NED">
                    <description>Offset to the current local frame. Anything expressed in this frame should be added to the current local frame position.</description>
                </entry>
@@ -432,7 +426,7 @@
                    <description>Offset in body NED frame. This makes sense if adding setpoints to the current flight path, to avoid an obstacle - e.g. useful to command 2 m/s^2 acceleration to the east.</description>
                </entry>
                <entry value="10" name="MAV_FRAME_GLOBAL_TERRAIN_ALT">
-                   <description>Global coordinate frame with above terrain level altitude. WGS84 coordinate system, relative altitude over terrain with respect to the waypoint coordinate. First value / x: latitude, second value / y: longitude, third value / z: positive altitude with 0 being at ground level in terrain model.</description>
+                   <description>Global coordinate frame with above terrain level altitude. WGS84 coordinate system, relative altitude over terrain with respect to the waypoint coordinate. First value / x: latitude in degrees, second value / y: longitude in degrees, third value / z: positive altitude in meters with 0 being at ground level in terrain model.</description>
                </entry>
           </enum>
           <enum name="MAVLINK_DATA_STREAM_TYPE">
@@ -1041,6 +1035,31 @@
                   <param index="1">Viewing angle horizontal of the panorama</param>
                   <param index="2">Viewing angle vertical of panorama</param>
               </entry>
+
+              <!-- VALUES FROM 0-40000 are reserved for the common message set. Values from 40000 to UINT16_MAX are available for dialects -->
+
+              <!-- BEGIN of payload range (30000 to 30999) -->
+              <entry value="30001" name="MAV_CMD_PAYLOAD_PREPARE_DEPLOY">
+                  <description>Deploy payload on a Lat / Lon / Alt position. This includes the navigation to reach the required release position and velocity.</description>
+                  <param index="1">Operation mode. 0: prepare single payload deploy (overwriting previous requests), but do not execute it. 1: execute payload deploy immediately (rejecting further deploy commands during execution, but allowing abort). 2: add payload deploy to existing deployment list.</param>
+                  <param index="2">Desired approach vector in degrees compass heading (0..360). A negative value indicates the system can define the approach vector at will.</param>
+                  <param index="3">Desired ground speed at release time. This can be overriden by the airframe in case it needs to meet minimum airspeed. A negative value indicates the system can define the ground speed at will.</param>
+                  <param index="4">Minimum altitude clearance to the release position in meters. A negative value indicates the system can define the clearance at will.</param>
+                  <param index="5">Latitude unscaled for MISSION_ITEM or in 1e7 degrees for MISSION_ITEM_INT</param>
+                  <param index="6">Longitude unscaled for MISSION_ITEM or in 1e7 degrees for MISSION_ITEM_INT</param>
+                  <param index="7">Altitude, in meters WGS84</param>
+              </entry>
+              <entry value="30002" name="MAV_CMD_PAYLOAD_CONTROL_DEPLOY">
+                  <description>Control the payload deployment.</description>
+                  <param index="1">Operation mode. 0: Abort deployment, continue normal mission. 1: switch to payload deploment mode. 100: delete first payload deployment request. 101: delete all payload deployment requests.</param>
+                  <param index="2">Reserved</param>
+                  <param index="3">Reserved</param>
+                  <param index="4">Reserved</param>
+                  <param index="5">Reserved</param>
+                  <param index="6">Reserved</param>
+                  <param index="7">Reserved</param>
+              </entry>
+              <!-- END of payload range (30000 to 30999) -->
           </enum>
           <enum name="MAV_DATA_STREAM">
                <description>Data stream IDs. A data stream is not a fixed set of messages, but rather a
@@ -1593,7 +1612,7 @@
                <field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
                <field type="int32_t" name="lat">Latitude, expressed as * 1E7</field>
                <field type="int32_t" name="lon">Longitude, expressed as * 1E7</field>
-               <field type="int32_t" name="alt">Altitude in meters, expressed as * 1000 (millimeters), above MSL</field>
+               <field type="int32_t" name="alt">Altitude in meters, expressed as * 1000 (millimeters), WGS84 (not AMSL)</field>
                <field type="int32_t" name="relative_alt">Altitude above ground in meters, expressed as * 1000 (millimeters)</field>
                <field type="int16_t" name="vx">Ground X Speed (Latitude), expressed as m/s * 100</field>
                <field type="int16_t" name="vy">Ground Y Speed (Longitude), expressed as m/s * 100</field>
@@ -1865,13 +1884,13 @@
               <field type="uint16_t" name="command">The scheduled action for the MISSION. see MAV_CMD in common.xml MAVLink specs</field>
               <field type="uint8_t" name="current">false:0, true:1</field>
               <field type="uint8_t" name="autocontinue">autocontinue to next wp</field>
-              <field type="int32_t" name="param1">PARAM1, see MAV_CMD enum</field>
-              <field type="int32_t" name="param2">PARAM2, see MAV_CMD enum</field>
-              <field type="int32_t" name="param3">PARAM3, see MAV_CMD enum</field>
-              <field type="int32_t" name="param4">PARAM4, see MAV_CMD enum</field>
-              <field type="int32_t" name="x">PARAM5 / local: x position, global: latitude in degrees * 10^7</field>
-              <field type="int32_t" name="y">PARAM6 / y position: global: longitude in degrees *10^7</field> 
-              <field type="int32_t" name="z">PARAM7 / z position: global: altitude in millimeters (meters * 10^3) (relative or absolute, depending on frame.</field>
+              <field type="float" name="param1">PARAM1, see MAV_CMD enum</field>
+              <field type="float" name="param2">PARAM2, see MAV_CMD enum</field>
+              <field type="float" name="param3">PARAM3, see MAV_CMD enum</field>
+              <field type="float" name="param4">PARAM4, see MAV_CMD enum</field>
+              <field type="int32_t" name="x">PARAM5 / local: x position in meters * 1e4, global: latitude in degrees * 10^7</field>
+              <field type="int32_t" name="y">PARAM6 / y position: local: x position in meters * 1e4, global: longitude in degrees *10^7</field>
+              <field type="float" name="z">PARAM7 / z position: global: altitude in meters (relative or absolute, depending on frame.</field>
           </message>
           <message id="74" name="VFR_HUD">
                <description>Metrics typically displayed on a HUD for fixed wing aircraft</description>
@@ -1890,13 +1909,13 @@
               <field type="uint16_t" name="command">The scheduled action for the mission item. see MAV_CMD in common.xml MAVLink specs</field>
               <field type="uint8_t" name="current">false:0, true:1</field>
               <field type="uint8_t" name="autocontinue">autocontinue to next wp</field>
-              <field type="int32_t" name="param1">PARAM1, see MAV_CMD enum</field>
-              <field type="int32_t" name="param2">PARAM2, see MAV_CMD enum</field>
-              <field type="int32_t" name="param3">PARAM3, see MAV_CMD enum</field>
-              <field type="int32_t" name="param4">PARAM4, see MAV_CMD enum</field>
-              <field type="int32_t" name="x">PARAM5 / local: x position, global: latitude in degrees * 10^7</field>
-              <field type="int32_t" name="y">PARAM6 / y position: global: longitude in degrees * 10^7</field>
-              <field type="int32_t" name="z">PARAM7 / z position: global: altitude in millimeters (meters * 10^3) (relative or absolute, depending on frame.</field>
+              <field type="float" name="param1">PARAM1, see MAV_CMD enum</field>
+              <field type="float" name="param2">PARAM2, see MAV_CMD enum</field>
+              <field type="float" name="param3">PARAM3, see MAV_CMD enum</field>
+              <field type="float" name="param4">PARAM4, see MAV_CMD enum</field>
+              <field type="int32_t" name="x">PARAM5 / local: x position in meters * 1e4, global: latitude in degrees * 10^7</field>
+              <field type="int32_t" name="y">PARAM6 / local: y position in meters * 1e4, global: longitude in degrees * 10^7</field>
+              <field type="float" name="z">PARAM7 / z position: global: altitude in meters (relative or absolute, depending on frame.</field>
           </message>
           <message id="76" name="COMMAND_LONG">
                <description>Send a command with up to seven parameters to the MAV</description>
@@ -1932,7 +1951,7 @@
                <field type="uint32_t" name="time_boot_ms">Timestamp in milliseconds since system boot</field>
                <field type="uint8_t" name="target_system">System ID</field>
                <field type="uint8_t" name="target_component">Component ID</field>
-               <field type="uint8_t" name="type_mask">Mappings: If any of these bits are set, the corresponding input should be ignored: bit 1: body roll rate, bit 2: body pitch rate, bit 3: body yaw rate. bit 4-bit 7: reserved, bit 8: attitude</field>
+               <field type="uint8_t" name="type_mask">Mappings: If any of these bits are set, the corresponding input should be ignored: bit 1: body roll rate, bit 2: body pitch rate, bit 3: body yaw rate. bit 4-bit 6: reserved, bit 7: throttle, bit 8: attitude</field>
                <field type="float[4]" name="q">Attitude quaternion (w, x, y, z order, zero-rotation is 1, 0, 0, 0)</field>
                <field type="float" name="body_roll_rate">Body roll rate in radians per second</field>
                <field type="float" name="body_pitch_rate">Body roll rate in radians per second</field>
@@ -1954,8 +1973,8 @@
                <field type="uint32_t" name="time_boot_ms">Timestamp in milliseconds since system boot</field>
                <field type="uint8_t" name="target_system">System ID</field>
                <field type="uint8_t" name="target_component">Component ID</field>
-               <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_LOCAL_NED, MAV_FRAME_LOCAL_OFFSET_NED = 5, MAV_FRAME_BODY_NED = 6, MAV_FRAME_BODY_OFFSET_NED = 7</field>
-               <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint</field>
+               <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_LOCAL_NED = 1, MAV_FRAME_LOCAL_OFFSET_NED = 7, MAV_FRAME_BODY_NED = 8, MAV_FRAME_BODY_OFFSET_NED = 9</field>
+               <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint, bit 11: yaw, bit 12: yaw rate</field>
                <field type="float" name="x">X Position in NED frame in meters</field>
                <field type="float" name="y">Y Position in NED frame in meters</field>
                <field type="float" name="z">Z Position in NED frame in meters (note, altitude is negative in NED)</field>
@@ -1965,12 +1984,14 @@
                <field type="float" name="afx">X acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
                <field type="float" name="afy">Y acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
                <field type="float" name="afz">Z acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
+               <field type="float" name="yaw">yaw setpoint in rad</field>
+               <field type="float" name="yaw_rate">yaw rate setpoint in rad/s</field>
           </message>
           <message id="85" name="POSITION_TARGET_LOCAL_NED">
                <description>Set vehicle position, velocity and acceleration setpoint in local frame.</description>
                <field type="uint32_t" name="time_boot_ms">Timestamp in milliseconds since system boot</field>
-               <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_LOCAL_NED, MAV_FRAME_LOCAL_OFFSET_NED = 5, MAV_FRAME_BODY_NED = 6, MAV_FRAME_BODY_OFFSET_NED = 7</field>
-               <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint</field>
+               <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_LOCAL_NED = 1, MAV_FRAME_LOCAL_OFFSET_NED = 7, MAV_FRAME_BODY_NED = 8, MAV_FRAME_BODY_OFFSET_NED = 9</field>
+               <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint, bit 11: yaw, bit 12: yaw rate</field>
                <field type="float" name="x">X Position in NED frame in meters</field>
                <field type="float" name="y">Y Position in NED frame in meters</field>
                <field type="float" name="z">Z Position in NED frame in meters (note, altitude is negative in NED)</field>
@@ -1980,36 +2001,44 @@
                <field type="float" name="afx">X acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
                <field type="float" name="afy">Y acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
                <field type="float" name="afz">Z acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
+               <field type="float" name="yaw">yaw setpoint in rad</field>
+               <field type="float" name="yaw_rate">yaw rate setpoint in rad/s</field>
           </message>
           <message id="86" name="SET_POSITION_TARGET_GLOBAL_INT">
                <description>Set vehicle position, velocity and acceleration setpoint in the WGS84 coordinate system.</description>
                <field type="uint32_t" name="time_boot_ms">Timestamp in milliseconds since system boot. The rationale for the timestamp in the setpoint is to allow the system to compensate for the transport delay of the setpoint. This allows the system to compensate processing latency.</field>
                <field type="uint8_t" name="target_system">System ID</field>
                <field type="uint8_t" name="target_component">Component ID</field>
-               <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint</field>
+               <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_GLOBAL_INT = 5, MAV_FRAME_GLOBAL_RELATIVE_ALT_INT = 6, MAV_FRAME_GLOBAL_TERRAIN_ALT_INT = 11</field>
+               <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint, bit 11: yaw, bit 12: yaw rate</field>
                <field type="int32_t" name="lat_int">X Position in WGS84 frame in 1e7 * meters</field>
                <field type="int32_t" name="lon_int">Y Position in WGS84 frame in 1e7 * meters</field>
-               <field type="float" name="alt">Altitude in WGS84, not AMSL</field>
+               <field type="float" name="alt">Altitude in meters in WGS84 altitude, not AMSL if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT</field>
                <field type="float" name="vx">X velocity in NED frame in meter / s</field>
                <field type="float" name="vy">Y velocity in NED frame in meter / s</field>
                <field type="float" name="vz">Z velocity in NED frame in meter / s</field>
                <field type="float" name="afx">X acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
                <field type="float" name="afy">Y acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
                <field type="float" name="afz">Z acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
+               <field type="float" name="yaw">yaw setpoint in rad</field>
+               <field type="float" name="yaw_rate">yaw rate setpoint in rad/s</field>
           </message>
           <message id="87" name="POSITION_TARGET_GLOBAL_INT">
                <description>Set vehicle position, velocity and acceleration setpoint in the WGS84 coordinate system.</description>
                <field type="uint32_t" name="time_boot_ms">Timestamp in milliseconds since system boot. The rationale for the timestamp in the setpoint is to allow the system to compensate for the transport delay of the setpoint. This allows the system to compensate processing latency.</field>
-               <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint</field>
+               <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_GLOBAL_INT = 5, MAV_FRAME_GLOBAL_RELATIVE_ALT_INT = 6, MAV_FRAME_GLOBAL_TERRAIN_ALT_INT = 11</field>
+               <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint, bit 11: yaw, bit 12: yaw rate</field>
                <field type="int32_t" name="lat_int">X Position in WGS84 frame in 1e7 * meters</field>
                <field type="int32_t" name="lon_int">Y Position in WGS84 frame in 1e7 * meters</field>
-               <field type="float" name="alt">Altitude in WGS84, not AMSL</field>
+               <field type="float" name="alt">Altitude in meters in WGS84 altitude, not AMSL if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT</field>
                <field type="float" name="vx">X velocity in NED frame in meter / s</field>
                <field type="float" name="vy">Y velocity in NED frame in meter / s</field>
                <field type="float" name="vz">Z velocity in NED frame in meter / s</field>
                <field type="float" name="afx">X acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
                <field type="float" name="afy">Y acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
                <field type="float" name="afz">Z acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N</field>
+               <field type="float" name="yaw">yaw setpoint in rad</field>
+               <field type="float" name="yaw_rate">yaw rate setpoint in rad/s</field>
           </message>
           <message id="89" name="LOCAL_POSITION_NED_SYSTEM_GLOBAL_OFFSET">
                <description>The offset in X, Y, Z and yaw between the LOCAL_POSITION_NED messages of MAV X and the global coordinate frame in NED coordinates. Coordinate frame is right-handed, Z-axis down (aeronautical frame, NED / north-east-down convention)</description>
@@ -2197,25 +2226,13 @@
 	    <field type="uint16_t" name="fixed">count of error corrected packets</field>
 	  </message>
 
-         <message id="110" name="FILE_TRANSFER_START">
-             <description>Begin file transfer</description>
-             <field type="uint64_t" name="transfer_uid">Unique transfer ID</field>
-             <field type="char[240]" name="dest_path">Destination path</field>
-             <field type="uint8_t" name="direction">Transfer direction: 0: from requester, 1: to requester</field>
-             <field type="uint32_t" name="file_size">File size in bytes</field>
-             <field type="uint8_t" name="flags">RESERVED</field>
-         </message>
-         <message id="111" name="FILE_TRANSFER_DIR_LIST">
-             <description>Get directory listing</description>
-             <field type="uint64_t" name="transfer_uid">Unique transfer ID</field>
-             <field type="char[240]" name="dir_path">Directory path to list</field>
-             <field type="uint8_t" name="flags">RESERVED</field>
-         </message>
-         <message id="112" name="FILE_TRANSFER_RES">
-             <description>File transfer result</description>
-             <field type="uint64_t" name="transfer_uid">Unique transfer ID</field>
-             <field type="uint8_t" name="result">0: OK, 1: not permitted, 2: bad path / file name, 3: no space left on device</field>
-         </message>
+        <message id="110" name="FILE_TRANSFER_PROTOCOL">
+            <description>File transfer message</description>
+            <field type="uint8_t" name="target_network">Network ID (0 for broadcast)</field>
+            <field type="uint8_t" name="target_system">System ID (0 for broadcast)</field>
+            <field type="uint8_t" name="target_component">Component ID (0 for broadcast)</field>
+            <field type="uint8_t[251]" name="payload">Variable length payload. The length is defined by the remaining message length when subtracting the header and other fields.  The entire content of this block is opaque unless you understand any the encoding message_type.  The particular encoding used can be extension specific and might not always be documented as part of the mavlink specification.</field>
+        </message>
          <message id="113" name="HIL_GPS">
              <description>The global position, as returned by the Global Positioning System (GPS). This is
                  NOT the global position estimate of the sytem, but rather a RAW sensor value. See message GLOBAL_POSITION for the global position estimate. Coordinate frame is right-handed, Z-axis up (GPS frame).</description>
@@ -2463,7 +2480,7 @@
             <field type="uint8_t" name="target_system">System ID (0 for broadcast)</field>
             <field type="uint8_t" name="target_component">Component ID (0 for broadcast)</field>
             <field type="uint16_t" name="message_type">A code that identifies the software component that understands this message (analogous to usb device classes or mime type strings).  If this code is less than 32768, it is considered a 'registered' protocol extension and the corresponding entry should be added to https://github.com/mavlink/mavlink/extension-message-ids.xml.  Software creators can register blocks of message IDs as needed (useful for GCS specific metadata, etc...). Message_types greater than 32767 are considered local experiments and should not be checked in to any widely distributed codebase.</field>
-            <field type="uint8_t" name="varlen_payload">Variable length payload. The length is defined by the remaining message length when subtracting the header and other fields.  The entire content of this block is opaque unless you understand any the encoding message_type.  The particular encoding used can be extension specific and might not always be documented as part of the mavlink specification.</field>
+            <field type="uint8_t[249]" name="payload">Variable length payload. The length is defined by the remaining message length when subtracting the header and other fields.  The entire content of this block is opaque unless you understand any the encoding message_type.  The particular encoding used can be extension specific and might not always be documented as part of the mavlink specification.</field>
         </message>
           <message id="249" name="MEMORY_VECT">
                <description>Send raw controller memory. The use of this message is discouraged for normal packets, but a quite efficient way for testing new messages and getting experimental debug output.</description>
