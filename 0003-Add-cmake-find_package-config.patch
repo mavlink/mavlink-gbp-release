@@ -1,4 +1,4 @@
-From 51f394f5d9424dd38e9902fb3b221fc97408f32c Mon Sep 17 00:00:00 2001
+From a291bbf5b1e683fb1ef2257d241b1f6013f1d9ae Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Tue, 17 Jun 2014 01:01:08 +0400
 Subject: [PATCH 3/7] Add cmake find_package config
