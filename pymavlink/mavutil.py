@@ -688,6 +688,8 @@ class mavserial(mavfile):
     '''a serial mavlink port'''
     def __init__(self, device, baud=115200, autoreconnect=False, source_system=255):
         import serial
+        if ',' in device and not os.path.exists(device):
+            device, baud = device.split(',')
         self.baud = baud
         self.device = device
         self.autoreconnect = autoreconnect
@@ -838,7 +840,7 @@ class mavtcp(mavfile):
         self.port.setblocking(0)
         set_close_on_exec(self.port.fileno())
         self.port.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        mavfile.__init__(self, self.port.fileno(), device, source_system=source_system)
+        mavfile.__init__(self, self.port.fileno(), "tcp:" + device, source_system=source_system)
 
     def close(self):
         self.port.close()
