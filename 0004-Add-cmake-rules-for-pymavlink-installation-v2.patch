@@ -1,4 +1,4 @@
-From fa5f15d10ddff077223574e2c6a915d62281a53c Mon Sep 17 00:00:00 2001
+From 4664cae9f8726e7cfb3e211d90bc5ee39c07ca20 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Tue, 17 Jun 2014 01:14:26 +0400
 Subject: [PATCH 4/7] Add cmake rules for pymavlink installation (v2).
