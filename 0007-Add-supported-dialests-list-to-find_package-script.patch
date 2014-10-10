@@ -1,4 +1,4 @@
-From 998fdd9bcc53519cc5ac3c0e0b2791d452ec0f77 Mon Sep 17 00:00:00 2001
+From ee762d40985ff6433d2c4cc49ce45ac8843e5e79 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Sat, 21 Jun 2014 16:21:46 +0400
 Subject: [PATCH 7/7] Add supported dialests list to find_package() script.
