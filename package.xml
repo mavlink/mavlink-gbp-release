@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mavlink</name>
-  <version>2014.10.01</version>
+  <version>2014.10.10</version>
   <description>MAVLink message marshaling library.
   This package provides C-headers and pymavlink library.
   </description>
