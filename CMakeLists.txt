@@ -28,9 +28,9 @@ install(FILES ${CMAKE_BINARY_DIR}/config.h DESTINATION include/${PROJECT_NAME} C
 # mavlink generation
 set(mavgen_path ${CMAKE_SOURCE_DIR}/pymavlink/generator/mavgen.py)
 macro(generateMavlink version definitions)
-    foreach(definition ${definitions})
+    foreach(definitionAbsPath ${definitions})
+        get_filename_component(definition ${definitionAbsPath} NAME)
         set(targetName ${definition}-v${version})
-        set(definitionAbsPath ${CMAKE_SOURCE_DIR}/message_definitions/v${version}/${definition})
         message(STATUS "processing: ${definitionAbsPath}")
         add_custom_command( 
             OUTPUT ${targetName}-stamp
@@ -44,32 +44,11 @@ macro(generateMavlink version definitions)
     endforeach()
 endmacro()
 
-# build
-set(v0.9Definitions
-    ardupilotmega.xml
-    common.xml
-    minimal.xml
-    pixhawk.xml
-    slugs.xml
-    test.xml
-    ualberta.xml
-    )
-# XXX: generation headers for 0.9 is broken
-#generateMavlink("0.9" "${v0.9Definitions}")
-set(v1.0Definitions
-    ardupilotmega.xml
-    autoquad.xml
-    common.xml
-    matrixpilot.xml
-    minimal.xml
-    pixhawk.xml
-    slugs.xml
-    test.xml
-    ualberta.xml
-    sensesoar.xml
-    )
-generateMavlink("1.0" "${v1.0Definitions}")
+# build only v1.0
+file(GLOB V10DEFINITIONS ${CMAKE_SOURCE_DIR}/message_definitions/v1.0/*.xml)
+generateMavlink("1.0" "${V10DEFINITIONS}")
 
+# build pymavlink
 add_subdirectory(pymavlink)
 
 # install files
@@ -83,7 +62,11 @@ set(PKG_VERSION ${PROJECT_VERSION})
 set(PKG_DESC "mavlink message marshalling library")
 set(PKG_LIBRARIES )
 set(PKG_DEPENDS )
-set(PKG_MAVLINK_DEFINITIONS "${v1.0Definitions}")
+set(PKG_MAVLINK_DEFINITIONS "${V10DEFINITIONS}")
+foreach(def ${V10DEFINITIONS})
+    get_filename_component(dialect "${def}" NAME_WE)
+    list(APPEND PKG_MAVLINK_DIALECTS ${dialect})
+endforeach()
 
 configure_file(config.cmake.in ${PROJECT_NAME}-config.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
