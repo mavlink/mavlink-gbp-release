@@ -1,3 +1,24 @@
+## mavlink (hydro) - 2014.11.11-2
+
+The packages in the `mavlink` repository were released into the `hydro` distro by running `/usr/bin/bloom-release --ros-distro hydro --track indigo mavlink` on `Tue, 11 Nov 2014 12:16:46 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2014.10.10-0`
+- old version: `2014.11.11-1`
+- new version: `2014.11.11-2`
+
+Versions of tools used:
+- bloom version: `0.5.12`
+- catkin_pkg version: `0.2.6`
+- rosdep version: `0.10.32`
+- rosdistro version: `0.3.6`
+- vcstools version: `0.1.35`
+
+
 ## mavlink (indigo) - 2014.10.10-1
 
 The packages in the `mavlink` repository were released into the `indigo` distro by running `/usr/bin/bloom-release --ros-distro indigo --track indigo mavlink` on `Fri, 10 Oct 2014 18:54:13 -0000`
