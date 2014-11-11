@@ -1,4 +1,4 @@
-From 39a04a669fc2dc8f2ffc99106b1725a033e96f1d Mon Sep 17 00:00:00 2001
+From 518144dafee7ded5456218166e5c31d3595d6d05 Mon Sep 17 00:00:00 2001
 From: Vladimir Ermakov <vooon341@gmail.com>
 Date: Tue, 17 Jun 2014 02:43:53 +0400
 Subject: [PATCH 5/7] Add install rule for package.xml
