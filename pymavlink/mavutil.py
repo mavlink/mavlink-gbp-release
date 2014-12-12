@@ -9,9 +9,13 @@ Released under GNU GPL version 3 or later
 import socket, math, struct, time, os, fnmatch, array, sys, errno
 
 # adding these extra imports allows pymavlink to be used directly with pyinstaller
-# without having complex spec files
-import json
-from pymavlink.dialects.v10 import ardupilotmega
+# without having complex spec files. To allow for installs that don't have ardupilotmega
+# at all we avoid throwing an exception if it isn't installed
+try:
+    import json
+    from pymavlink.dialects.v10 import ardupilotmega
+except Exception:
+    pass
 
 # these imports allow for mavgraph and mavlogdump to use maths expressions more easily
 from math import *
@@ -28,7 +32,17 @@ if home is not None:
         mavuser = imp.load_source('pymavlink.mavuser', extra)
         from pymavlink.mavuser import *
 
+# Store the MAVLink library for the currently-selected dialect
+# (set by set_dialect())
 mavlink = None
+
+# Store the mavlink file currently being operated on
+# (set by mavlink_connection())
+mavfile_global = None
+
+# Use a globally-set MAVLink dialect if one has been specified as an environment variable.
+if not 'MAVLINK_DIALECT' in os.environ:
+    os.environ['MAVLINK_DIALECT'] = 'ardupilotmega'
 
 def mavlink10():
     '''return True if using MAVLink 1.0'''
@@ -52,8 +66,6 @@ def evaluate_condition(condition, vars):
     if v is None:
         return False
     return v
-
-mavfile_global = None
 
 class location(object):
     '''represent a GPS coordinate'''
@@ -92,9 +104,7 @@ def set_dialect(dialect):
     current_dialect = dialect
     mavlink = mod
 
-# allow for a MAVLINK_DIALECT environment variable
-if not 'MAVLINK_DIALECT' in os.environ:
-    os.environ['MAVLINK_DIALECT'] = 'ardupilotmega'
+# Set the default dialect. This is done here as it needs to be after the function declaration
 set_dialect(os.environ['MAVLINK_DIALECT'])
 
 class mavfile(object):
@@ -149,13 +159,17 @@ class mavfile(object):
         global mavlink
         if len(buf) == 0:
             return
-        if not ord(buf[0]) in [ 85, 254 ]:
+        try:
+            magic = ord(buf[0])
+        except:
+            magic = buf[0]
+        if not magic in [ 85, 254 ]:
             return
         self.first_byte = False
-        if self.WIRE_PROTOCOL_VERSION == "0.9" and ord(buf[0]) == 254:
+        if self.WIRE_PROTOCOL_VERSION == "0.9" and magic == 254:
             self.WIRE_PROTOCOL_VERSION = "1.0"
             set_dialect(current_dialect)
-        elif self.WIRE_PROTOCOL_VERSION == "1.0" and ord(buf[0]) == 85:
+        elif self.WIRE_PROTOCOL_VERSION == "1.0" and magic == 85:
             self.WIRE_PROTOCOL_VERSION = "0.9"
             set_dialect(current_dialect)
             os.environ['MAVLINK09'] = '1'
@@ -457,7 +471,7 @@ class mavfile(object):
             map = mode_mapping_tracker
         if map is None:
             return None
-        inv_map = dict((a, b) for (b, a) in map.items())
+        inv_map = dict((a, b) for (b, a) in list(map.items()))
         return inv_map
 
     def set_mode(self, mode):
@@ -997,10 +1011,17 @@ def mavlink_connection(device, baud=115200, source_system=255,
                        robust_parsing=True, notimestamps=False, input=True,
                        dialect=None, autoreconnect=False, zero_time_base=False):
     '''open a serial, UDP, TCP or file mavlink connection'''
+    global mavfile_global
+
     if dialect is not None:
         set_dialect(dialect)
     if device.startswith('tcp:'):
         return mavtcp(device[4:], source_system=source_system)
+    if device.startswith('udpin:'):
+        return mavudp(device[6:], input=True, source_system=source_system)
+    if device.startswith('udpout:'):
+        return mavudp(device[7:], input=False, source_system=source_system)
+    # For legacy purposes we accept the following syntax and let the caller to specify direction
     if device.startswith('udp:'):
         return mavudp(device[4:], input=input, source_system=source_system)
 
@@ -1008,7 +1029,6 @@ def mavlink_connection(device, baud=115200, source_system=255,
         # support dataflash logs
         from pymavlink import DFReader
         m = DFReader.DFReader_binary(device, zero_time_base=zero_time_base)
-        global mavfile_global
         mavfile_global = m
         return m
 
@@ -1016,7 +1036,6 @@ def mavlink_connection(device, baud=115200, source_system=255,
         # support dataflash text logs
         from pymavlink import DFReader
         if DFReader.DFReader_is_text_log(device):
-            global mavfile_global
             m = DFReader.DFReader_text(device, zero_time_base=zero_time_base)
             mavfile_global = m
             return m    
@@ -1350,7 +1369,7 @@ class MavlinkSerialPort():
         '''an object that looks like a serial port, but
         transmits using mavlink SERIAL_CONTROL packets'''
         def __init__(self, portname, baudrate, devnum=0, devbaud=0, timeout=3, debug=0):
-                from pymavlink import mavutil
+                from . import mavutil
 
                 self.baudrate = 0
                 self.timeout = timeout
@@ -1372,7 +1391,7 @@ class MavlinkSerialPort():
 
         def write(self, b):
                 '''write some bytes'''
-                from pymavlink import mavutil
+                from . import mavutil
                 self.debug("sending '%s' (0x%02x) of len %u\n" % (b, ord(b[0]), len(b)), 2)
                 while len(b) > 0:
                         n = len(b)
@@ -1391,7 +1410,7 @@ class MavlinkSerialPort():
 
         def _recv(self):
                 '''read some bytes into self.buf'''
-                from pymavlink import mavutil
+                from . import mavutil
                 start_time = time.time()
                 while time.time() < start_time + self.timeout:
                         m = self.mav.recv_match(condition='SERIAL_CONTROL.count!=0',
@@ -1442,7 +1461,7 @@ class MavlinkSerialPort():
 
         def setBaudrate(self, baudrate):
                 '''set baudrate'''
-                from pymavlink import mavutil
+                from . import mavutil
                 if self.baudrate == baudrate:
                         return
                 self.baudrate = baudrate
