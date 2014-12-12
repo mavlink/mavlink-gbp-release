@@ -22,7 +22,7 @@ def kmh(mps):
 
 def altitude(SCALED_PRESSURE, ground_pressure=None, ground_temp=None):
     '''calculate barometric altitude'''
-    from pymavlink import mavutil
+    from . import mavutil
     self = mavutil.mavfile_global
     if ground_pressure is None:
         if self.param('GND_ABS_PRESS', None) is None:
@@ -36,7 +36,7 @@ def altitude(SCALED_PRESSURE, ground_pressure=None, ground_temp=None):
 
 def altitude2(SCALED_PRESSURE, ground_pressure=None, ground_temp=None):
     '''calculate barometric altitude'''
-    from pymavlink import mavutil
+    from . import mavutil
     self = mavutil.mavfile_global
     if ground_pressure is None:
         if self.param('GND_ABS_PRESS', None) is None:
@@ -509,7 +509,7 @@ def wingloading(bank):
     '''return expected wing loading factor for a bank angle in radians'''
     return 1.0/cos(bank)
 
-def airspeed(VFR_HUD, ratio=None, used_ratio=None):
+def airspeed(VFR_HUD, ratio=None, used_ratio=None, offset=None):
     '''recompute airspeed with a different ARSPD_RATIO'''
     import mavutil
     mav = mavutil.mavfile_global
@@ -521,9 +521,23 @@ def airspeed(VFR_HUD, ratio=None, used_ratio=None):
         else:
             print("no ARSPD_RATIO in mav.params")
             used_ratio = ratio
-    airspeed_pressure = (VFR_HUD.airspeed**2) / used_ratio
+    if hasattr(VFR_HUD,'airspeed'):
+        airspeed = VFR_HUD.airspeed
+    else:
+        airspeed = VFR_HUD.Airspeed
+    airspeed_pressure = (airspeed**2) / used_ratio
+    if offset is not None:
+        airspeed_pressure += offset
+        if airspeed_pressure < 0:
+            airspeed_pressure = 0
     airspeed = sqrt(airspeed_pressure * ratio)
     return airspeed
+
+def EAS2TAS(ARSP,GPS,BARO,ground_temp=25):
+    '''EAS2TAS from ARSP.Temp'''
+    tempK = ground_temp + 273.15 - 0.0065 * GPS.Alt
+    return sqrt(1.225 / (BARO.Press / (287.26 * tempK)))
+
 
 def airspeed_ratio(VFR_HUD):
     '''recompute airspeed with a different ARSPD_RATIO'''
@@ -804,7 +818,7 @@ def downsample(N):
 
 def armed(HEARTBEAT):
     '''return 1 if armed, 0 if not'''
-    from pymavlink import mavutil
+    from . import mavutil
     if HEARTBEAT.type == mavutil.mavlink.MAV_TYPE_GCS:
         self = mavutil.mavfile_global
         if self.motors_armed():
@@ -897,7 +911,7 @@ ekf_home = None
 def ekf1_pos(EKF1):
   '''calculate EKF position when EKF disabled'''
   global ekf_home
-  from pymavlink import mavutil
+  from . import mavutil
   self = mavutil.mavfile_global
   if ekf_home is None:
       if not 'GPS' in self.messages or self.messages['GPS'].Status != 3:
