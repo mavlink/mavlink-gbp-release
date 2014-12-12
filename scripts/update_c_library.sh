@@ -19,9 +19,15 @@
 # git clone git@github.com:mavlink/c_library.git
 # cd ~/src/mavlink
 # ./scripts/update_c_library.sh
+#
+# A one-liner for the TMP directory (e.g. for crontab)
+# cd /tmp; git clone git@github.com:mavlink/mavlink.git &> /dev/null; \
+# cd /tmp/mavlink && git remote rename origin upstream &> /dev/null; \
+# mkdir -p include/mavlink/v1.0 && cd include/mavlink/v1.0 && git clone git@github.com:mavlink/c_library.git &> /dev/null; \
+# cd /tmp/mavlink && ./scripts/update_c_library.sh &> /dev/null
 
 function generate_headers() {
-python2 pymavlink/generator/mavgen.py \
+python2 pymavlink/tools/mavgen.py \
     --output $CLIBRARY_PATH \
     --lang C \
     message_definitions/v1.0/$1.xml
@@ -31,7 +37,7 @@ python2 pymavlink/generator/mavgen.py \
 MAVLINK_PATH=$PWD
 MAVLINK_GIT_REMOTENAME=upstream
 MAVLINK_GIT_BRANCHNAME=master
-CLIBRARY_PATH=$MAVLINK_PATH/include/mavlink/v1.0/
+CLIBRARY_PATH=$MAVLINK_PATH/include/mavlink/v1.0/c_library
 CLIBRARY_GIT_REMOTENAME=origin
 CLIBRARY_GIT_BRANCHNAME=master
 
