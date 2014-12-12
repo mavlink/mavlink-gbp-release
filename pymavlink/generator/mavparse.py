@@ -6,7 +6,7 @@ Copyright Andrew Tridgell 2011
 Released under GNU GPL version 3 or later
 '''
 
-import xml.parsers.expat, os, errno, time, sys, operator
+import xml.parsers.expat, os, errno, time, sys, operator, struct
 
 PROTOCOL_0_9 = "0.9"
 PROTOCOL_1_0 = "1.0"
@@ -211,11 +211,6 @@ class MAVXML(object):
                 self.enum[-1].entry[-1].param.append(MAVEnumParam(attrs['index']))
 
         def end_element(name):
-            in_element = '.'.join(in_element_list)
-            if in_element == "mavlink.enums.enum":
-                # add a ENUM_END
-                self.enum[-1].entry.append(MAVEnumEntry("%s_ENUM_END" % self.enum[-1].name,
-                                                        self.enum[-1].highest_value+1, end_marker=True))
             in_element_list.pop()
 
         def char_data(data):
@@ -297,13 +292,14 @@ class MAVXML(object):
 def message_checksum(msg):
     '''calculate a 8-bit checksum of the key fields of a message, so we
        can detect incompatible XML changes'''
-    from mavcrc import x25crc
-    crc = x25crc(msg.name + ' ')
+    from .mavcrc import x25crc
+    crc = x25crc()
+    crc.accumulate_str(msg.name + ' ')
     for f in msg.ordered_fields:
-        crc.accumulate(f.type + ' ')
-        crc.accumulate(f.name + ' ')
+        crc.accumulate_str(f.type + ' ')
+        crc.accumulate_str(f.name + ' ')
         if f.array_length:
-            crc.accumulate(chr(f.array_length))
+            crc.accumulate([f.array_length])
     return (crc.crc&0xFF) ^ (crc.crc>>8)
 
 def merge_enums(xml):
@@ -313,19 +309,20 @@ def merge_enums(xml):
         newenums = []
         for enum in x.enum:
             if enum.name in emap:
-                emap[enum.name].entry.pop() # remove end marker
                 emap[enum.name].entry.extend(enum.entry)
                 print("Merged enum %s" % enum.name)
             else:
                 newenums.append(enum)
                 emap[enum.name] = enum
         x.enum = newenums
-    # sort by value
     for e in emap:
+        # sort by value
         emap[e].entry = sorted(emap[e].entry,
                                key=operator.attrgetter('value'),
                                reverse=False)
-
+        # add a ENUM_END
+        emap[e].entry.append(MAVEnumEntry("%s_ENUM_END" % emap[e].name,
+                                            emap[e].entry[-1].value+1, end_marker=True))
 
 def check_duplicates(xml):
     '''check for duplicate message IDs'''
