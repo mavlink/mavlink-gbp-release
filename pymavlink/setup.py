@@ -11,7 +11,7 @@ except LookupError:
 from distutils.core import setup, Extension
 import glob, os, shutil, fnmatch
 
-version = '1.1.39'
+version = '1.1.41'
 
 from generator import mavgen, mavparse
 
@@ -92,5 +92,6 @@ setup (name = 'pymavlink',
                    'tools/mavtomfile.py',
                    'tools/mavgen.py',
                    'tools/mavkml.py',
-                   'tools/mavsummarize.py']
+                   'tools/mavsummarize.py',
+                   'tools/MPU6KSearch.py']
        )
