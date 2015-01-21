@@ -551,25 +551,11 @@ class mavfile(object):
         else:
             print("Setting relays not supported.")
 
-    def calibrate_imu(self):
-        '''calibrate IMU'''
-        if self.mavlink10():
-            self.mav.command_long_send(self.target_system, self.target_component,
-                                       mavlink.MAV_CMD_PREFLIGHT_CALIBRATION, 0,
-                                       1, 1, 1, 1, 0, 0, 0)
-        else:
-            MAV_ACTION_CALIBRATE_GYRO = 17
-            self.mav.action_send(self.target_system, self.target_component, MAV_ACTION_CALIBRATE_GYRO)
-
     def calibrate_level(self):
-        '''calibrate accels'''
-        if self.mavlink10():
-            self.mav.command_long_send(self.target_system, self.target_component,
-                                       mavlink.MAV_CMD_PREFLIGHT_CALIBRATION, 0,
-                                       1, 1, 1, 1, 0, 0, 0)
-        else:
-            MAV_ACTION_CALIBRATE_ACC = 19
-            self.mav.action_send(self.target_system, self.target_component, MAV_ACTION_CALIBRATE_ACC)
+        '''calibrate accels (1D version)'''
+        self.mav.command_long_send(self.target_system, self.target_component,
+                                   mavlink.MAV_CMD_PREFLIGHT_CALIBRATION, 0,
+                                   1, 1, 0, 0, 0, 0, 0)
 
     def calibrate_pressure(self):
         '''calibrate pressure'''
@@ -626,7 +612,7 @@ class mavfile(object):
         if self.mavlink10():
             self.mav.command_long_send(
                 self.target_system,  # target_system
-                mavlink.MAV_COMP_ID_SYSTEM_CONTROL, # target_component
+                self.target_component,
                 mavlink.MAV_CMD_COMPONENT_ARM_DISARM, # command
                 0, # confirmation
                 1, # param1 (1 to indicate arm)
@@ -642,7 +628,7 @@ class mavfile(object):
         if self.mavlink10():
             self.mav.command_long_send(
                 self.target_system,  # target_system
-                mavlink.MAV_COMP_ID_SYSTEM_CONTROL, # target_component
+                self.target_component,
                 mavlink.MAV_CMD_COMPONENT_ARM_DISARM, # command
                 0, # confirmation
                 0, # param1 (0 to indicate disarm)
@@ -1116,20 +1102,26 @@ class SerialPort(object):
 def auto_detect_serial_win32(preferred_list=['*']):
     '''try to auto-detect serial ports on win32'''
     try:
-        import scanwin32
-        list = sorted(scanwin32.comports())
+        from serial.tools.list_ports_windows import comports
+        list = sorted(comports())
     except:
         return []
     ret = []
-    for order, port, desc, hwid in list:
+    others = []
+    for port, description, hwid in list:
+        matches = False
+        p = SerialPort(port, description=description, hwid=hwid)
         for preferred in preferred_list:
-            if fnmatch.fnmatch(desc, preferred) or fnmatch.fnmatch(hwid, preferred):
-                ret.append(SerialPort(port, description=desc, hwid=hwid))
+            if fnmatch.fnmatch(description, preferred) or fnmatch.fnmatch(hwid, preferred):
+                matches = True
+        if matches:
+            ret.append(p)
+        else:
+            others.append(p)
     if len(ret) > 0:
         return ret
     # now the rest
-    for order, port, desc, hwid in list:
-        ret.append(SerialPort(port, description=desc, hwid=hwid))
+    ret.extend(others)
     return ret
         
 
@@ -1140,19 +1132,21 @@ def auto_detect_serial_unix(preferred_list=['*']):
     import glob
     glist = glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*') + glob.glob('/dev/ttyACM*') + glob.glob('/dev/serial/by-id/*')
     ret = []
+    others = []
     # try preferred ones first
     for d in glist:
+        matches = False
         for preferred in preferred_list:
             if fnmatch.fnmatch(d, preferred):
-                ret.append(SerialPort(d))
+                matches = True
+        if matches:
+            ret.append(SerialPort(d))
+        else:
+            others.append(SerialPort(d))
     if len(ret) > 0:
         return ret
-    # now the rest
-    for d in glist:
-        ret.append(SerialPort(d))
+    ret.extend(others)
     return ret
-
-
 
 def auto_detect_serial(preferred_list=['*']):
     '''try to auto-detect serial port'''
@@ -1472,3 +1466,8 @@ class MavlinkSerialPort():
                                                  0, [0]*70)
                 self.flushInput()
                 self.debug("Changed baudrate %u" % self.baudrate)
+
+if __name__ == '__main__':
+        serial_list = auto_detect_serial(preferred_list=['*FTDI*',"*Arduino_Mega_2560*", "*3D_Robotics*", "*USB_to_UART*", '*PX4*', '*FMU*'])
+        for port in serial_list:
+            print("%s" % port)
