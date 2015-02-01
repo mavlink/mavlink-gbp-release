@@ -213,7 +213,7 @@ class mavfile(object):
         msg._posted = True
         msg._timestamp = time.time()
         type = msg.get_type()
-        if type != 'HEARTBEAT' or msg.type != mavlink.MAV_TYPE_GCS:
+        if type != 'HEARTBEAT' or (msg.type != mavlink.MAV_TYPE_GCS and msg.type != mavlink.MAV_TYPE_GIMBAL):
             self.messages[type] = msg
 
         if 'usec' in msg.__dict__:
@@ -246,7 +246,7 @@ class mavfile(object):
             self.mav_count += 1
         
         self.timestamp = msg._timestamp
-        if type == 'HEARTBEAT':
+        if type == 'HEARTBEAT' and msg.get_srcComponent() != mavlink.MAV_COMP_ID_GIMBAL:
             self.target_system = msg.get_srcSystem()
             self.target_component = msg.get_srcComponent()
             if mavlink.WIRE_PROTOCOL_VERSION == '1.0' and msg.type != mavlink.MAV_TYPE_GCS:
@@ -728,8 +728,6 @@ class mavserial(mavfile):
             if waiting < n:
                 n = waiting
         ret = self.port.read(n)
-        if len(ret) == 0:
-            time.sleep(0.01)
         return ret
 
     def write(self, buf):
@@ -831,16 +829,18 @@ class mavtcp(mavfile):
             sys.exit(1)
         self.port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.destination_addr = (a[0], int(a[1]))
-        while retries > 0:
+        while retries >= 0:
             retries -= 1
-            if retries == 0:
+            if retries <= 0:
                 self.port.connect(self.destination_addr)
             else:
                 try:
                     self.port.connect(self.destination_addr)
                     break
-                except Exception:
-                    time.sleep(1)
+                except Exception as e:
+                    if retries > 0:
+                        print(e, "sleeping")
+                        time.sleep(1)
                     continue
         self.port.setblocking(0)
         set_close_on_exec(self.port.fileno())
@@ -995,14 +995,15 @@ class mavchildexec(mavfile):
 def mavlink_connection(device, baud=115200, source_system=255,
                        planner_format=None, write=False, append=False,
                        robust_parsing=True, notimestamps=False, input=True,
-                       dialect=None, autoreconnect=False, zero_time_base=False):
+                       dialect=None, autoreconnect=False, zero_time_base=False,
+                       retries=3):
     '''open a serial, UDP, TCP or file mavlink connection'''
     global mavfile_global
 
     if dialect is not None:
         set_dialect(dialect)
     if device.startswith('tcp:'):
-        return mavtcp(device[4:], source_system=source_system)
+        return mavtcp(device[4:], source_system=source_system, retries=retries)
     if device.startswith('udpin:'):
         return mavudp(device[6:], input=True, source_system=source_system)
     if device.startswith('udpout:'):
@@ -1421,7 +1422,6 @@ class MavlinkSerialPort():
                                                 type='SERIAL_CONTROL', blocking=True, timeout=0.01)
                         if m is not None and m.count != 0:
                                 break
-                        time.sleep(0.01)
                 if m is not None:
                         if self._debug > 2:
                                 print(m)
