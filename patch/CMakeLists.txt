@@ -35,7 +35,7 @@ macro(generateMavlink version definitions)
         add_custom_command( 
             OUTPUT ${targetName}-stamp
             COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
-                ${PYTHON_EXECUTABLE} -m pymavlink.tools.mavgen --lang=C --wire-protocol=${version}
+                ${PYTHON_EXECUTABLE} -m pymavlink/tools/mavgen --lang=C --wire-protocol=${version}
                 --output=include/v${version} ${definitionAbsPath}
             COMMAND touch ${targetName}-stamp
             DEPENDS ${definitionAbsPath} ${mavgen_path}
