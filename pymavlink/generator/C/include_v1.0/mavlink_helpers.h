@@ -77,7 +77,7 @@ MAVLINK_HELPER uint16_t mavlink_finalize_message_chan(mavlink_message_t* msg, ui
 	msg->len = length;
 	msg->sysid = system_id;
 	msg->compid = component_id;
-	// One sequence number per component
+	// One sequence number per channel
 	msg->seq = mavlink_get_channel_status(chan)->current_tx_seq;
 	mavlink_get_channel_status(chan)->current_tx_seq = mavlink_get_channel_status(chan)->current_tx_seq+1;
 	msg->checksum = crc_calculate(((const uint8_t*)(msg)) + 3, MAVLINK_CORE_HEADER_LEN);
@@ -226,7 +226,7 @@ MAVLINK_HELPER void mavlink_update_checksum(mavlink_message_t* msg, uint8_t c)
  * A typical use scenario of this function call is:
  *
  * @code
- * #include <inttypes.h> // For fixed-width uint8_t type
+ * #include <mavlink.h>
  *
  * mavlink_message_t msg;
  * int chan = 0;
