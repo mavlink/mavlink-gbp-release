@@ -95,7 +95,7 @@ def set_dialect(dialect):
         mod = __import__(modname)
     except Exception:
         # auto-generate the dialect module
-        from generator.mavgen import mavgen_python_dialect
+        from .generator.mavgen import mavgen_python_dialect
         mavgen_python_dialect(dialect, wire_protocol)
         mod = __import__(modname)
     components = modname.split('.')
@@ -960,6 +960,36 @@ class mavlogfile(mavfile):
         if msg.get_type() != "BAD_DATA":
             self._last_timestamp = msg._timestamp
 
+
+class mavmemlog(mavfile):
+    '''a MAVLink log in memory. This allows loading a log into
+    memory to make it easier to do multiple sweeps over a log'''
+    def __init__(self, mav):
+        mavfile.__init__(self, None, 'memlog')
+        self._msgs = []
+        self._index = 0
+        self._count = 0
+        while True:
+            m = mav.recv_msg()
+            if m is None:
+                break
+            self._msgs.append(m)
+        self._count = len(self._msgs)
+
+    def recv_msg(self):
+        '''message receive routine'''
+        if self._index >= self._count:
+            return None
+        m = self._msgs[self._index]
+        self._index += 1
+        self.percent = (100.0 * self._index) / self._count
+        return m
+
+    def rewind(self):
+        '''rewind to start'''
+        self._index = 0
+        self.percent = 0
+
 class mavchildexec(mavfile):
     '''a MAVLink child processes reader/writer'''
     def __init__(self, filename, source_system=255):
@@ -1012,7 +1042,7 @@ def mavlink_connection(device, baud=115200, source_system=255,
     if device.startswith('udp:'):
         return mavudp(device[4:], input=input, source_system=source_system)
 
-    if device.lower().endswith('.bin'):
+    if device.lower().endswith('.bin') or device.lower().endswith('.px4log'):
         # support dataflash logs
         from pymavlink import DFReader
         m = DFReader.DFReader_binary(device, zero_time_base=zero_time_base)
@@ -1028,7 +1058,7 @@ def mavlink_connection(device, baud=115200, source_system=255,
             return m    
 
     # list of suffixes to prevent setting DOS paths as UDP sockets
-    logsuffixes = [ 'log', 'raw', 'tlog' ]
+    logsuffixes = ['mavlink', 'log', 'raw', 'tlog' ]
     suffix = device.split('.')[-1].lower()
     if device.find(':') != -1 and not suffix in logsuffixes:
         return mavudp(device, source_system=source_system, input=input)
@@ -1055,6 +1085,11 @@ class periodic_event(object):
     def trigger(self):
         '''return True if we should trigger now'''
         tnow = time.time()
+
+        if tnow < self.last_time:
+            print("Warning, time moved backwards. Restarting timer.")
+            self.last_time = tnow
+
         if self.last_time + (1.0/self.frequency) <= tnow:
             self.last_time = tnow
             return True
@@ -1129,7 +1164,7 @@ def auto_detect_serial_win32(preferred_list=['*']):
         
 
 def auto_detect_serial_unix(preferred_list=['*']):
-    '''try to auto-detect serial ports on win32'''
+    '''try to auto-detect serial ports on unix'''
     import glob
     glist = glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*') + glob.glob('/dev/ttyACM*') + glob.glob('/dev/serial/by-id/*')
     ret = []
@@ -1234,7 +1269,11 @@ mode_mapping_acm = {
     8 : 'POSITION',
     9 : 'LAND',
     10 : 'OF_LOITER',
-    11 : 'APPROACH'
+    11 : 'DRIFT',
+    13 : 'SPORT',
+    14 : 'FLIP',
+    15 : 'AUTOTUNE',
+    16 : 'POSHOLD'
     }
 mode_mapping_rover = {
     0 : 'MANUAL',
@@ -1307,7 +1346,10 @@ def mode_string_v10(msg):
     '''mode string for 1.0 protocol, from heartbeat'''
     if not msg.base_mode & mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
         return "Mode(0x%08x)" % msg.base_mode
-    if msg.type in [ mavlink.MAV_TYPE_QUADROTOR, mavlink.MAV_TYPE_HEXAROTOR, mavlink.MAV_TYPE_OCTOROTOR, mavlink.MAV_TYPE_TRICOPTER, mavlink.MAV_TYPE_COAXIAL ]:
+    if msg.type in [ mavlink.MAV_TYPE_QUADROTOR, mavlink.MAV_TYPE_HEXAROTOR,
+                     mavlink.MAV_TYPE_OCTOROTOR, mavlink.MAV_TYPE_TRICOPTER,
+                     mavlink.MAV_TYPE_COAXIAL,
+                     mavlink.MAV_TYPE_HELICOPTER ]:
         if msg.custom_mode in mode_mapping_acm:
             return mode_mapping_acm[msg.custom_mode]
     if msg.type == mavlink.MAV_TYPE_FIXED_WING:
