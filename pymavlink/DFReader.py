@@ -223,7 +223,6 @@ class DFReader(object):
             if rate > self.msg_rate.get(type, 0):
                 self.msg_rate[type] = rate
         self.msg_rate['IMU'] = 50.0
-        self.msg_rate['ATT'] = 50.0
         self.timebase = t
         self.counts_since_gps = {}        
 
@@ -231,7 +230,7 @@ class DFReader(object):
         '''set time for a message'''
         if self.px4_timestamps:
             m._timestamp = self.timebase + self.px4_timebase
-        elif self._zero_time_base or self.new_timestamps:
+        elif len(m._fieldnames) > 0 and (self._zero_time_base or self.new_timestamps):
             if 'TimeMS' == m._fieldnames[0]:
                 m._timestamp = self.timebase + m.TimeMS*0.001
             elif m.get_type() in ['GPS','GPS2']:
@@ -362,7 +361,9 @@ class DFReader_binary(DFReader):
             hdr = self.data[self.offset:self.offset+3]
         msg_type = ord(hdr[2])
         if skip_bytes != 0:
-            print("Skipped %u bad bytes in log %s" % (skip_bytes, skip_type))
+            if self.remaining < 528:
+                return None
+            print("Skipped %u bad bytes in log %s remaining=%u" % (skip_bytes, skip_type, self.remaining))
 
         self.offset += 3
         self.remaining -= 3
@@ -381,6 +382,9 @@ class DFReader_binary(DFReader):
         try:
             elements = list(struct.unpack(fmt.msg_struct, body))
         except Exception:
+            if self.remaining < 528:
+                # we can have garbage at the end of an APM2 log
+                return None
             print("Failed to parse %s/%s with len %u (remaining %u)" % (fmt.name, fmt.msg_struct, len(body), self.remaining))
             raise
         name = null_term(fmt.name)
@@ -443,15 +447,15 @@ class DFReader_text(DFReader):
             if len(elements) >= 2:
                 break
 
+        if self.line >= len(self.lines):
+            return None
+
         # cope with empty structures
         if len(elements) == 5 and elements[-1] == ',':
             elements[-1] = ''
             elements.append('')
 
         self.percent = 100.0 * (self.line / float(len(self.lines)))
-
-        if self.line >= len(self.lines):
-            return None
 
         msg_type = elements[0]
 
