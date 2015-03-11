@@ -17,7 +17,13 @@ else()
 endif()
 
 # prepare installation script
+set(INSTALL_SCRIPT_TMP ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/python_distutils_install.sh)
 set(INSTALL_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/python_distutils_install.sh)
-configure_file(python_distutils_install.sh.in ${INSTALL_SCRIPT} @ONLY)
+configure_file(python_distutils_install.sh.in ${INSTALL_SCRIPT_TMP} @ONLY)
+
+# workaround for setting exec perms on install script
+file(COPY ${INSTALL_SCRIPT_TMP} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
 
 install(CODE "execute_process(COMMAND \"${INSTALL_SCRIPT}\" WORKING_DIRECTORY \"${CMAKE_CURRENT_SOURCE_DIR}\")")
