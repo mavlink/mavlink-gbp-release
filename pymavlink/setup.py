@@ -11,7 +11,7 @@ except LookupError:
 from distutils.core import setup, Extension
 import glob, os, shutil, fnmatch, platform
 
-version = '1.1.44'
+version = '1.1.49'
 
 from generator import mavgen, mavparse
 
@@ -51,7 +51,8 @@ if platform.system() != 'Windows':
     extensions = [ Extension('mavnative',
                     sources = ['mavnative/mavnative.c'],
                     include_dirs = [
-                        'generator/C/include_v1.0'
+                        'generator/C/include_v1.0',
+                        'mavnative'
                         ]
                     ) ]
 else:
@@ -80,7 +81,8 @@ setup (name = 'pymavlink',
                                                      'C/include_v0.9/*.h',
                                                      'C/include_v1.0/*.h',
                                                      'C/include_v1.0/*.hpp' ],
-                        'pymavlink.generator.lib.minixsv': [ '*.xsd' ] },
+                        'pymavlink.generator.lib.minixsv': [ '*.xsd' ],
+                        'pymavlink' : ['mavnative/*.h'] },
        packages = ['pymavlink',
                    'pymavlink.generator',
                    'pymavlink.generator.lib',
