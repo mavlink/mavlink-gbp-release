@@ -1,0 +1,12 @@
+Source: ros-jade-mavlink
+Section: misc
+Priority: extra
+Maintainer: Vladimir Ermakov <vooon341@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), cmake, python-dev
+Homepage: http://qgroundcontrol.org/mavlink/
+Standards-Version: 3.9.2
+
+Package: ros-jade-mavlink
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-dev, ros-jade-catkin
+Description: MAVLink message marshaling library. This package provides C-headers and pymavlink library.
