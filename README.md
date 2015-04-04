@@ -1,3 +1,24 @@
+## mavlink (hydro) - 2015.4.4-0
+
+The packages in the `mavlink` repository were released into the `hydro` distro by running `/usr/bin/bloom-release --rosdistro hydro --track hydro mavlink` on `Sat, 04 Apr 2015 12:46:31 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2015.3.11-0`
+- old version: `2015.3.11-0`
+- new version: `2015.4.4-0`
+
+Versions of tools used:
+- bloom version: `0.5.19`
+- catkin_pkg version: `0.2.7`
+- rosdep version: `0.11.2`
+- rosdistro version: `0.4.1`
+- vcstools version: `0.1.36`
+
+
 ## mavlink (jade) - 2015.3.11-0
 
 The packages in the `mavlink` repository were released into the `jade` distro by running `/usr/bin/bloom-release --rosdistro jade --track jade mavlink` on `Wed, 11 Mar 2015 14:26:33 -0000`
