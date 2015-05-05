@@ -610,6 +610,16 @@
                     <param index="6">Empty</param>
                     <param index="7">Desired altitude in meters</param>
                </entry>
+                <entry value="31" name="MAV_CMD_NAV_LOITER_TO_ALT">
+                    <description>Begin loiter at the specified Latitude and Longitude.  If Lat=Lon=0, then loiter at the current position.  Don't consider the navigation command complete (don't leave loiter) until the altitude has been reached.  Additionally, if the Heading Required parameter is non-zero the  aircraft will not leave the loiter until heading toward the next waypoint. </description>
+                    <param index="1">Heading Required (0 = False)</param>
+                    <param index="2">Radius in meters. If positive loiter clockwise, negative counter-clockwise, 0 means no change to standard loiter.</param>
+                    <param index="3">Empty</param>
+                    <param index="4">Empty</param>
+                    <param index="5">Latitude</param>
+                    <param index="6">Longitude</param>
+                    <param index="7">Altitude</param>
+               </entry>
                <entry value="80" name="MAV_CMD_NAV_ROI">
                     <description>Sets the region of interest (ROI) for a sensor set or the vehicle itself. This can then be used by the vehicles control system to control the vehicle attitude and the attitude of various sensors such as cameras.</description>
                     <param index="1">Region of intereset mode. (see MAV_ROI enum)</param>
@@ -1080,6 +1090,13 @@
                   <description>Stop image capture sequence</description>
                   <param index="1">Reserved</param>
                   <param index="2">Reserved</param>
+              </entry>
+              
+              <entry name="MAV_CMD_DO_TRIGGER_CONTROL" value="2003">
+                   <description>Enable or disable on-board camera triggering system.</description>
+                   <param index="1">Trigger enable/disable (0 for disable, 1 for start)</param>
+                   <param index="2">Shutter integration time (in ms)</param>
+                   <param index="3">Reserved</param>
               </entry>
 
               <entry value="2500" name="MAV_CMD_VIDEO_START_CAPTURE">
@@ -1887,16 +1904,19 @@
           </message>
           <message id="64" name="LOCAL_POSITION_NED_COV">
               <description>The filtered local position (e.g. fused computer vision and accelerometers). Coordinate frame is right-handed, Z-axis down (aeronautical frame, NED / north-east-down convention)</description>
-              <field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
+              <field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot). 0 for system without monotonic timestamp</field>
               <field type="uint64_t" name="time_utc">Timestamp (microseconds since UNIX epoch) in UTC. 0 for unknown. Commonly filled by the precision time source of a GPS receiver.</field>
               <field type="uint8_t" name="estimator_type" enum="MAV_ESTIMATOR_TYPE">Class id of the estimator this estimate originated from.</field>
               <field type="float" name="x">X Position</field>
               <field type="float" name="y">Y Position</field>
               <field type="float" name="z">Z Position</field>
-              <field type="float" name="vx">X Speed</field>
-              <field type="float" name="vy">Y Speed</field>
-              <field type="float" name="vz">Z Speed</field>
-              <field type="float[36]" name="covariance">Covariance matrix (first six entries are the first ROW, next six entries are the second row, etc.)</field>
+              <field type="float" name="vx">X Speed (m/s)</field>
+              <field type="float" name="vy">Y Speed (m/s)</field>
+              <field type="float" name="vz">Z Speed (m/s)</field>
+              <field type="float" name="ax">X Acceleration (m/s^2)</field>
+              <field type="float" name="ay">Y Acceleration (m/s^2)</field>
+              <field type="float" name="az">Z Acceleration (m/s^2)</field>
+              <field type="float[45]" name="covariance">Covariance matrix upper right triangular (first nine entries are the first ROW, next eight entries are the second row, etc.)</field>
           </message>
           <message id="65" name="RC_CHANNELS">
                <description>The PPM values of the RC channels received. The standard PPM modulation is as follows: 1000 microseconds: 0%, 2000 microseconds: 100%. Individual receivers/transmitters might violate this specification.</description>
@@ -2324,6 +2344,11 @@
             <description>Time synchronization message.</description>
             <field type="int64_t" name="tc1">Time sync timestamp 1</field>
             <field type="int64_t" name="ts1">Time sync timestamp 2</field>
+        </message>
+        <message id="112" name="CAMERA_TRIGGER">
+            <description>Camera-IMU triggering and synchronisation message.</description>
+            <field type="uint64_t" name="time_usec">Timestamp for the image frame in microseconds</field>
+            <field type="uint32_t" name="seq">Image frame sequence</field>
         </message>
          <message id="113" name="HIL_GPS">
              <description>The global position, as returned by the Global Positioning System (GPS). This is
