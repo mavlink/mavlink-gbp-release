@@ -26,6 +26,7 @@ parser.add_argument("--types", default=None, help="types of messages (comma sepa
 parser.add_argument("--nottypes", default=None, help="types of messages not to include (comma separated)")
 parser.add_argument("--dialect", default="ardupilotmega", help="MAVLink dialect")
 parser.add_argument("--zero-time-base", action='store_true', help="use Z time base for DF logs")
+parser.add_argument("--no-bad-data", action='store_true', help="Don't output corrupted messages")
 parser.add_argument("log", metavar="LOG")
 args = parser.parse_args()
 
@@ -111,7 +112,9 @@ while True:
     if nottypes is not None and m.get_type() in nottypes:
         continue
 
-    if m.get_type() == 'BAD_DATA' and m.reason == "Bad prefix":
+    # Ignore BAD_DATA messages is the user requested or if they're because of a bad prefix. The
+    # latter case is normally because of a mismatched MAVLink version.
+    if m.get_type() == 'BAD_DATA' and (args.no_bad_data is True or m.reason == "Bad prefix"):
         continue
 
     # Grab the timestamp.
@@ -145,7 +148,7 @@ while True:
 
         # Prepare the message as a single object with 'meta' and 'data' keys holding
         # the message's metadata and actual data respectively.
-        outMsg = {"meta": {"msgId": m.get_msgId(), "type": m.get_type(), "timestamp": timestamp}, "data": data}
+        outMsg = {"meta": {"type": m.get_type(), "timestamp": timestamp}, "data": data}
 
         # Now print out this object with stringified properly.
         print(json.dumps(outMsg))
