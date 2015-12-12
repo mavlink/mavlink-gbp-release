@@ -18,9 +18,8 @@ try:
 except Exception:
     pass
 
-# these imports allow for mavgraph and mavlogdump to use maths expressions more easily
-from math import *
-from .mavextra import *
+# maximum packet length for a single receive call - use the UDP limit
+UDP_MAX_PACKET_LEN = 65535
 
 '''
 Support having a $HOME/.pymavlink/mavextra.py for extra graphing functions
@@ -817,7 +816,7 @@ class mavudp(mavfile):
 
     def recv(self,n=None):
         try:
-            data, self.last_address = self.port.recvfrom(300)
+            data, self.last_address = self.port.recvfrom(UDP_MAX_PACKET_LEN)
         except socket.error as e:
             if e.errno in [ errno.EAGAIN, errno.EWOULDBLOCK, errno.ECONNREFUSED ]:
                 return ""
