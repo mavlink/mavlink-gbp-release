@@ -21,6 +21,35 @@ set(CMAKE_INSTALL_LIBDIR lib)
 set(PythonInterp_FIND_VERSION "2")
 find_package(PythonInterp REQUIRED)
 
+# Try to read package version from package.xml
+if(EXISTS ${CMAKE_SOURCE_DIR}/package.xml)
+    file(WRITE ${CMAKE_BINARY_DIR}/package_version.py
+        "import re, sys\n"
+        "from xml.etree import ElementTree as ET\n"
+        "doc = ET.parse('${CMAKE_SOURCE_DIR}/package.xml')\n"
+        "ver = doc.find('version').text\n"
+        "if re.match('\\d+\\.\\d+\\.\\d+', ver):\n"
+        "    sys.stdout.write(ver)\n"
+        "else:\n"
+        "    sys.stderr.write('Version format error.\\n')\n"
+        "    sys.exit(1)\n"
+        )
+
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/package_version.py
+        OUTPUT_VARIABLE XML_VERSION
+        RESULT_VARIABLE XML_RESULT
+        )
+
+    string(STRIP "${XML_VERSION}" XML_VERSION)
+    if(NOT ${XML_RESULT})
+        set(PROJECT_VERSION ${XML_VERSION})
+        message(STATUS "Package version: ${PROJECT_VERSION}")
+    else()
+        message(WARNING "Package version: package.xml parse error, default used: ${PROJECT_VERSION}")
+    endif()
+endif()
+
 # config files
 configure_file(config.h.in config.h)
 install(FILES ${CMAKE_BINARY_DIR}/config.h DESTINATION include/${PROJECT_NAME} COMPONENT Dev)
