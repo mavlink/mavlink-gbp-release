@@ -26,27 +26,28 @@ configure_file(config.h.in config.h)
 install(FILES ${CMAKE_BINARY_DIR}/config.h DESTINATION include/${PROJECT_NAME} COMPONENT Dev)
 
 # mavlink generation
-set(mavgen_path ${CMAKE_SOURCE_DIR}/pymavlink/generator/mavgen.py)
-macro(generateMavlink version definitions)
+set(mavgen_path ${CMAKE_SOURCE_DIR}/pymavlink/tools/mavgen.py)
+set(common_xml_path ${CMAKE_SOURCE_DIR}/message_definitions/v1.0/common.xml)
+macro(generateMavlink_v10 definitions)
     foreach(definitionAbsPath ${definitions})
-        get_filename_component(definition ${definitionAbsPath} NAME)
-        set(targetName ${definition}-v${version})
+        get_filename_component(definition ${definitionAbsPath} NAME_WE)
         message(STATUS "processing: ${definitionAbsPath}")
-        add_custom_command( 
-            OUTPUT ${targetName}-stamp
+        add_custom_command(
+            OUTPUT include/v1.0/${definition}/${definition}.h
             COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
-                ${PYTHON_EXECUTABLE} -m pymavlink.tools.mavgen --lang=C --wire-protocol=${version}
-                --output=include/v${version} ${definitionAbsPath}
-            COMMAND touch ${targetName}-stamp
-            DEPENDS ${definitionAbsPath} ${mavgen_path}
+                ${PYTHON_EXECUTABLE} ${mavgen_path} --lang=C --wire-protocol=1.0
+                --output=include/v1.0 ${definitionAbsPath}
+                DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
             )
-        add_custom_target(${targetName} ALL DEPENDS ${targetName}-stamp)
+        add_custom_target(${definition}.xml-v1.0
+            ALL DEPENDS include/v1.0/${definition}/${definition}.h
+            )
     endforeach()
 endmacro()
 
 # build only v1.0
 file(GLOB V10DEFINITIONS ${CMAKE_SOURCE_DIR}/message_definitions/v1.0/*.xml)
-generateMavlink("1.0" "${V10DEFINITIONS}")
+generateMavlink_v10("${V10DEFINITIONS}")
 
 # build pymavlink
 add_subdirectory(pymavlink)
@@ -59,7 +60,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/share/${PROJECT_NAME} DESTINATION share CO
 # thanks for urdfdom project
 set(PKG_NAME ${PROJECT_NAME})
 set(PKG_VERSION ${PROJECT_VERSION})
-set(PKG_DESC "mavlink message marshalling library")
+set(PKG_DESC "MAVLink micro air vehicle marshalling / communication library")
 set(PKG_LIBRARIES )
 set(PKG_DEPENDS )
 set(PKG_MAVLINK_DEFINITIONS "${V10DEFINITIONS}")
