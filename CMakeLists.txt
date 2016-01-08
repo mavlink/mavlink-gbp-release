@@ -21,32 +21,62 @@ set(CMAKE_INSTALL_LIBDIR lib)
 set(PythonInterp_FIND_VERSION "2")
 find_package(PythonInterp REQUIRED)
 
+# Try to read package version from package.xml
+if(EXISTS ${CMAKE_SOURCE_DIR}/package.xml)
+    file(WRITE ${CMAKE_BINARY_DIR}/package_version.py
+        "import re, sys\n"
+        "from xml.etree import ElementTree as ET\n"
+        "doc = ET.parse('${CMAKE_SOURCE_DIR}/package.xml')\n"
+        "ver = doc.find('version').text\n"
+        "if re.match('\\d+\\.\\d+\\.\\d+', ver):\n"
+        "    sys.stdout.write(ver)\n"
+        "else:\n"
+        "    sys.stderr.write('Version format error.\\n')\n"
+        "    sys.exit(1)\n"
+        )
+
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/package_version.py
+        OUTPUT_VARIABLE XML_VERSION
+        RESULT_VARIABLE XML_RESULT
+        )
+
+    string(STRIP "${XML_VERSION}" XML_VERSION)
+    if(NOT ${XML_RESULT})
+        set(PROJECT_VERSION ${XML_VERSION})
+        message(STATUS "Package version: ${PROJECT_VERSION}")
+    else()
+        message(WARNING "Package version: package.xml parse error, default used: ${PROJECT_VERSION}")
+    endif()
+endif()
+
 # config files
 configure_file(config.h.in config.h)
 install(FILES ${CMAKE_BINARY_DIR}/config.h DESTINATION include/${PROJECT_NAME} COMPONENT Dev)
 
 # mavlink generation
-set(mavgen_path ${CMAKE_SOURCE_DIR}/pymavlink/generator/mavgen.py)
-macro(generateMavlink version definitions)
+set(mavgen_path ${CMAKE_SOURCE_DIR}/pymavlink/tools/mavgen.py)
+set(common_xml_path ${CMAKE_SOURCE_DIR}/message_definitions/v1.0/common.xml)
+macro(generateMavlink_v10 definitions)
     foreach(definitionAbsPath ${definitions})
-        get_filename_component(definition ${definitionAbsPath} NAME)
-        set(targetName ${definition}-v${version})
+        get_filename_component(definition ${definitionAbsPath} NAME_WE)
         message(STATUS "processing: ${definitionAbsPath}")
-        add_custom_command( 
-            OUTPUT ${targetName}-stamp
+        add_custom_command(
+            OUTPUT include/v1.0/${definition}/${definition}.h
             COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
-                ${PYTHON_EXECUTABLE} -m pymavlink.tools.mavgen --lang=C --wire-protocol=${version}
-                --output=include/v${version} ${definitionAbsPath}
-            COMMAND touch ${targetName}-stamp
-            DEPENDS ${definitionAbsPath} ${mavgen_path}
+                ${PYTHON_EXECUTABLE} ${mavgen_path} --lang=C --wire-protocol=1.0
+                --output=include/v1.0 ${definitionAbsPath}
+                DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
             )
-        add_custom_target(${targetName} ALL DEPENDS ${targetName}-stamp)
+        add_custom_target(${definition}.xml-v1.0
+            ALL DEPENDS include/v1.0/${definition}/${definition}.h
+            )
     endforeach()
 endmacro()
 
 # build only v1.0
 file(GLOB V10DEFINITIONS ${CMAKE_SOURCE_DIR}/message_definitions/v1.0/*.xml)
-generateMavlink("1.0" "${V10DEFINITIONS}")
+generateMavlink_v10("${V10DEFINITIONS}")
 
 # build pymavlink
 add_subdirectory(pymavlink)
@@ -59,7 +89,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/share/${PROJECT_NAME} DESTINATION share CO
 # thanks for urdfdom project
 set(PKG_NAME ${PROJECT_NAME})
 set(PKG_VERSION ${PROJECT_VERSION})
-set(PKG_DESC "mavlink message marshalling library")
+set(PKG_DESC "MAVLink micro air vehicle marshalling / communication library")
 set(PKG_LIBRARIES )
 set(PKG_DEPENDS )
 set(PKG_MAVLINK_DEFINITIONS "${V10DEFINITIONS}")
