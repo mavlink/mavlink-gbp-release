@@ -591,7 +591,7 @@
                     <param index="1">Turns</param>
                     <param index="2">Empty</param>
                     <param index="3">Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise</param>
-                    <param index="4">Desired yaw angle.</param>
+                    <param index="4">Forward moving aircraft this sets exit xtrack location: 0 for center of loiter wp, 1 for exit location. Else, this is desired yaw angle</param>
                     <param index="5">Latitude</param>
                     <param index="6">Longitude</param>
                     <param index="7">Altitude</param>
@@ -601,7 +601,7 @@
                     <param index="1">Seconds (decimal)</param>
                     <param index="2">Empty</param>
                     <param index="3">Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise</param>
-                    <param index="4">Desired yaw angle.</param>
+                    <param index="4">Forward moving aircraft this sets exit xtrack location: 0 for center of loiter wp, 1 for exit location. Else, this is desired yaw angle</param>
                     <param index="5">Latitude</param>
                     <param index="6">Longitude</param>
                     <param index="7">Altitude</param>
@@ -681,7 +681,7 @@
                     <param index="1">Heading Required (0 = False)</param>
                     <param index="2">Radius in meters. If positive loiter clockwise, negative counter-clockwise, 0 means no change to standard loiter.</param>
                     <param index="3">Empty</param>
-                    <param index="4">Empty</param>
+                    <param index="4">Forward moving aircraft this sets exit xtrack location: 0 for center of loiter wp, 1 for exit location</param>
                     <param index="5">Latitude</param>
                     <param index="6">Longitude</param>
                     <param index="7">Altitude</param>
@@ -772,6 +772,16 @@
                     <param index="6">Empty</param>
                     <param index="7">Empty</param>
                </entry>
+               <entry value="93" name="MAV_CMD_NAV_DELAY">
+                    <description>Delay the next navigation command a number of seconds or until a specified time</description>
+                    <param index="1">Delay in seconds (decimal, -1 to enable time-of-day fields)</param>
+                    <param index="2">hour (24h format, UTC, -1 to ignore)</param>
+                    <param index="3">minute (24h format, UTC, -1 to ignore)</param>
+                    <param index="4">second (24h format, UTC)</param>
+                    <param index="5">Empty</param>
+                    <param index="6">Empty</param>
+                    <param index="7">Empty</param>
+               </entry>
                <entry value="95" name="MAV_CMD_NAV_LAST">
                     <description>NOP - This command is only used to mark the upper limit of the NAV/ACTION commands in the enumeration</description>
                     <param index="1">Empty</param>
@@ -857,7 +867,7 @@
                     <param index="1">Speed type (0=Airspeed, 1=Ground Speed)</param>
                     <param index="2">Speed  (m/s, -1 indicates no change)</param>
                     <param index="3">Throttle  ( Percent, -1 indicates no change)</param>
-                    <param index="4">Empty</param>
+                    <param index="4">absolute or relative [0,1]</param>
                     <param index="5">Empty</param>
                     <param index="6">Empty</param>
                     <param index="7">Empty</param>
@@ -966,9 +976,9 @@
                <entry value="192" name="MAV_CMD_DO_REPOSITION">
                     <description>Reposition the vehicle to a specific WGS84 global position.</description>
                     <param index="1">Ground speed, less than 0 (-1) for default</param>
-                    <param index="2">Reserved</param>
+                    <param index="2">Bitmask of option flags, see the MAV_DO_REPOSITION_FLAGS enum.</param>
                     <param index="3">Reserved</param>
-                    <param index="4">Yaw heading, NaN for unchanged</param>
+                    <param index="4">Yaw heading, NaN for unchanged. For planes indicates loiter direction (0: clockwise, 1: counter clockwise)</param>
                     <param index="5">Latitude (deg * 1E7)</param>
                     <param index="6">Longitude (deg * 1E7)</param>
                     <param index="7">Altitude (meters)</param>
@@ -2024,6 +2034,59 @@
               <entry value="32" name="ADSB_FLAGS_VALID_SQUAWK"></entry>
               <entry value="64" name="ADSB_FLAGS_SIMULATED"></entry>
           </enum>
+          <enum name="MAV_DO_REPOSITION_FLAGS">
+              <description>Bitmask of options for the MAV_CMD_DO_REPOSITION</description>
+              <entry value="1" name="MAV_DO_REPOSITION_FLAGS_CHANGE_MODE">
+                  <description>The aircraft should immediately transition into guided. This should not be set for follow me applications</description>
+              </entry>
+          </enum>
+          <!-- ESTIMATOR_STATUS_FLAGS - these values should be bit-and with the messages flags field to know if flag has been set -->
+          <enum name="ESTIMATOR_STATUS_FLAGS">
+              <description>Flags in EKF_STATUS message</description>
+              <entry name="ESTIMATOR_ATTITUDE" value="1">
+                  <description>True if the attitude estimate is good</description>
+              </entry>
+
+              <entry name="ESTIMATOR_VELOCITY_HORIZ" value="2">
+                  <description>True if the horizontal velocity estimate is good</description>
+              </entry>
+
+              <entry name="ESTIMATOR_VELOCITY_VERT" value="4">
+                  <description>True if the  vertical velocity estimate is good</description>
+              </entry>
+
+              <entry name="ESTIMATOR_POS_HORIZ_REL" value="8">
+                  <description>True if the horizontal position (relative) estimate is good</description>
+              </entry>
+
+              <entry name="ESTIMATOR_POS_HORIZ_ABS" value="16">
+                  <description>True if the horizontal position (absolute) estimate is good</description>
+              </entry>
+
+              <entry name="ESTIMATOR_POS_VERT_ABS" value="32">
+                  <description>True if the vertical position (absolute) estimate is good</description>
+              </entry>
+
+              <entry name="ESTIMATOR_POS_VERT_AGL" value="64">
+                  <description>True if the vertical position (above ground) estimate is good</description>
+              </entry>
+
+              <entry name="ESTIMATOR_CONST_POS_MODE" value="128">
+                  <description>True if the EKF is in a constant position mode and is not using external measurements (eg GPS or optical flow)</description>
+              </entry>
+
+              <entry name="ESTIMATOR_PRED_POS_HORIZ_REL" value="256">
+                  <description>True if the EKF has sufficient data to enter a mode that will provide a (relative) position estimate</description>
+              </entry>
+
+              <entry name="ESTIMATOR_PRED_POS_HORIZ_ABS" value="512">
+                  <description>True if the EKF has sufficient data to enter a mode that will provide a (absolute) position estimate</description>
+              </entry>
+
+              <entry name="ESTIMATOR_GPS_GLITCH" value="1024">
+                  <description>True if the EKF has detected a GPS glitch</description>
+              </entry>
+          </enum>
      </enums>
      <messages>
           <message id="0" name="HEARTBEAT">
@@ -2364,6 +2427,12 @@
                <field type="float" name="param_value_min">Minimum param value. The protocol does not define if this overwrites an onboard minimum value. (Depends on implementation)</field>
                <field type="float" name="param_value_max">Maximum param value. The protocol does not define if this overwrites an onboard maximum value. (Depends on implementation)</field>
           </message>
+          <message id="51" name="MISSION_REQUEST_INT">
+               <description>Request the information of the mission item with the sequence number seq. The response of the system to this message should be a MISSION_ITEM_INT message. http://qgroundcontrol.org/mavlink/waypoint_protocol</description>
+               <field type="uint8_t" name="target_system">System ID</field>
+               <field type="uint8_t" name="target_component">Component ID</field>
+               <field type="uint16_t" name="seq">Sequence</field>
+          </message>
           <message id="54" name="SAFETY_SET_ALLOWED_AREA">
                <description>Set a safety zone (volume), which is defined by two corners of a cube. This message can be used to tell the MAV which setpoints/MISSIONs to accept and which to reject. Safety areas are often enforced by national or competition regulations.</description>
                <field type="uint8_t" name="target_system">System ID</field>
@@ -2396,7 +2465,7 @@
                <field type="float[9]" name="covariance">Attitude covariance</field>
           </message>
           <message id="62" name="NAV_CONTROLLER_OUTPUT">
-               <description>Outputs of the APM navigation controller. The primary use of this message is to check the response and signs of the controller before actual flight and to assist with tuning controller parameters.</description>
+               <description>The state of the fixed wing navigation and position controller.</description>
                <field type="float" name="nav_roll">Current desired roll in degrees</field>
                <field type="float" name="nav_pitch">Current desired pitch in degrees</field>
                <field type="int16_t" name="nav_bearing">Current desired heading in degrees</field>
@@ -3234,7 +3303,37 @@
             <field type="float" name="size_x">Size in radians of target along x-axis</field>
             <field type="float" name="size_y">Size in radians of target along y-axis</field>
         </message>
-        <!-- MESSAGE IDs 180 - 240: Space for custom messages in individual projectname_messages.xml files -->
+        <!-- MESSAGE IDs 180 - 229: Space for custom messages in individual projectname_messages.xml files -->
+        <message id="230" name="ESTIMATOR_STATUS">
+            <description>Estimator status message including flags, innovation test ratios and estimated accuracies. The flags message is an integer bitmask containing information on which EKF outputs are valid. See the ESTIMATOR_STATUS_FLAGS enum definition for further information. The innovaton test ratios show the magnitude of the sensor innovation divided by the innovation check threshold. Under normal operation the innovaton test ratios should be below 0.5 with occasional values up to 1.0. Values greater than 1.0 should be rare under normal operation and indicate that a measurement has been rejected by the filter. The user should be notified if an innovation test ratio greater than 1.0 is recorded. Notifications for values in the range between 0.5 and 1.0 should be optional and controllable by the user.</description>
+            <field type="uint64_t" name="time_usec">Timestamp (micros since boot or Unix epoch)</field>
+            <field name="flags" type="uint16_t" enum="ESTIMATOR_STATUS_FLAGS">Integer bitmask indicating which EKF outputs are valid. See definition for ESTIMATOR_STATUS_FLAGS.</field>
+            <field name="vel_ratio" type="float">Velocity innovation test ratio</field>
+            <field name="pos_horiz_ratio" type="float">Horizontal position innovation test ratio</field>
+            <field name="pos_vert_ratio" type="float">Vertical position innovation test ratio</field>
+            <field name="mag_ratio" type="float">Magnetometer innovation test ratio</field>
+            <field name="hagl_ratio" type="float">Height above terrain innovation test ratio</field>
+            <field name="tas_ratio" type="float">True airspeed innovation test ratio</field>
+            <field name="pos_horiz_accuracy" type="float">Horizontal position 1-STD accuracy relative to the EKF local origin (m)</field>
+            <field name="pos_vert_accuracy" type="float">Vertical position 1-STD accuracy relative to the EKF local origin (m)</field>
+        </message>
+        <message id="231" name="WIND_COV">
+            <field type="uint64_t" name="time_usec">Timestamp (micros since boot or Unix epoch)</field>
+            <field type="float" name="wind_x">Wind in X (NED) direction in m/s</field>
+            <field type="float" name="wind_y">Wind in Y (NED) direction in m/s</field>
+            <field type="float" name="wind_z">Wind in Z (NED) direction in m/s</field>
+            <field type="float" name="var_horiz">Variability of the wind in XY. RMS of a 1 Hz lowpassed wind estimate.</field>
+            <field type="float" name="var_vert">Variability of the wind in Z. RMS of a 1 Hz lowpassed wind estimate.</field>
+            <field type="float" name="wind_alt">AMSL altitude (m) this measurement was taken at</field>
+            <field name="horiz_accuracy" type="float">Horizontal speed 1-STD accuracy</field>
+            <field name="vert_accuracy" type="float">Vertical speed 1-STD accuracy</field>
+        </message>
+        <message id="233" name="GPS_RTCM_DATA">
+           <description>WORK IN PROGRESS! RTCM message for injecting into the onboard GPS (used for DGPS)</description>
+           <field type="uint8_t" name="flags">LSB: 1 means message is fragmented</field>
+           <field type="uint8_t" name="len">data length</field>
+           <field type="uint8_t[180]" name="data">RTCM message (may be fragmented)</field>
+        </message>
         <message id="241" name="VIBRATION">
             <description>Vibration levels and accelerometer clipping</description>
             <field type="uint64_t" name="time_usec">Timestamp (micros since boot or Unix epoch)</field>
