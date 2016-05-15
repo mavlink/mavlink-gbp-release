@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>mavlink</name>
   <version>:{version}</version>
   <description>MAVLink message marshaling library.
@@ -15,10 +15,10 @@
   <author>Lorenz Meier</author>
   <license>LGPLv3</license>
 
-  <build_depend>python</build_depend>
-  <run_depend>catkin</run_depend>
-  <run_depend>python</run_depend>
   <buildtool_depend>cmake</buildtool_depend>
+  <depend>python</depend>
+  <build_depend>python-setuptools</build_depend>
+  <exec_depend>catkin</exec_depend>
 
   <export>
     <build_type>cmake</build_type>
