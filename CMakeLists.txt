@@ -96,7 +96,8 @@ generateMavlink_v10("${V10DEFINITIONS}")
 
 # build v2.0 if it is supported. for now it uses same definitions as v1.0
 if(EXISTS "${CMAKE_SOURCE_DIR}/pymavlink/generator/C/include_v2.0")
-    generateMavlink_v20("${V10DEFINITIONS}")
+    set(V20DEFINITIONS "${V10DEFINITIONS}")
+    generateMavlink_v20("${V20DEFINITIONS}")
 endif()
 
 # build pymavlink
@@ -109,15 +110,22 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/share/${PROJECT_NAME} DESTINATION share CO
 
 # thanks for urdfdom project
 set(PKG_NAME ${PROJECT_NAME})
+set(PKG2_NAME "${PROJECT_NAME}2")
 set(PKG_VERSION ${PROJECT_VERSION})
 set(PKG_DESC "MAVLink micro air vehicle marshalling / communication library")
 set(PKG_LIBRARIES )
 set(PKG_DEPENDS )
 set(PKG_MAVLINK_DEFINITIONS "${V10DEFINITIONS}")
+set(PKG2_MAVLINK_DEFINITIONS "${V20DEFINITIONS}")
 foreach(def ${V10DEFINITIONS})
     get_filename_component(dialect "${def}" NAME_WE)
     list(APPEND PKG_MAVLINK_DIALECTS ${dialect})
 endforeach()
+foreach(def ${V20DEFINITIONS})
+    get_filename_component(dialect "${def}" NAME_WE)
+    list(APPEND PKG2_MAVLINK_DIALECTS ${dialect})
+endforeach()
+
 
 configure_file(config.cmake.in ${PROJECT_NAME}-config.cmake @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
