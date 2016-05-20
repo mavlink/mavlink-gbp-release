@@ -1,3 +1,26 @@
+## mavlink (jade) - 2016.5.20-0
+
+The packages in the `mavlink` repository were released into the `jade` distro by running `/usr/bin/bloom-release --rosdistro jade --track jade mavlink` on `Fri, 20 May 2016 10:01:08 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2016.5.15-1`
+- old version: `2016.5.15-1`
+- new version: `2016.5.20-0`
+
+Versions of tools used:
+
+- bloom version: `0.5.21`
+- catkin_pkg version: `0.2.10`
+- rosdep version: `0.11.4`
+- rosdistro version: `0.4.7`
+- vcstools version: `0.1.38`
+
+
 ## mavlink (indigo) - 2016.5.20-0
 
 The packages in the `mavlink` repository were released into the `indigo` distro by running `/usr/bin/bloom-release --rosdistro indigo --track indigo mavlink` on `Fri, 20 May 2016 09:43:00 -0000`
