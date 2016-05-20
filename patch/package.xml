@@ -3,7 +3,8 @@
   <name>mavlink</name>
   <version>:{version}</version>
   <description>MAVLink message marshaling library.
-  This package provides C-headers and pymavlink library.
+  This package provides C-headers and pymavlink library
+  for both 1.0 and 2.0 versions of protocol.
   </description>
 
   <maintainer email="vooon341@gmail.com">Vladimir Ermakov</maintainer>
