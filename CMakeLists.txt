@@ -84,8 +84,17 @@ macro(generateMavlink_v20 definitions)
                 --output=include/v2.0 ${definitionAbsPath}
             DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
             )
+        add_custom_command(
+            OUTPUT include/v2.0/${definition}/${definition}.hpp
+            COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
+                ${PYTHON_EXECUTABLE} ${mavgen_path} --lang=C++11 --wire-protocol=2.0
+                --output=include/v2.0 ${definitionAbsPath}
+            DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
+            )
         add_custom_target(${definition}.xml-v2.0
-            ALL DEPENDS include/v2.0/${definition}/${definition}.h
+            ALL DEPENDS
+                include/v2.0/${definition}/${definition}.h
+                include/v2.0/${definition}/${definition}.hpp
             )
     endforeach()
 endmacro()
