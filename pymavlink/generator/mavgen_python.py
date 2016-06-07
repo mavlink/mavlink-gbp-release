@@ -78,8 +78,8 @@ class MAVLink_header(object):
         self.incompat_flags = incompat_flags
         self.compat_flags = compat_flags
 
-    def pack(self):
-        if WIRE_PROTOCOL_VERSION == '2.0':
+    def pack(self, force_mavlink1=False):
+        if WIRE_PROTOCOL_VERSION == '2.0' and not force_mavlink1:
             return struct.pack('<BBBBBBBHB', ${PROTOCOL_MARKER}, self.mlen,
                                self.incompat_flags, self.compat_flags,
                                self.seq, self.srcSystem, self.srcComponent,
@@ -193,22 +193,28 @@ class MAVLink_message(object):
         self._msgbuf += sig
         mav.signing.timestamp += 1
 
-    def pack(self, mav, crc_extra, payload):
-        self._payload = payload
+    def pack(self, mav, crc_extra, payload, force_mavlink1=False):
+        plen = len(payload)
+        if WIRE_PROTOCOL_VERSION != '1.0' and not force_mavlink1:
+            # in MAVLink2 we can strip trailing zeros off payloads. This allows for simple
+            # variable length arrays and smaller packets
+            while plen > 0 and payload[plen-1] == chr(0):
+                plen -= 1
+        self._payload = payload[:plen]
         incompat_flags = 0
         if mav.signing.sign_outgoing:
             incompat_flags |= MAVLINK_IFLAG_SIGNED
         self._header  = MAVLink_header(self._header.msgId,
                                        incompat_flags=incompat_flags, compat_flags=0,
-                                       mlen=len(payload), seq=mav.seq,
+                                       mlen=len(self._payload), seq=mav.seq,
                                        srcSystem=mav.srcSystem, srcComponent=mav.srcComponent)
-        self._msgbuf = self._header.pack() + payload
+        self._msgbuf = self._header.pack(force_mavlink1=force_mavlink1) + self._payload
         crc = x25crc(self._msgbuf[1:])
         if ${crc_extra}: # using CRC extra
             crc.accumulate_str(struct.pack('B', crc_extra))
         self._crc = crc.crc
         self._msgbuf += struct.pack('<H', self._crc)
-        if mav.signing.sign_outgoing:
+        if mav.signing.sign_outgoing and not force_mavlink1:
             self.sign_packet(mav)
         return self._msgbuf
 
@@ -296,7 +302,7 @@ class %s(MAVLink_message):
         for f in m.fields:
                 outf.write("                self.%s = %s\n" % (f.name, f.name))
         outf.write("""
-        def pack(self, mav):
+        def pack(self, mav, force_mavlink1=False):
                 return MAVLink_message.pack(self, mav, %u, struct.pack('%s'""" % (m.crc_extra, m.fmtstr))
         for field in m.ordered_fields:
                 if (field.type != "char" and field.array_length > 1):
@@ -304,7 +310,7 @@ class %s(MAVLink_message):
                                 outf.write(", self.{0:s}[{1:d}]".format(field.name,i))
                 else:
                         outf.write(", self.{0:s}".format(field.name))
-        outf.write("))\n")
+        outf.write("), force_mavlink1=force_mavlink1)\n")
 
 
 def native_mavfmt(field):
@@ -398,6 +404,10 @@ class MAVLinkSigning(object):
         self.sign_outgoing = False
         self.allow_unsigned_callback = None
         self.stream_timestamps = {}
+        self.badsig_count = 0
+        self.goodsig_count = 0
+        self.unsigned_count = 0
+        self.reject_count = 0
 
 class MAVLink(object):
         '''MAVLink protocol handling class'''
@@ -446,9 +456,9 @@ class MAVLink(object):
             self.send_callback_args = args
             self.send_callback_kwargs = kwargs
 
-        def send(self, mavmsg):
+        def send(self, mavmsg, force_mavlink1=False):
                 '''send a MAVLink message'''
-                buf = mavmsg.pack(self)
+                buf = mavmsg.pack(self, force_mavlink1=force_mavlink1)
                 self.file.write(buf)
                 self.seq = (self.seq + 1) % 256
                 self.total_packets_sent += 1
@@ -615,7 +625,6 @@ class MAVLink(object):
                 # decode the header
                 if msgbuf[0] != PROTOCOL_MARKER_V1:
                     headerlen = 10
-                    allow_smaller = True
                     try:
                         magic, mlen, incompat_flags, compat_flags, seq, srcSystem, srcComponent, msgIdlow, msgIdhigh = struct.unpack('<cBBBBBBHB', msgbuf[:headerlen])
                     except struct.error as emsg:
@@ -624,7 +633,6 @@ class MAVLink(object):
                     mapkey = msgId
                 else:
                     headerlen = 6
-                    allow_smaller = False
                     try:
                         magic, mlen, seq, srcSystem, srcComponent, msgId = struct.unpack('<cBBBBB', msgbuf[:headerlen])
                         incompat_flags = 0
@@ -670,16 +678,28 @@ class MAVLink(object):
                     if signature_len == MAVLINK_SIGNATURE_BLOCK_LEN:
                         sig_ok = self.check_signature(msgbuf, srcSystem, srcComponent)
                         accept_signature = sig_ok
+                        if sig_ok:
+                            self.signing.goodsig_count += 1
+                        else:
+                            self.signing.badsig_count += 1
                         if not accept_signature and self.signing.allow_unsigned_callback is not None:
                             accept_signature = self.signing.allow_unsigned_callback(self, msgId)
+                            if accept_signature:
+                                self.signing.unsigned_count += 1
+                            else:
+                                self.signing.reject_count += 1
                     elif self.signing.allow_unsigned_callback is not None:
                         accept_signature = self.signing.allow_unsigned_callback(self, msgId)
+                        if accept_signature:
+                            self.signing.unsigned_count += 1
+                        else:
+                            self.signing.reject_count += 1
                     if not accept_signature:
                         raise MAVError('Invalid signature')
 
                 csize = struct.calcsize(fmt)
                 mbuf = msgbuf[headerlen:-(2+signature_len)]
-                if len(mbuf) < csize and allow_smaller:
+                if len(mbuf) < csize:
                     # zero pad to give right size
                     mbuf.extend([0]*(csize - len(mbuf)))
                 if len(mbuf) < csize:
@@ -770,11 +790,11 @@ def generate_methods(outf, msgs):
 """, sub)
 
         t.write(outf, """
-        def ${NAMELOWER}_send(${SELFFIELDNAMES}):
+        def ${NAMELOWER}_send(${SELFFIELDNAMES}, force_mavlink1=False):
                 '''
                 ${COMMENT}
                 '''
-                return self.send(self.${NAMELOWER}_encode(${FIELDNAMES}))
+                return self.send(self.${NAMELOWER}_encode(${FIELDNAMES}), force_mavlink1=force_mavlink1)
 
 """, sub)
 

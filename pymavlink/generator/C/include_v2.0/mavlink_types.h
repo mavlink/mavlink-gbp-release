@@ -8,6 +8,10 @@
 
 #include <stdint.h>
 
+#ifdef MAVLINK_USE_CXX_NAMESPACE
+namespace mavlink {
+#endif
+
 // Macro to define packed structures
 #ifdef __GNUC__
   #define MAVPACKED( __Declaration__ ) __Declaration__ __attribute__((packed))
@@ -112,6 +116,7 @@ typedef struct __mavlink_message {
 	uint8_t compid;         ///< ID of the message sender component
 	uint32_t msgid:24;      ///< ID of message in payload
 	uint64_t payload64[(MAVLINK_MAX_PAYLOAD_LEN+MAVLINK_NUM_CHECKSUM_BYTES+7)/8];
+	uint8_t ck[2];          ///< incoming checksum bytes
 	uint8_t signature[MAVLINK_SIGNATURE_BLOCK_LEN];
 }) mavlink_message_t;
 
@@ -287,5 +292,9 @@ typedef struct __mavlink_msg_entry {
  */
 #define MAVLINK_IFLAG_SIGNED  0x01
 #define MAVLINK_IFLAG_MASK    0x01 // mask of all understood bits
+
+#ifdef MAVLINK_USE_CXX_NAMESPACE
+} // namespace mavlink
+#endif
 
 #endif /* MAVLINK_TYPES_H_ */
