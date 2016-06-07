@@ -1,3 +1,26 @@
+## mavlink (kinetic) - 2016.6.7-0
+
+The packages in the `mavlink` repository were released into the `kinetic` distro by running `/usr/bin/bloom-release --rosdistro kinetic --track kinetic mavlink` on `Tue, 07 Jun 2016 20:26:26 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2016.5.20-0`
+- old version: `2016.5.20-0`
+- new version: `2016.6.7-0`
+
+Versions of tools used:
+
+- bloom version: `0.5.21`
+- catkin_pkg version: `0.2.10`
+- rosdep version: `0.11.5`
+- rosdistro version: `0.4.7`
+- vcstools version: `0.1.38`
+
+
 ## mavlink (jade) - 2016.5.20-0
 
 The packages in the `mavlink` repository were released into the `jade` distro by running `/usr/bin/bloom-release --rosdistro jade --track jade mavlink` on `Fri, 20 May 2016 10:01:08 -0000`
