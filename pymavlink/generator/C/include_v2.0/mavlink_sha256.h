@@ -42,6 +42,10 @@
 */
 #ifndef HAVE_MAVLINK_SHA256
 
+#ifdef MAVLINK_USE_CXX_NAMESPACE
+namespace mavlink {
+#endif
+
 #ifndef MAVLINK_HELPER
 #define MAVLINK_HELPER
 #endif
@@ -49,7 +53,10 @@
 typedef struct {
   unsigned int sz[2];
   uint32_t counter[8];
-  unsigned char save[64];
+  union {
+      unsigned char save_bytes[64];
+      uint32_t save_u32[16];
+  } u;
 } mavlink_sha256_ctx;
 
 #define Ch(x,y,z) (((x) & (y)) ^ ((~(x)) & (z)))
@@ -166,14 +173,14 @@ MAVLINK_HELPER void mavlink_sha256_update(mavlink_sha256_ctx *m, const void *v, 
         if (len < l) {
             l = len;
         }
-	memcpy(m->save + offset, p, l);
+	memcpy(m->u.save_bytes + offset, p, l);
 	offset += l;
 	p += l;
 	len -= l;
 	if(offset == 64){
 	    int i;
 	    uint32_t current[16];
-	    const uint32_t *u = (const uint32_t *)m->save;
+	    const uint32_t *u = m->u.save_u32;
 	    for (i = 0; i < 16; i++){
                 const uint8_t *p1 = (const uint8_t *)&u[i];
                 uint8_t *p2 = (uint8_t *)&current[i];
@@ -237,5 +244,9 @@ MAVLINK_HELPER void mavlink_sha256_final_48(mavlink_sha256_ctx *m, uint8_t resul
 #undef Sigma1
 #undef sigma0
 #undef sigma1
+
+#ifdef MAVLINK_USE_CXX_NAMESPACE
+} // namespace mavlink
+#endif
 
 #endif // HAVE_MAVLINK_SHA256
