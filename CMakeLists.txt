@@ -77,30 +77,50 @@ macro(generateMavlink_v20 definitions)
     foreach(definitionAbsPath ${definitions})
         get_filename_component(definition ${definitionAbsPath} NAME_WE)
         message(STATUS "processing v2.0: ${definitionAbsPath}")
+
         add_custom_command(
-            OUTPUT include/v2.0/${definition}/${definition}.h
+            #OUTPUT include/v2.0/${definition}/${definition}.h
+            OUTPUT ${definition}-v2.0-c.stamp
             COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
                 ${PYTHON_EXECUTABLE} ${mavgen_path} --lang=C --wire-protocol=2.0
                 --output=include/v2.0 ${definitionAbsPath}
+            COMMAND touch ${definition}-v2.0-c.stamp
             DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
             )
         add_custom_command(
-            OUTPUT include/v2.0/${definition}/${definition}.hpp
+            #OUTPUT include/v2.0/${definition}/${definition}.hpp
+            OUTPUT ${definition}-v2.0-cxx.stamp
             COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
                 ${PYTHON_EXECUTABLE} ${mavgen_path} --lang=C++11 --wire-protocol=2.0
                 --output=include/v2.0 ${definitionAbsPath}
+            COMMAND touch ${definition}-v2.0-cxx.stamp
             DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
             )
         add_custom_target(${definition}.xml-v2.0
             ALL DEPENDS
-                include/v2.0/${definition}/${definition}.h
-                include/v2.0/${definition}/${definition}.hpp
+                ${definition}-v2.0-c.stamp
+                ${definition}-v2.0-cxx.stamp
+                #include/v2.0/${definition}/${definition}.h
+                #include/v2.0/${definition}/${definition}.hpp
             )
+    endforeach()
+
+    # common should be last
+    foreach(definitionAbsPath ${definitions})
+        get_filename_component(definition ${definitionAbsPath} NAME_WE)
+        add_dependencies(common.xml-v2.0 ${definition}.xml-v2.0)
     endforeach()
 endmacro()
 
 # build v1.0
 file(GLOB V10DEFINITIONS ${CMAKE_SOURCE_DIR}/message_definitions/v1.0/*.xml)
+
+# do not generate testing dialects
+foreach(definition minimal test python_array_test)
+    list(REMOVE_ITEM V10DEFINITIONS "${CMAKE_SOURCE_DIR}/message_definitions/v1.0/${definition}.xml")
+endforeach()
+list(SORT V10DEFINITIONS)
+
 generateMavlink_v10("${V10DEFINITIONS}")
 
 # build v2.0 if it is supported. for now it uses same definitions as v1.0
