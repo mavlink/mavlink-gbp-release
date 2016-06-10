@@ -104,7 +104,17 @@ ${{fields:    ${cxx_type} ${name}; /*< ${description} */
 }}
 
 
-    inline std::string to_yaml(void)
+    inline std::string get_name(void) const
+    {
+            return NAME;
+    }
+
+    inline Info&& get_message_info(void) const
+    {
+            return std::move(Info{ MSG_ID, LENGTH, MIN_LENGTH, CRC_EXTRA });
+    }
+
+    inline std::string to_yaml(void) const
     {
         std::stringstream ss;
 
@@ -115,14 +125,11 @@ ${{fields:        ${to_yaml_code}
         return ss.str();
     }
 
-    inline void serialize(mavlink::MsgMap &map)
+    inline void serialize(mavlink::MsgMap &map) const
     {
         map.reset(MSG_ID, LENGTH);
 
-${{const_fileds:        ${name} = ${const_value};
-}}
-
-${{ordered_fields:        map << ${name};${ser_whitespace}// offset: ${wire_offset}
+${{ordered_fields:        map << ${ser_name};${ser_whitespace}// offset: ${wire_offset}
 }}
     }
 
@@ -304,11 +311,11 @@ def generate_one(basename, xml):
     for m in xml.message:
         m.dialect_name = xml.basename
         m.msg_name = m.name
-        m.const_fileds = []
 
         for f in m.fields:
             spaces = 30 - len(f.name)
             f.ser_whitespace = ' ' * (spaces if spaces > 1 else 1)
+            f.ser_name = f.name  # for most of fields it is name
 
             to_yaml_cast = 'int' if f.type in ['uint8_t', 'int8_t'] else ''
 
@@ -350,7 +357,7 @@ def generate_one(basename, xml):
 
             # cope with uint8_t_mavlink_version
             if f.omit_arg:
-                m.const_fileds.append(f)
+                f.ser_name = "%s(%s)" % (f.type, f.const_value)
 
     generate_main_hpp(directory, xml)
     for m in xml.message:
