@@ -5,6 +5,7 @@
 #include <cassert>
 #include <string>
 #include <iostream>
+#include <cstring>
 
 #ifndef MAVLINK_HELPER
 #define MAVLINK_HELPER static inline
@@ -25,8 +26,12 @@ const mavlink_msg_entry_t *mavlink_get_msg_entry(uint32_t msgid);
 
 namespace mavlink {
 
+//! Message ID type
 using msgid_t = uint32_t;
 
+/**
+ * MAVLink Message base class.
+ */
 struct Message {
 	static constexpr msgid_t MSG_ID = UINT32_MAX;
 	static constexpr size_t LENGTH = 0;
@@ -70,5 +75,40 @@ struct Message {
 	 */
 	virtual void deserialize(MsgMap &msp) = 0;
 };
+
+/**
+ * Converts std::array<char, N> to std::string.
+ *
+ * Array treated as null-terminated string up to _N chars.
+ */
+template<size_t _N>
+std::string to_string(const std::array<char, _N> &a)
+{
+	return std::string(a.data(), strnlen(a.data(), a.size()));
+}
+
+/**
+ * Convert std::array to comma separated string
+ */
+template<typename _T, size_t _N>
+std::string to_string(const std::array<_T, _N> &a)
+{
+	std::stringstream ss;
+	bool first = true;
+
+	for (auto const &v : a) {
+		if (first)
+			first = false;
+		else
+			ss << ", ";
+
+		//if (sizeof(_T) == 1)
+			ss << +v;
+		//else
+		//	ss << v;
+	}
+
+	return ss.str();
+}
 
 } // namespace mavlink
