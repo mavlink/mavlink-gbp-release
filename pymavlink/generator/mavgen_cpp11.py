@@ -12,8 +12,30 @@ Released under GNU GPL version 3 or later
 import sys, textwrap, os, time
 from . import mavparse, mavtemplate
 import collections
+import struct
 
 t = mavtemplate.MAVTemplate()
+
+def tmax(bit):
+    return (1<<bit) - 1
+
+# numeric limits
+TYPE_MAX = {
+    #'float'    : float('+inf'),
+    #'double'   : float('+inf'),
+    'char'     : tmax(7),
+    'int8_t'   : tmax(7),
+    'uint8_t'  : tmax(8),
+    'uint8_t_mavlink_version'  : tmax(8),
+    'int16_t'  : tmax(15),
+    'uint16_t' : tmax(16),
+    'int32_t'  : tmax(31),
+    'uint32_t' : tmax(32),
+    'int64_t'  : tmax(63),
+    'uint64_t' : tmax(64),
+}
+
+EType = collections.namedtuple('EType', ('type', 'max'))
 
 
 def generate_main_hpp(directory, xml):
@@ -55,9 +77,12 @@ ${{enum:
 /** @brief ${description} */
 enum class ${name}${cxx_underlying_type}
 {
-${{entry:    ${name_trim}=${value}, /* ${description} |${{param:${description}| }} */
+${{entry_flt:    ${name_trim}=${value}, /* ${description} |${{param:${description}| }} */
 }}
 };
+
+//! ${name} ENUM_END
+constexpr auto ${enum_end_name} = ${enum_end_value};
 }}
 
 
@@ -277,6 +302,11 @@ def enum_remove_prefix(prefix, s):
     return '_'.join(sl)
 
 
+def fix_int8_t(v):
+    '''convert unsigned char value to signed char'''
+    return struct.unpack('b', struct.pack('B', v))[0]
+
+
 def generate_one(basename, xml):
     '''generate headers for one XML file'''
 
@@ -323,7 +353,7 @@ def generate_one(basename, xml):
             to_yaml_cast = '+' if f.type in ['char', 'uint8_t', 'int8_t'] else ''
 
             if f.enum:
-                enum_types[f.enum].append((f.type, f.type_length))
+                enum_types[f.enum].append(EType(f.type, TYPE_MAX[f.type]))
 
             # XXX use TIMESYNC message to test trimmed message decoding
             if m.name == 'TIMESYNC' and f.name == 'ts1':
@@ -336,11 +366,14 @@ def generate_one(basename, xml):
             if f.array_length != 0:
                 f.cxx_type = 'std::array<%s, %s>' % (f.type, f.array_length)
 
+                # XXX sometime test_value is > 127 for int8_t, monkeypatch
+                if f.type == 'int8_t':
+                    f.test_value = [fix_int8_t(v) for v in f.test_value]
+
                 if f.type == 'char':
                     f.to_yaml_code = """ss << "  %s: \\"" << to_string(%s) << "\\"" << std::endl;""" % (f.name, f.name)
 
-                    # XXX find how to make std::array<> from const char[]
-                    f.cxx_test_value = 'make_str_array(packet_in.%s, "%s")' % (f.name, f.test_value)
+                    f.cxx_test_value = 'to_char_array("%s")' % (f.test_value)
                     f.c_test_value = '"%s"' % f.test_value
                 else:
                     f.to_yaml_code = """ss << "  %s: [" << to_string(%s) << "]" << std::endl;""" % (f.name, f.name)
@@ -352,8 +385,8 @@ def generate_one(basename, xml):
                 f.to_yaml_code = """ss << "  %s: " << %s%s << std::endl;""" % (f.name, to_yaml_cast, f.name)
 
                 # XXX sometime test_value is > 127 for int8_t, monkeypatch
-                if f.type == 'int8_t' and f.test_value > 127:
-                    f.test_value -= 128;
+                if f.type == 'int8_t':
+                    f.test_value = fix_int8_t(f.test_value);
 
                 if f.type == 'char':
                     f.cxx_test_value = "'%s'" % f.test_value
@@ -373,18 +406,30 @@ def generate_one(basename, xml):
 
     # add trimmed filed name to enums
     for e in xml.enum:
+        underlying_type = None
         if e.name in enum_types:
             types = enum_types[e.name]
-            types.sort(key=lambda x: x[1])  # sort by type size
-            # XXX ENUM_END break builds!
-            #     Example: APM GOPRO_CAPTURE_MODE ENUM_END = 256 > uint8_t
-            #e.cxx_underlying_type = " : " + types[-1][0]
-            e.cxx_underlying_type = ''
-        else:
-            e.cxx_underlying_type = ''
+            types.sort(key=lambda x: x.max)
+            underlying_type = types[-1]
 
+        # template do not support "if"
+        # filter out ENUM_END, it often > than unterlying type may handle
+        e.entry_flt = []
         for f in e.entry:
             f.name_trim = enum_remove_prefix(e.name, f.name)
+            if not f.end_marker:
+                e.entry_flt.append(f)
+                # XXX check all values in acceptable range
+                if underlying_type and f.value > underlying_type.max:
+                    raise ValueError("Enum %s::%s = %s > MAX(%s)" % (e.name, f.name_trim, f.value, underlying_type.max))
+                elif not underlying_type and f.value > TYPE_MAX['int32_t']:
+                    # default underlying type is int, usual 32-bit
+                    underlying_type = EType('int64_t', TYPE_MAX['int64_t'])
+            else:
+                e.enum_end_name = f.name
+                e.enum_end_value = f.value
+
+        e.cxx_underlying_type = ' : ' + underlying_type.type if underlying_type else ''
 
     generate_main_hpp(directory, xml)
     for m in xml.message:
