@@ -42,10 +42,6 @@
 */
 #ifndef HAVE_MAVLINK_SHA256
 
-#ifdef MAVLINK_USE_CXX_NAMESPACE
-namespace mavlink {
-#endif
-
 #ifndef MAVLINK_HELPER
 #define MAVLINK_HELPER
 #endif
@@ -244,9 +240,5 @@ MAVLINK_HELPER void mavlink_sha256_final_48(mavlink_sha256_ctx *m, uint8_t resul
 #undef Sigma1
 #undef sigma0
 #undef sigma1
-
-#ifdef MAVLINK_USE_CXX_NAMESPACE
-} // namespace mavlink
-#endif
 
 #endif // HAVE_MAVLINK_SHA256
