@@ -1,7 +1,7 @@
 project (mavlink NONE)
 
 # Note: patched version for installation as ROS 3-rd party library
-# Provides C-headers and pymavlink
+# Provides C-headers and C++11
 
 # settings
 cmake_minimum_required (VERSION 2.8.2)
@@ -130,7 +130,9 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/pymavlink/generator/C/include_v2.0")
 endif()
 
 # build pymavlink
-add_subdirectory(pymavlink)
+# NOTE: pymavlink removed from mavlink package on @tridge request.
+#       use `rosdep install python-pymavlink` to solve that dependency.
+#add_subdirectory(pymavlink)
 
 # install files
 install(DIRECTORY ${CMAKE_BINARY_DIR}/include/ DESTINATION include/${PROJECT_NAME} COMPONENT Dev FILES_MATCHING PATTERN "*.h*")
