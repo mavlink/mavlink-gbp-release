@@ -1,10 +1,12 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>mavlink</name>
-  <version>2016.10.5</version>
+  <version>2016.10.10</version>
   <description>MAVLink message marshaling library.
-  This package provides C-headers and pymavlink library
+  This package provides C-headers and C++11 library
   for both 1.0 and 2.0 versions of protocol.
+
+  For pymavlink use separate install via rosdep (python-pymavlink).
   </description>
 
   <maintainer email="vooon341@gmail.com">Vladimir Ermakov</maintainer>
