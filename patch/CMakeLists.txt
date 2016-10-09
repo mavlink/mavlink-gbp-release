@@ -131,7 +131,7 @@ endif()
 
 # build pymavlink
 # NOTE: pymavlink removed from mavlink package on @tridge request.
-#       use `rosdep install pymavlink` to solve that dependency.
+#       use `rosdep install python-pymavlink` to solve that dependency.
 #add_subdirectory(pymavlink)
 
 # install files
