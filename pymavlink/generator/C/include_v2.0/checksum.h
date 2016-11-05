@@ -1,13 +1,10 @@
-#ifdef MAVLINK_USE_CXX_NAMESPACE
+#pragma once
+
+#if defined(MAVLINK_USE_CXX_NAMESPACE)
 namespace mavlink {
-#else
-#ifdef __cplusplus
+#elif defined(__cplusplus)
 extern "C" {
 #endif
-#endif
-
-#ifndef _CHECKSUM_H_
-#define _CHECKSUM_H_
 
 // Visual Studio versions before 2010 don't have stdint.h, so we just error out.
 #if (defined _MSC_VER) && (_MSC_VER < 1600)
@@ -93,12 +90,6 @@ static inline void crc_accumulate_buffer(uint16_t *crcAccum, const char *pBuffer
         }
 }
 
-#endif /* _CHECKSUM_H_ */
-
-#ifdef MAVLINK_USE_CXX_NAMESPACE
-} // namespace mavlink
-#else
-#ifdef __cplusplus
+#if defined(MAVLINK_USE_CXX_NAMESPACE) || defined(__cplusplus)
 }
-#endif
 #endif
