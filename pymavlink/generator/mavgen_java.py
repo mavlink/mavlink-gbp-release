@@ -5,8 +5,12 @@
     Copyright Andrew Tridgell 2011
     Released under GNU GPL version 3 or later
     '''
+from __future__ import print_function
 
-import sys, textwrap, os, time
+from builtins import range
+from builtins import object
+
+import os
 from . import mavparse, mavtemplate
 
 t = mavtemplate.MAVTemplate()
