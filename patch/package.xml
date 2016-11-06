@@ -21,6 +21,8 @@
   <buildtool_depend>cmake</buildtool_depend>
   <depend>python</depend>
   <build_depend>python-setuptools</build_depend>
+  <build_depend>python-lxml</build_depend>
+  <build_depend>python-future</build_depend>
   <exec_depend>catkin</exec_depend>
 
   <export>
