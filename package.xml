@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>mavlink</name>
-  <version>2016.11.5</version>
+  <version>2016.11.7</version>
   <description>MAVLink message marshaling library.
   This package provides C-headers and C++11 library
   for both 1.0 and 2.0 versions of protocol.
@@ -21,6 +21,8 @@
   <buildtool_depend>cmake</buildtool_depend>
   <depend>python</depend>
   <build_depend>python-setuptools</build_depend>
+  <build_depend>python-lxml</build_depend>
+  <build_depend>python-future</build_depend>
   <exec_depend>catkin</exec_depend>
 
   <export>
