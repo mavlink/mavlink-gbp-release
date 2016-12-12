@@ -1146,10 +1146,10 @@
                    <param index="7">Empty</param>
                </entry>
 
-               <entry name="MAV_CMD_DO_SET_POSITION_YAW_THRUST" value="213">
-                    <description>Sets a desired vehicle turn angle and thrust change</description>
+               <entry name="MAV_CMD_NAV_SET_YAW_SPEED" value="213">
+                    <description>Sets a desired vehicle turn angle and speed change</description>
                     <param index="1">yaw angle to adjust steering by in centidegress</param>
-                    <param index="2">Thrust - normalized to -2 .. 2</param>
+                    <param index="2">speed - normalized to 0 .. 1</param>
                     <param index="3">Empty</param>
                     <param index="4">Empty</param>
                     <param index="5">Empty</param>
@@ -2317,10 +2317,10 @@
                   <description>Report potential collision</description>
               </entry>
               <entry value="2" name="MAV_COLLISION_ACTION_ASCEND_OR_DESCEND">
-                  <description>Ascend or Descend to avoid thread</description>
+                  <description>Ascend or Descend to avoid threat</description>
               </entry>
               <entry value="3" name="MAV_COLLISION_ACTION_MOVE_HORIZONTALLY">
-                  <description>Ascend or Descend to avoid thread</description>
+                  <description>Move horizontally to avoid threat</description>
               </entry>
               <entry value="4" name="MAV_COLLISION_ACTION_MOVE_PERPENDICULAR">
                   <description>Aircraft to move perpendicular to the collision's velocity vector</description>
@@ -2759,7 +2759,7 @@
           </message>
           <message id="61" name="ATTITUDE_QUATERNION_COV">
                <description>The attitude in the aeronautical frame (right-handed, Z-down, X-front, Y-right), expressed as quaternion. Quaternion order is w, x, y, z and a zero rotation would be expressed as (1 0 0 0).</description>
-               <field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
+               <field type="uint64_t" name="time_usec">Timestamp (microseconds since system boot or since UNIX epoch)</field>
                <field type="float[4]" name="q">Quaternion components, w, x, y, z (1 0 0 0 is the null-rotation)</field>
                <field type="float" name="rollspeed">Roll angular speed (rad/s)</field>
                <field type="float" name="pitchspeed">Pitch angular speed (rad/s)</field>
@@ -2779,8 +2779,7 @@
           </message>
           <message id="63" name="GLOBAL_POSITION_INT_COV">
               <description>The filtered global position (e.g. fused GPS and accelerometers). The position is in GPS-frame (right-handed, Z-up). It  is designed as scaled integer message since the resolution of float is not sufficient. NOTE: This message is intended for onboard networks / companion computers and higher-bandwidth links and optimized for accuracy and completeness. Please use the GLOBAL_POSITION_INT message for a minimal subset.</description>
-              <field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
-              <field type="uint64_t" name="time_utc">Timestamp (microseconds since UNIX epoch) in UTC. 0 for unknown. Commonly filled by the precision time source of a GPS receiver.</field>
+              <field type="uint64_t" name="time_usec">Timestamp (microseconds since system boot or since UNIX epoch)</field>
               <field type="uint8_t" name="estimator_type" enum="MAV_ESTIMATOR_TYPE">Class id of the estimator this estimate originated from.</field>
               <field type="int32_t" name="lat">Latitude, expressed as degrees * 1E7</field>
               <field type="int32_t" name="lon">Longitude, expressed as degrees * 1E7</field>
@@ -2793,8 +2792,7 @@
           </message>
           <message id="64" name="LOCAL_POSITION_NED_COV">
               <description>The filtered local position (e.g. fused computer vision and accelerometers). Coordinate frame is right-handed, Z-axis down (aeronautical frame, NED / north-east-down convention)</description>
-              <field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot). 0 for system without monotonic timestamp</field>
-              <field type="uint64_t" name="time_utc">Timestamp (microseconds since UNIX epoch) in UTC. 0 for unknown. Commonly filled by the precision time source of a GPS receiver.</field>
+              <field type="uint64_t" name="time_usec">Timestamp (microseconds since system boot or since UNIX epoch)</field>
               <field type="uint8_t" name="estimator_type" enum="MAV_ESTIMATOR_TYPE">Class id of the estimator this estimate originated from.</field>
               <field type="float" name="x">X Position</field>
               <field type="float" name="y">Y Position</field>
@@ -3667,7 +3665,6 @@
         </message>
         <message id="234" name="HIGH_LATENCY">
             <description>Message appropriate for high latency connections like Iridium</description>
-            <field name="time_usec" type="uint64_t">Timestamp (microseconds since UNIX epoch)</field>
             <field name="base_mode" type="uint8_t">System mode bitfield, see MAV_MODE_FLAG ENUM in mavlink/include/mavlink_types.h</field>
             <field name="custom_mode" type="uint32_t">A bitfield for use for autopilot-specific flags.</field>
             <field name="landed_state" type="uint8_t" enum="MAV_LANDED_STATE">The landed state. Is set to MAV_LANDED_STATE_UNDEFINED if landed state is unknown.</field>
@@ -3675,12 +3672,9 @@
             <field name="pitch" type="int16_t">pitch (centidegrees)</field>
             <field name="heading" type="uint16_t">heading (centidegrees)</field>
             <field name="throttle" type="int8_t">throttle (percentage)</field>
-            <field name="roll_sp" type="int16_t">roll setpoint (centidegrees)</field>
-            <field name="pitch_sp" type="int16_t">pitch setpoint (centidegrees)</field>
             <field name="heading_sp" type="int16_t">heading setpoint (centidegrees)</field>
             <field name="latitude" type="int32_t">Latitude, expressed as degrees * 1E7</field>
             <field name="longitude" type="int32_t">Longitude, expressed as degrees * 1E7</field>
-            <field name="altitude_home" type="int16_t">Altitude above the home position (meters)</field>
             <field name="altitude_amsl" type="int16_t">Altitude above mean sea level (meters)</field>
             <field name="altitude_sp" type="int16_t">Altitude setpoint relative to the home position (meters)</field>
             <field name="airspeed" type="uint8_t">airspeed (m/s)</field>
@@ -3912,16 +3906,12 @@
             <field type="uint64_t" name="flight_uuid">Universally unique identifier (UUID) of flight, should correspond to name of logfiles</field>
         </message>
 
-        <message id="265" name="MOUNT_STATUS">
-            <description>WIP: Status and orientation of a mount</description>
+        <message id="265" name="MOUNT_ORIENTATION">
+            <description>WIP: Orientation of a mount</description>
                 <field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
-               <field type="uint8_t" name="mode" enum="MAV_MOUNT_MODE">Mount operation mode (see MAV_MOUNT_MODE enum)</field>
-               <field type="float" name="roll">Roll in degrees, set if appropriate mount mode.</field>
-               <field type="float" name="pitch">Pitch in degrees, set if appropriate mount mode.</field>
-               <field type="float" name="yaw">Yaw in degrees, set if appropriate mount mode.</field>
-               <field type="int32_t" name="lat">Latitude, in degrees * 1E7, set if appropriate mount mode.</field>
-               <field type="int32_t" name="lon">Longitude, in degrees * 1E7, set if appropriate mount mode.</field>
-               <field type="float" name="alt">Altitude in meters, set if appropriate mount mode.</field>
+               <field type="float" name="roll">Roll in degrees</field>
+               <field type="float" name="pitch">Pitch in degrees</field>
+               <field type="float" name="yaw">Yaw in degrees</field>
         </message>
 
         <message id="266" name="LOGGING_DATA">
