@@ -70,8 +70,9 @@ if nottypes is not None:
     nottypes = nottypes.split(',')
 
 ext = os.path.splitext(filename)[1]
-isbin = ext in ['.bin', '.BIN']
+isbin = ext in ['.bin', '.BIN', '.px4log']
 islog = ext in ['.log', '.LOG'] # NOTE: "islog" does not mean a tlog
+istlog = ext in ['.tlog', '.TLOG']
 
 if args.csv_sep == "tab":
     args.csv_sep = "\t"
@@ -86,7 +87,7 @@ def match_type(mtype, patterns):
 # Write out a header row as we're outputting in CSV format.
 fields = ['timestamp']
 offsets = {}
-if islog and args.format == 'csv': # we know our fields from the get-go
+if istlog and args.format == 'csv': # we know our fields from the get-go
     try:
         currentOffset = 1 # Store how many fields in we are for each message.
         for type in types:
