@@ -78,30 +78,16 @@ macro(generateMavlink_v20 definitions)
         get_filename_component(definition ${definitionAbsPath} NAME_WE)
         message(STATUS "processing v2.0: ${definitionAbsPath}")
 
+        # mavgen C++ also do C gen
         add_custom_command(
-            #OUTPUT include/v2.0/${definition}/${definition}.h
-            OUTPUT ${definition}-v2.0-c.stamp
-            COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
-                ${PYTHON_EXECUTABLE} ${mavgen_path} --lang=C --wire-protocol=2.0
-                --output=include/v2.0 ${definitionAbsPath}
-            COMMAND touch ${definition}-v2.0-c.stamp
-            DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
-            )
-        add_custom_command(
-            #OUTPUT include/v2.0/${definition}/${definition}.hpp
-            OUTPUT ${definition}-v2.0-cxx.stamp
+            OUTPUT include/v2.0/${definition}/${definition}.hpp
             COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
                 ${PYTHON_EXECUTABLE} ${mavgen_path} --lang=C++11 --wire-protocol=2.0
                 --output=include/v2.0 ${definitionAbsPath}
-            COMMAND touch ${definition}-v2.0-cxx.stamp
             DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
             )
         add_custom_target(${definition}.xml-v2.0
-            ALL DEPENDS
-                ${definition}-v2.0-c.stamp
-                ${definition}-v2.0-cxx.stamp
-                #include/v2.0/${definition}/${definition}.h
-                #include/v2.0/${definition}/${definition}.hpp
+            ALL DEPENDS include/v2.0/${definition}/${definition}.hpp
             )
     endforeach()
 
