@@ -992,7 +992,7 @@
         <param index="7">Empty</param>
       </entry>
       <entry value="189" name="MAV_CMD_DO_LAND_START">
-        <description>Mission command to perform a landing. This is used as a marker in a mission to tell the autopilot where a sequence of mission items that represents a landing starts. It may also be sent via a COMMAND_LONG to trigger a landing, in which case the nearest (geographically) landing sequence in the mission will be used. The Latitude/Longitude is optional, and may be set to 0/0 if not needed. If specified then it will be used to help find the closest landing sequence.</description>
+        <description>Mission command to perform a landing. This is used as a marker in a mission to tell the autopilot where a sequence of mission items that represents a landing starts. It may also be sent via a COMMAND_LONG to trigger a landing, in which case the nearest (geographically) landing sequence in the mission will be used. The Latitude/Longitude is optional, and may be set to 0 if not needed. If specified then it will be used to help find the closest landing sequence.</description>
         <param index="1">Empty</param>
         <param index="2">Empty</param>
         <param index="3">Empty</param>
@@ -1091,7 +1091,7 @@
         <param index="4">Focus Locking, Unlocking or Re-locking</param>
         <param index="5">Shooting Command</param>
         <param index="6">Command Identity</param>
-        <param index="7">Empty</param>
+        <param index="7">Test shot identifier. If set to 1, image will only be captured, but not counted towards internal frame count.</param>
       </entry>
       <!-- Camera Mount Mission Commands Enumeration -->
       <entry value="204" name="MAV_CMD_DO_MOUNT_CONFIGURE">
@@ -1115,9 +1115,9 @@
         <param index="7">MAV_MOUNT_MODE enum value</param>
       </entry>
       <entry value="206" name="MAV_CMD_DO_SET_CAM_TRIGG_DIST">
-        <description>Mission command to set CAM_TRIGG_DIST for this flight</description>
-        <param index="1">Camera trigger distance (meters)</param>
-        <param index="2">Empty</param>
+        <description>Mission command to set camera trigger distance for this flight. The camera is trigerred each time this distance is exceeded. This command can also be used to set the shutter integration time for the camera.</description>
+        <param index="1">Camera trigger distance (meters). -1 or 0 to ignore</param>
+        <param index="2">Camera shutter integration time (milliseconds). -1 or 0 to ignore</param>
         <param index="3">Empty</param>
         <param index="4">Empty</param>
         <param index="5">Empty</param>
@@ -1164,10 +1164,21 @@
         <param index="6">Empty</param>
         <param index="7">Empty</param>
       </entry>
+      <!-- 211 and 212 used in dialects -->
       <entry value="213" name="MAV_CMD_NAV_SET_YAW_SPEED">
         <description>Sets a desired vehicle turn angle and speed change</description>
         <param index="1">yaw angle to adjust steering by in centidegress</param>
         <param index="2">speed - normalized to 0 .. 1</param>
+        <param index="3">Empty</param>
+        <param index="4">Empty</param>
+        <param index="5">Empty</param>
+        <param index="6">Empty</param>
+        <param index="7">Empty</param>
+      </entry>
+      <entry value="214" name="MAV_CMD_DO_SET_CAM_TRIGG_INTERVAL">
+        <description>Mission command to set camera trigger interval for this flight. If triggering is enabled, the camera is triggered each time this interval expires. This command can also be used to set the shutter integration time for the camera.</description>
+        <param index="1">Camera trigger cycle time (milliseconds). -1 or 0 to ignore.</param>
+        <param index="2">Camera shutter integration time (milliseconds). Should be less than trigger cycle time. -1 or 0 to ignore.</param>
         <param index="3">Empty</param>
         <param index="4">Empty</param>
         <param index="5">Empty</param>
@@ -1348,12 +1359,12 @@
       <entry value="524" name="MAV_CMD_SET_CAMERA_SETTINGS_2">
         <description>WIP: Set the camera settings part 2 (CAMERA_SETTINGS). Use NAN for values you don't want to change.</description>
         <param index="1">Camera ID (1 for first, 2 for second, etc.)</param>
-        <param index="2">Camera mode (0: photo, 1: video)</param>
-        <param index="3">Audio recording enabled (0: off 1: on)</param>
-        <param index="4">Reserved for metering mode ID (Average, Center, Spot, etc.)</param>
-        <param index="5">Reserved for image format ID (Jpeg/Raw/Jpeg+Raw)</param>
-        <param index="6">Reserved for image quality ID (Compression)</param>
-        <param index="7">Reserved for color mode ID (Neutral, Vivid, etc.)</param>
+        <param index="2">Reserved for Flicker mode (0 for Auto)</param>
+        <param index="3">Reserved for metering mode ID (Average, Center, Spot, etc.)</param>
+        <param index="4">Reserved for image format ID (Jpeg/Raw/Jpeg+Raw)</param>
+        <param index="5">Reserved for image quality ID (Compression)</param>
+        <param index="6">Reserved for color mode ID (Neutral, Vivid, etc.)</param>
+        <param index="7">Reserved</param>
       </entry>
       <entry value="525" name="MAV_CMD_REQUEST_STORAGE_INFORMATION">
         <description>WIP: Request storage information (STORAGE_INFORMATION)</description>
@@ -1384,6 +1395,13 @@
         <param index="2">0: No Action 1: Reset all settings</param>
         <param index="3">Reserved (all remaining params)</param>
       </entry>
+      <entry value="530" name="MAV_CMD_SET_CAMERA_MODE">
+        <description>WIP: Set camera running mode. Use NAN for values you don't want to change.</description>
+        <param index="1">Camera ID (0 for all cameras, 1 for first, 2 for second, etc.)</param>
+        <param index="2">Camera mode (0: photo mode, 1: video mode)</param>
+        <param index="3">Audio recording enabled (0: off 1: on)</param>
+        <param index="4">Reserved (all remaining params)</param>
+      </entry>
       <entry value="2000" name="MAV_CMD_IMAGE_START_CAPTURE">
         <description>WIP: Start image capture sequence. Sends CAMERA_IMAGE_CAPTURED after each capture.</description>
         <param index="1">Camera ID (0 for all cameras, 1 for first, 2 for second, etc.)</param>
@@ -1406,8 +1424,8 @@
       <entry value="2003" name="MAV_CMD_DO_TRIGGER_CONTROL">
         <description>Enable or disable on-board camera triggering system.</description>
         <param index="1">Trigger enable/disable (0 for disable, 1 for start), -1 to ignore</param>
-        <param index="2">Shutter integration time (in ms), -1 to ignore</param>
-        <param index="3">1 to reset the trigger sequence, -1/0 to ignore</param>
+        <param index="2">1 to reset the trigger sequence, -1 or 0 to ignore</param>
+        <param index="3">1 to pause triggering, but without switching the camera off or retracting it. -1 to ignore</param>
       </entry>
       <entry value="2500" name="MAV_CMD_VIDEO_START_CAPTURE">
         <description>WIP: Starts video capture (recording)</description>
@@ -1505,7 +1523,7 @@
         <param index="7">Altitude</param>
       </entry>
       <entry value="5001" name="MAV_CMD_NAV_FENCE_POLYGON_VERTEX_INCLUSION">
-        <description>Fence vertex for an inclusion polygon. The vehicle must stay within this area. Minimum of 3 vertices required.
+        <description>Fence vertex for an inclusion polygon (the polygon must not be self-intersecting). The vehicle must stay within this area. Minimum of 3 vertices required.
         </description>
         <param index="1">Polygon vertex count</param>
         <param index="2">Reserved</param>
@@ -1516,9 +1534,31 @@
         <param index="7">Reserved</param>
       </entry>
       <entry value="5002" name="MAV_CMD_NAV_FENCE_POLYGON_VERTEX_EXCLUSION">
-        <description>Fence vertex for an exclusion polygon. The vehicle must stay outside this area. Minimum of 3 vertices required.
+        <description>Fence vertex for an exclusion polygon (the polygon must not be self-intersecting). The vehicle must stay outside this area. Minimum of 3 vertices required.
         </description>
         <param index="1">Polygon vertex count</param>
+        <param index="2">Reserved</param>
+        <param index="3">Reserved</param>
+        <param index="4">Reserved</param>
+        <param index="5">Latitude</param>
+        <param index="6">Longitude</param>
+        <param index="7">Reserved</param>
+      </entry>
+      <entry value="5003" name="MAV_CMD_NAV_FENCE_CIRCLE_INCLUSION">
+        <description>Circular fence area. The vehicle must stay inside this area.
+        </description>
+        <param index="1">radius in meters</param>
+        <param index="2">Reserved</param>
+        <param index="3">Reserved</param>
+        <param index="4">Reserved</param>
+        <param index="5">Latitude</param>
+        <param index="6">Longitude</param>
+        <param index="7">Reserved</param>
+      </entry>
+      <entry value="5004" name="MAV_CMD_NAV_FENCE_CIRCLE_EXCLUSION">
+        <description>Circular fence area. The vehicle must stay outside this area.
+        </description>
+        <param index="1">radius in meters</param>
         <param index="2">Reserved</param>
         <param index="3">Reserved</param>
         <param index="4">Reserved</param>
@@ -2162,6 +2202,9 @@
       </entry>
       <entry value="32768" name="MAV_PROTOCOL_CAPABILITY_MISSION_RALLY">
         <description>Autopilot supports mission rally point protocol.</description>
+      </entry>
+      <entry value="65536" name="MAV_PROTOCOL_CAPABILITY_FLIGHT_INFORMATION">
+        <description>Autopilot supports the flight information protocol.</description>
       </entry>
     </enum>
     <enum name="MAV_MISSION_TYPE">
@@ -3966,6 +4009,7 @@
       <field type="uint8_t" name="image_format_id">Reserved for image format ID (Jpeg/Raw/Jpeg+Raw)</field>
       <field type="uint8_t" name="image_quality_id">Reserved for image quality ID (Compression)</field>
       <field type="uint8_t" name="metering_mode_id">Reserved for metering mode ID (Average, Center, Spot, etc.)</field>
+      <field type="uint8_t" name="flicker_mode_id">Reserved for flicker mode ID (Auto, 60Hz, 50Hz, etc.)</field>
     </message>
     <message id="261" name="STORAGE_INFORMATION">
       <description>WIP: Information about a storage medium</description>
