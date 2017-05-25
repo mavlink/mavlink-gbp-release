@@ -1,3 +1,26 @@
+## mavlink (lunar) - 2017.5.25-1
+
+The packages in the `mavlink` repository were released into the `lunar` distro by running `/usr/bin/bloom-release --ros-distro lunar --track lunar mavlink` on `Thu, 25 May 2017 14:54:02 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `2017.5.25-0`
+- new version: `2017.5.25-1`
+
+Versions of tools used:
+
+- bloom version: `0.5.26`
+- catkin_pkg version: `0.3.1`
+- rosdep version: `0.11.5`
+- rosdistro version: `0.6.2`
+- vcstools version: `0.1.39`
+
+
 ## mavlink (lunar) - 2017.5.25-0
 
 The packages in the `mavlink` repository were released into the `lunar` distro by running `/usr/bin/bloom-release --ros-distro lunar --track lunar mavlink --new-track` on `Thu, 25 May 2017 08:41:43 -0000`
