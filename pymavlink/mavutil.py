@@ -988,6 +988,7 @@ class mavtcpin(mavfile):
         self.listen = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listen_addr = (a[0], int(a[1]))
         self.listen.bind(self.listen_addr)
+        self.listen.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.listen.listen(1)
         self.listen.setblocking(0)
         set_close_on_exec(self.listen.fileno())
@@ -1485,18 +1486,9 @@ mode_mapping_sub = {
     2: 'ALT_HOLD',
     3: 'AUTO',
     4: 'GUIDED',
-    5: 'VELHOLD',
-    6: 'RTL',
     7: 'CIRCLE',
     9: 'SURFACE',
-    10: 'OF_LOITER',
-    11: 'DRIFT',
-    13: 'TRANSECT',
-    14: 'FLIP',
-    15: 'AUTOTUNE',
     16: 'POSHOLD',
-    17: 'BRAKE',
-    18: 'THROW',
     19: 'MANUAL',
     }
 
@@ -1557,6 +1549,8 @@ px4_map = { "MANUAL":        (mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | mavlin
             "LOITER":        (mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | auto_mode_flags,                                                                        PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_LOITER         ),
             "MISSION":       (mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | auto_mode_flags,                                                                        PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_MISSION        ),
             "RTL":           (mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | auto_mode_flags,                                                                        PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_RTL            ),
+            "LAND":          (mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | auto_mode_flags,                                                                        PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_LAND           ),
+            "RTGS":          (mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | auto_mode_flags,                                                                        PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_RTGS           ),
             "FOLLOWME":      (mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | auto_mode_flags,                                                                        PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_FOLLOW_TARGET  ),
             "OFFBOARD":      (mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | auto_mode_flags,                                                                        PX4_CUSTOM_MAIN_MODE_OFFBOARD,    0                                       )}
 
