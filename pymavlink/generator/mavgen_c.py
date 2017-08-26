@@ -6,6 +6,7 @@ Copyright Andrew Tridgell 2011
 Released under GNU GPL version 3 or later
 '''
 from __future__ import print_function
+from future.utils import iteritems
 
 from builtins import range
 from builtins import object
@@ -152,6 +153,7 @@ ${{include_list:#include "../${base}/${base}.h"
 
 #if MAVLINK_THIS_XML_IDX == MAVLINK_PRIMARY_XML_IDX
 # define MAVLINK_MESSAGE_INFO {${message_info_array}}
+# define MAVLINK_MESSAGE_NAMES {${message_name_array}}
 # if MAVLINK_COMMAND_24BIT
 #  include "../mavlink_get_info.h"
 # endif
@@ -197,14 +199,14 @@ ${{array_fields:#define MAVLINK_MSG_${msg_name}_FIELD_${name_upper}_LEN ${array_
     ${id}, \\
     "${name}", \\
     ${num_fields}, \\
-    { ${{ordered_fields: { "${name}", ${c_print_format}, MAVLINK_TYPE_${type_upper}, ${array_length}, ${wire_offset}, offsetof(mavlink_${name_lower}_t, ${name}) }, \\
+    { ${{fields: { "${name}", ${c_print_format}, MAVLINK_TYPE_${type_upper}, ${array_length}, ${wire_offset}, offsetof(mavlink_${name_lower}_t, ${name}) }, \\
         }} } \\
 }
 #else
 #define MAVLINK_MESSAGE_INFO_${name} { \\
     "${name}", \\
     ${num_fields}, \\
-    { ${{ordered_fields: { "${name}", ${c_print_format}, MAVLINK_TYPE_${type_upper}, ${array_length}, ${wire_offset}, offsetof(mavlink_${name_lower}_t, ${name}) }, \\
+    { ${{fields: { "${name}", ${c_print_format}, MAVLINK_TYPE_${type_upper}, ${array_length}, ${wire_offset}, offsetof(mavlink_${name_lower}_t, ${name}) }, \\
         }} } \\
 }
 #endif
@@ -614,6 +616,13 @@ def generate_one(basename, xml):
                 # feed the compiler a "filled" empty message
                 xml.message_info_array += '{"EMPTY",0,{{"","",MAVLINK_TYPE_CHAR,0,0,0}}}, '
     xml.message_info_array = xml.message_info_array[:-2]
+
+    # form message name array
+    xml.message_name_array = ''
+    # sort by names
+    for msgid, name in sorted(iteritems(xml.message_names), key=lambda k_v: (k_v[1], k_v[0])):
+        xml.message_name_array += '{ "%s", %u }, ' % (name, msgid)
+    xml.message_name_array = xml.message_name_array[:-2]
 
     # add some extra field attributes for convenience with arrays
     for m in xml.message:
