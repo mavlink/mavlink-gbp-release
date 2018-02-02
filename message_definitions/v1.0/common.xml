@@ -152,6 +152,9 @@
       <entry value="28" name="MAV_TYPE_PARAFOIL">
         <description>Steerable, nonrigid airfoil</description>
       </entry>
+      <entry value="29" name="MAV_TYPE_DODECAROTOR">
+        <description>Dodecarotor</description>
+      </entry>
     </enum>
     <enum name="FIRMWARE_VERSION_TYPE">
       <description>These values define the type of firmware release.  These values indicate the first version or release of this type.  For example the first alpha release would be 64, the second would be 65.</description>
@@ -169,6 +172,195 @@
       </entry>
       <entry value="255" name="FIRMWARE_VERSION_TYPE_OFFICIAL">
         <description>official stable release</description>
+      </entry>
+    </enum>
+    <enum name="FLIGHT_MODE">
+      <description>Flight modes of the MAV.</description>
+      <entry value="0" name="FLIGHT_MODE_MANUAL">
+        <description>Manual flight mode</description>
+      </entry>
+      <entry value="1" name="FLIGHT_MODE_ALTCTL">
+        <description>Altitude hold flight mode</description>
+      </entry>
+      <entry value="2" name="FLIGHT_MODE_POSCTL">
+        <description>Position control flight mode</description>
+      </entry>
+      <entry value="3" name="FLIGHT_MODE_STABILIZED">
+        <description>Stabilized mode</description>
+      </entry>
+      <entry value="4" name="FLIGHT_MODE_ACRO">
+        <description>Acro mode</description>
+      </entry>
+      <entry value="5" name="FLIGHT_MODE_RATTITIDE">
+        <description>Rattitude mode</description>
+      </entry>
+      <entry value="6" name="FLIGHT_MODE_AUTO_MISSION">
+        <description>Mission mode</description>
+      </entry>
+      <entry value="7" name="FLIGHT_MODE_AUTO_LOITER">
+        <description>Loiter mode</description>
+      </entry>
+      <entry value="8" name="FLIGHT_MODE_AUTO_RTL">
+        <description>Return to land mode</description>
+      </entry>
+      <entry value="9" name="FLIGHT_MODE_AUTO_RCRECOVER">
+        <description>RC recover mode</description>
+      </entry>
+      <entry value="10" name="FLIGHT_MODE_AUTO_RTGS">
+        <description>Return to ground station mode</description>
+      </entry>
+      <entry value="11" name="FLIGHT_MODE_AUTO_LANDENGFAIL">
+        <description>Land Engine Fail mode</description>
+      </entry>
+      <entry value="12" name="FLIGHT_MODE_AUTO_LANDGPSFAIL">
+        <description>Land GPS fail mode</description>
+      </entry>
+      <entry value="13" name="FLIGHT_MODE_AUTO_TAKEOFF">
+        <description>Takeoff mode</description>
+      </entry>
+      <entry value="14" name="FLIGHT_MODE_AUTO_LAND">
+        <description>Land mode</description>
+      </entry>
+      <entry value="15" name="FLIGHT_MODE_AUTO_FOLLOW_TARGET">
+        <description>Follow target/me mode</description>
+      </entry>
+      <entry value="16" name="FLIGHT_MODE_AUTO_PRECLAND">
+        <description>Precision landing mode</description>
+      </entry>
+      <entry value="17" name="FLIGHT_MODE_DESCEND">
+        <description>Descend mode</description>
+      </entry>
+      <entry value="18" name="FLIGHT_MODE_OFFBOARD">
+        <description>Offboard mode</description>
+      </entry>
+      <entry value="19" name="FLIGHT_MODE_TERMINATION">
+        <description>Termination mode</description>
+      </entry>
+      <entry value="20" name="FLIGHT_MODE_AUTO_TUNE">
+        <description>Auto tune mode</description>
+      </entry>
+      <entry value="21" name="FLIGHT_MODE_BRAKE">
+        <description>Brake mode</description>
+      </entry>
+      <entry value="22" name="FLIGHT_MODE_CIRCLE">
+        <description>Circle mode</description>
+      </entry>
+      <entry value="23" name="FLIGHT_MODE_DRIFT">
+        <description>Drift mode</description>
+      </entry>
+      <entry value="24" name="FLIGHT_MODE_GUIDED">
+        <description>Guided mode</description>
+      </entry>
+      <entry value="25" name="FLIGHT_MODE_SPORT">
+        <description>Sport mode</description>
+      </entry>
+      <entry value="26" name="FLIGHT_MODE_THROW">
+        <description>Throw mode</description>
+      </entry>
+      <entry value="27" name="FLIGHT_MODE_SUPER_SIMPLE">
+        <description>Simplified multicopter control mode</description>
+      </entry>
+      <entry value="28" name="FLIGHT_MODE_AVIOD_TRAFFIC">
+        <description>Avoid traffic mode</description>
+      </entry>
+      <entry value="29" name="FLIGHT_MODE_FBWA">
+        <description>Fly by wire (version A) mode</description>
+      </entry>
+      <entry value="30" name="FLIGHT_MODE_FBWB">
+        <description>Flz by wire (version B) mode</description>
+      </entry>
+      <entry value="31" name="FLIGHT_MODE_TRAINING">
+        <description>Position control flight mode</description>
+      </entry>
+      <entry value="32" name="FLIGHT_MODE_CRUISE">
+        <description>Cruise mode</description>
+      </entry>
+      <entry value="33" name="FLIGHT_MODE_HOLD">
+        <description>Position hold mode</description>
+      </entry>
+      <entry value="34" name="FLIGHT_MODE_STEERING">
+        <description>Steering mode</description>
+      </entry>
+      <entry value="35" name="FLIGHT_MODE_SMART_RTL">
+        <description>Smart return-to-land-mode</description>
+      </entry>
+    </enum>
+    <enum name="MAV_FAILSAFE_FLAG">
+      <description>These flags encode if a certain failsafe mode is triggered.</description>
+      <entry value="128" name="MAV_FAILSAFE_FLAG_RC_LOSS">
+        <description>0b10000000 RC loss failsafe active.</description>
+      </entry>
+      <entry value="64" name="MAV_FAILSAFE_FLAG_TELEM_LOSS">
+        <description>0b01000000 remote control input is enabled.</description>
+      </entry>
+      <entry value="32" name="MAV_FAILSAFE_FLAG_ENGINE">
+        <description>0b00100000 Engine failure failsafe active.</description>
+      </entry>
+      <entry value="16" name="MAV_FAILSAFE_FLAG_GPS">
+        <description>0b00010000 GPS failure failsafe active.</description>
+      </entry>
+      <entry value="8" name="MAV_FAILSAFE_FLAG_BATTERY">
+        <description>0b00001000 Battery failure failsafe active.</description>
+      </entry>
+      <entry value="4" name="MAV_FAILSAFE_FLAG_GEOFENCE">
+        <description>0b00000100 Geofence failsafe active.</description>
+      </entry>
+      <entry value="2" name="MAV_FAILSAFE_FLAG_RESERVED1">
+        <description>0b00000010 Reserved for future use.</description>
+      </entry>
+      <entry value="1" name="MAV_FAILSAFE_FLAG_RESERVED2">
+        <description>0b00000001 Reserved for future use.</description>
+      </entry>
+    </enum>
+    <enum name="MAV_FAILURE_FLAG">
+      <description>These flags encode if a certain failsafe mode is triggered.</description>
+      <entry value="1" name="MAV_FAILURE_FLAG_GPS">
+        <description>GPS failure.</description>
+      </entry>
+      <entry value="2" name="MAV_FAILURE_FLAG_AIRSPEED">
+        <description>Airspeed failure.</description>
+      </entry>
+      <entry value="4" name="MAV_FAILURE_FLAG_BAROMETER">
+        <description>Barometer failure.</description>
+      </entry>
+      <entry value="8" name="MAV_FAILURE_FLAG_ACCELEROMETER">
+        <description>Accelerometer failure.</description>
+      </entry>
+      <entry value="16" name="MAV_FAILURE_FLAG_GYROSCOPE">
+        <description>Gyroscope failure.</description>
+      </entry>
+      <entry value="32" name="MAV_FAILURE_FLAG_MAGNETOMETER">
+        <description>Magnetometer.</description>
+      </entry>
+      <entry value="64" name="MAV_FAILURE_FLAG_MISSION">
+        <description>Mission failure.</description>
+      </entry>
+      <entry value="128" name="MAV_FAILURE_FLAG_ESTIMATOR">
+        <description>Estimator failure.</description>
+      </entry>
+      <entry value="256" name="MAV_FAILURE_FLAG_LIDAR">
+        <description>Lidar failure.</description>
+      </entry>
+      <entry value="512" name="MAV_FAILURE_FLAG_OFFBOARD_LINK">
+        <description>Offboard link failure.</description>
+      </entry>
+      <entry value="1024" name="MAV_FAILURE_FLAG_RESERVED1">
+        <description>Reserved for future use.</description>
+      </entry>
+      <entry value="2048" name="MAV_FAILURE_FLAG_RESERVED2">
+        <description>Reserved for future use.</description>
+      </entry>
+      <entry value="4096" name="MAV_FAILURE_FLAG_RESERVED3">
+        <description>Reserved for future use.</description>
+      </entry>
+      <entry value="8192" name="MAV_FAILURE_FLAG_RESERVED4">
+        <description>Reserved for future use.</description>
+      </entry>
+      <entry value="16384" name="MAV_FAILURE_FLAG_RESERVED5">
+        <description>Reserved for future use.</description>
+      </entry>
+      <entry value="32768" name="MAV_FAILURE_FLAG_RESERVED6">
+        <description>Reserved for future use.</description>
       </entry>
     </enum>
     <!-- WARNING: MAV_ACTION Enum is no longer supported - has been removed. Please use MAV_CMD -->
@@ -706,7 +898,7 @@
       <entry value="21" name="MAV_CMD_NAV_LAND">
         <description>Land at location</description>
         <param index="1">Abort Alt</param>
-        <param index="2">Empty</param>
+        <param index="2">Precision land mode. (0 = normal landing, 1 = opportunistic precision landing, 2 = required precsion landing)</param>
         <param index="3">Empty</param>
         <param index="4">Desired yaw angle. NaN for unchanged.</param>
         <param index="5">Latitude</param>
@@ -794,7 +986,7 @@
         <param index="7">Y offset from target (m)</param>
       </entry>
       <entry value="80" name="MAV_CMD_NAV_ROI">
-        <description>Sets the region of interest (ROI) for a sensor set or the vehicle itself. This can then be used by the vehicles control system to control the vehicle attitude and the attitude of various sensors such as cameras.</description>
+        <description>THIS INTERFACE IS DEPRECATED AS OF JANUARY 2018. Please use MAV_CMD_DO_SET_ROI_* messages instead. Sets the region of interest (ROI) for a sensor set or the vehicle itself. This can then be used by the vehicles control system to control the vehicle attitude and the attitude of various sensors such as cameras.</description>
         <param index="1">Region of intereset mode. (see MAV_ROI enum)</param>
         <param index="2">Waypoint index/ target ID. (see MAV_ROI enum)</param>
         <param index="3">ROI index (allows a vehicle to manage multiple ROI's)</param>
@@ -1107,6 +1299,36 @@
         <param index="6">Empty</param>
         <param index="7">Empty</param>
       </entry>
+      <entry value="195" name="MAV_CMD_DO_SET_ROI_LOCATION">
+        <description>Sets the region of interest (ROI) to a location. This can then be used by the vehicles control system to control the vehicle attitude and the attitude of various sensors such as cameras.</description>
+        <param index="1">Empty</param>
+        <param index="2">Empty</param>
+        <param index="3">Empty</param>
+        <param index="4">Empty</param>
+        <param index="5">Latitude</param>
+        <param index="6">Longitude</param>
+        <param index="7">Altitude</param>
+      </entry>
+      <entry value="196" name="MAV_CMD_DO_SET_ROI_WPNEXT_OFFSET">
+        <description>Sets the region of interest (ROI) to be toward next waypoint, with optional pitch/roll/yaw offset. This can then be used by the vehicles control system to control the vehicle attitude and the attitude of various sensors such as cameras.</description>
+        <param index="1">Empty</param>
+        <param index="2">Empty</param>
+        <param index="3">Empty</param>
+        <param index="4">Empty</param>
+        <param index="5">pitch offset from next waypoint</param>
+        <param index="6">roll offset from next waypoint</param>
+        <param index="7">yaw offset from next waypoint</param>
+      </entry>
+      <entry value="197" name="MAV_CMD_DO_SET_ROI_NONE">
+        <description>Cancels any previous ROI command returning the vehicle/sensors to default flight characteristics. This can then be used by the vehicles control system to control the vehicle attitude and the attitude of various sensors such as cameras.</description>
+        <param index="1">Empty</param>
+        <param index="2">Empty</param>
+        <param index="3">Empty</param>
+        <param index="4">Empty</param>
+        <param index="5">Empty</param>
+        <param index="6">Empty</param>
+        <param index="7">Empty</param>
+      </entry>
       <entry value="200" name="MAV_CMD_DO_CONTROL_VIDEO">
         <description>Control onboard camera system.</description>
         <param index="1">Camera ID (-1 for all)</param>
@@ -1118,7 +1340,7 @@
         <param index="7">Empty</param>
       </entry>
       <entry value="201" name="MAV_CMD_DO_SET_ROI">
-        <description>Sets the region of interest (ROI) for a sensor set or the vehicle itself. This can then be used by the vehicles control system to control the vehicle attitude and the attitude of various sensors such as cameras.</description>
+        <description>THIS INTERFACE IS DEPRECATED AS OF JANUARY 2018. Please use MAV_CMD_DO_SET_ROI_* messages instead. Sets the region of interest (ROI) for a sensor set or the vehicle itself. This can then be used by the vehicles control system to control the vehicle attitude and the attitude of various sensors such as cameras.</description>
         <param index="1">Region of intereset mode. (see MAV_ROI enum)</param>
         <param index="2">Waypoint index/ target ID. (see MAV_ROI enum)</param>
         <param index="3">ROI index (allows a vehicle to manage multiple ROI's)</param>
@@ -1128,9 +1350,8 @@
         <param index="7">MAV_ROI_WPNEXT: yaw offset from next waypoint, MAV_ROI_LOCATION: altitude</param>
       </entry>
       <!-- Camera Controller Mission Commands Enumeration -->
-      <!-- MAV_CMD_DO_DIGICAM_CONFIGURE should be deprecated and replaced with PARAM_EXT_XXX messages -->
       <entry value="202" name="MAV_CMD_DO_DIGICAM_CONFIGURE">
-        <description>Mission command to configure an on-board camera controller system.</description>
+        <description>THIS INTERFACE IS DEPRECATED since 2018-01. Please use PARAM_EXT_XXX messages and the camera definition format described in https://mavlink.io/en/protocol/camera_def.html.</description>
         <param index="1">Modes: P, TV, AV, M, Etc</param>
         <param index="2">Shutter speed: Divisor number for one second</param>
         <param index="3">Aperture: F stop number</param>
@@ -1140,7 +1361,7 @@
         <param index="7">Main engine cut-off time before camera trigger in seconds/10 (0 means no cut-off)</param>
       </entry>
       <entry value="203" name="MAV_CMD_DO_DIGICAM_CONTROL">
-        <description>Mission command to control an on-board camera controller system.</description>
+        <description>THIS INTERFACE IS DEPRECATED since 2018-01. Please use PARAM_EXT_XXX messages and the camera definition format described in https://mavlink.io/en/protocol/camera_def.html.</description>
         <param index="1">Session control e.g. show/hide lens</param>
         <param index="2">Zoom's absolute position</param>
         <param index="3">Zooming step value to offset zoom from the current position</param>
@@ -1202,12 +1423,12 @@
       </entry>
       <entry value="209" name="MAV_CMD_DO_MOTOR_TEST">
         <description>Mission command to perform motor test</description>
-        <param index="1">motor sequence number (a number from 1 to max number of motors on the vehicle)</param>
+        <param index="1">motor number (a number from 1 to max number of motors on the vehicle)</param>
         <param index="2">throttle type (0=throttle percentage, 1=PWM, 2=pilot throttle channel pass-through. See MOTOR_TEST_THROTTLE_TYPE enum)</param>
         <param index="3">throttle</param>
         <param index="4">timeout (in seconds)</param>
-        <param index="5">Empty</param>
-        <param index="6">Empty</param>
+        <param index="5">motor count (number of motors to test to test in sequence, waiting for the timeout above between them; 0=1 motor, 1=1 motor, 2=2 motors...)</param>
+        <param index="6">motor test order (See MOTOR_TEST_ORDER enum)</param>
         <param index="7">Empty</param>
       </entry>
       <entry value="210" name="MAV_CMD_DO_INVERTED_FLIGHT">
@@ -1298,7 +1519,7 @@
         <param index="2">1: magnetometer calibration</param>
         <param index="3">1: ground pressure calibration</param>
         <param index="4">1: radio RC calibration, 2: RC trim calibration</param>
-        <param index="5">1: accelerometer calibration, 2: board level calibration, 3: accelerometer temperature calibration</param>
+        <param index="5">1: accelerometer calibration, 2: board level calibration, 3: accelerometer temperature calibration, 4: simple accelerometer calibration</param>
         <param index="6">1: APM: compass/motor interference calibration (PX4: airspeed calibration, deprecated), 2: airspeed calibration</param>
         <param index="7">1: ESC calibration, 3: barometer temperature calibration</param>
       </entry>
@@ -1396,12 +1617,12 @@
         <param index="2">Reserved (all remaining params)</param>
       </entry>
       <entry value="521" name="MAV_CMD_REQUEST_CAMERA_INFORMATION">
-        <description>WIP: Request camera information (CAMERA_INFORMATION).</description>
+        <description>Request camera information (CAMERA_INFORMATION).</description>
         <param index="1">0: No action 1: Request camera capabilities</param>
         <param index="2">Reserved (all remaining params)</param>
       </entry>
       <entry value="522" name="MAV_CMD_REQUEST_CAMERA_SETTINGS">
-        <description>WIP: Request camera settings (CAMERA_SETTINGS).</description>
+        <description>Request camera settings (CAMERA_SETTINGS).</description>
         <param index="1">0: No Action 1: Request camera settings</param>
         <param index="2">Reserved (all remaining params)</param>
       </entry>
@@ -1418,7 +1639,7 @@
         <param index="3">Reserved (all remaining params)</param>
       </entry>
       <entry value="527" name="MAV_CMD_REQUEST_CAMERA_CAPTURE_STATUS">
-        <description>WIP: Request camera capture status (CAMERA_CAPTURE_STATUS)</description>
+        <description>Request camera capture status (CAMERA_CAPTURE_STATUS)</description>
         <param index="1">0: No Action 1: Request camera capture status</param>
         <param index="2">Reserved (all remaining params)</param>
       </entry>
@@ -1428,7 +1649,7 @@
         <param index="2">Reserved (all remaining params)</param>
       </entry>
       <entry value="529" name="MAV_CMD_RESET_CAMERA_SETTINGS">
-        <description>WIP: Reset all camera settings to Factory Default</description>
+        <description>Reset all camera settings to Factory Default</description>
         <param index="1">0: No Action 1: Reset all settings</param>
         <param index="2">Reserved (all remaining params)</param>
       </entry>
@@ -1846,7 +2067,7 @@
       </entry>
     </enum>
     <enum name="MAV_ROI">
-      <description> The ROI (region of interest) for the vehicle. This can be
+      <description>THIS INTERFACE IS DEPRECATED AS OF JANUARY 2018. Please use MAV_CMD_DO_SET_ROI_* messages instead. The ROI (region of interest) for the vehicle. This can be
                 be used by the vehicle for camera/vehicle attitude alignment (see
                 MAV_CMD_NAV_ROI).</description>
       <entry value="0" name="MAV_ROI_NONE">
@@ -2500,6 +2721,18 @@
       </entry>
     </enum>
     <!-- motor test type enum -->
+    <enum name="MOTOR_TEST_ORDER">
+      <entry name="MOTOR_TEST_ORDER_DEFAULT" value="0">
+        <description>default autopilot motor test method</description>
+      </entry>
+      <entry name="MOTOR_TEST_ORDER_SEQUENCE" value="1">
+        <description>motor numbers are specified as their index in a predefined vehicle-specific sequence</description>
+      </entry>
+      <entry name="MOTOR_TEST_ORDER_BOARD" value="2">
+        <description>motor numbers are specified as the output as labeled on the board</description>
+      </entry>
+    </enum>
+    <!-- motor test throttle type enum -->
     <enum name="MOTOR_TEST_THROTTLE_TYPE">
       <entry value="0" name="MOTOR_TEST_THROTTLE_PERCENT">
         <description>throttle as a percentage from 0 ~ 100</description>
@@ -2509,6 +2742,9 @@
       </entry>
       <entry value="2" name="MOTOR_TEST_THROTTLE_PILOT">
         <description>throttle pass-through from pilot's transmitter</description>
+      </entry>
+      <entry value="3" name="MOTOR_TEST_COMPASS_CAL">
+        <description>per-motor compass calibration test</description>
       </entry>
     </enum>
     <!-- GPS_INPUT ignore flags enum -->
@@ -2712,6 +2948,15 @@
       </entry>
       <entry value="5" name="MAV_ARM_AUTH_DENIED_REASON_BAD_WEATHER">
         <description>Weather is not good to fly</description>
+      </entry>
+    </enum>
+    <enum name="RTK_BASELINE_COORDINATE_SYSTEM">
+      <description>RTK GPS baseline coordinate system, used for RTK corrections</description>
+      <entry value="0" name="RTK_BASELINE_COORDINATE_SYSTEM_ECEF">
+        <description>Earth-centered, Earth-fixed</description>
+      </entry>
+      <entry value="1" name="RTK_BASELINE_COORDINATE_SYSTEM_NED">
+        <description>North, East, Down</description>
       </entry>
     </enum>
   </enums>
@@ -3064,7 +3309,7 @@
       <description>As local waypoints exist, the global waypoint reference allows to transform between the local coordinate frame and the global (GPS) coordinate frame. This can be necessary when e.g. in- and outdoor settings are connected and the MAV should move from in- to outdoor.</description>
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84), in degrees * 1E7</field>
-      <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84, in degrees * 1E7</field>
+      <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84), in degrees * 1E7</field>
       <field type="int32_t" name="altitude" units="mm">Altitude (AMSL), in meters * 1000 (positive for up)</field>
       <extensions/>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (microseconds since UNIX epoch or microseconds since system boot)</field>
@@ -3314,8 +3559,8 @@
       <field type="uint8_t" name="type_mask">Mappings: If any of these bits are set, the corresponding input should be ignored: bit 1: body roll rate, bit 2: body pitch rate, bit 3: body yaw rate. bit 4-bit 6: reserved, bit 7: throttle, bit 8: attitude</field>
       <field type="float[4]" name="q">Attitude quaternion (w, x, y, z order, zero-rotation is 1, 0, 0, 0)</field>
       <field type="float" name="body_roll_rate" units="rad/s">Body roll rate in radians per second</field>
-      <field type="float" name="body_pitch_rate" units="rad/s">Body roll rate in radians per second</field>
-      <field type="float" name="body_yaw_rate" units="rad/s">Body roll rate in radians per second</field>
+      <field type="float" name="body_pitch_rate" units="rad/s">Body pitch rate in radians per second</field>
+      <field type="float" name="body_yaw_rate" units="rad/s">Body yaw rate in radians per second</field>
       <field type="float" name="thrust">Collective thrust, normalized to 0 .. 1 (-1 .. 1 for vehicles capable of reverse trust)</field>
     </message>
     <message id="83" name="ATTITUDE_TARGET">
@@ -3371,8 +3616,8 @@
       <field type="uint8_t" name="target_component">Component ID</field>
       <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_GLOBAL_INT = 5, MAV_FRAME_GLOBAL_RELATIVE_ALT_INT = 6, MAV_FRAME_GLOBAL_TERRAIN_ALT_INT = 11</field>
       <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint, bit 11: yaw, bit 12: yaw rate</field>
-      <field type="int32_t" name="lat_int" units="degE7">X Position in WGS84 frame in 1e7 * meters</field>
-      <field type="int32_t" name="lon_int" units="degE7">Y Position in WGS84 frame in 1e7 * meters</field>
+      <field type="int32_t" name="lat_int" units="degE7">X Position in WGS84 frame in 1e7 * degrees</field>
+      <field type="int32_t" name="lon_int" units="degE7">Y Position in WGS84 frame in 1e7 * degrees</field>
       <field type="float" name="alt" units="m">Altitude in meters in AMSL altitude, not WGS84 if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT</field>
       <field type="float" name="vx" units="m/s">X velocity in NED frame in meter / s</field>
       <field type="float" name="vy" units="m/s">Y velocity in NED frame in meter / s</field>
@@ -3388,8 +3633,8 @@
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp in milliseconds since system boot. The rationale for the timestamp in the setpoint is to allow the system to compensate for the transport delay of the setpoint. This allows the system to compensate processing latency.</field>
       <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_GLOBAL_INT = 5, MAV_FRAME_GLOBAL_RELATIVE_ALT_INT = 6, MAV_FRAME_GLOBAL_TERRAIN_ALT_INT = 11</field>
       <field type="uint16_t" name="type_mask">Bitmask to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration. Mapping: bit 1: x, bit 2: y, bit 3: z, bit 4: vx, bit 5: vy, bit 6: vz, bit 7: ax, bit 8: ay, bit 9: az, bit 10: is force setpoint, bit 11: yaw, bit 12: yaw rate</field>
-      <field type="int32_t" name="lat_int" units="degE7">X Position in WGS84 frame in 1e7 * meters</field>
-      <field type="int32_t" name="lon_int" units="degE7">Y Position in WGS84 frame in 1e7 * meters</field>
+      <field type="int32_t" name="lat_int" units="degE7">X Position in WGS84 frame in 1e7 * degrees</field>
+      <field type="int32_t" name="lon_int" units="degE7">Y Position in WGS84 frame in 1e7 * degrees</field>
       <field type="float" name="alt" units="m">Altitude in meters in AMSL altitude, not WGS84 if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT</field>
       <field type="float" name="vx" units="m/s">X velocity in NED frame in meter / s</field>
       <field type="float" name="vy" units="m/s">Y velocity in NED frame in meter / s</field>
@@ -3419,8 +3664,8 @@
       <field type="float" name="rollspeed" units="rad/s">Body frame roll / phi angular speed (rad/s)</field>
       <field type="float" name="pitchspeed" units="rad/s">Body frame pitch / theta angular speed (rad/s)</field>
       <field type="float" name="yawspeed" units="rad/s">Body frame yaw / psi angular speed (rad/s)</field>
-      <field type="int32_t" name="lat">Latitude, expressed as * 1E7</field>
-      <field type="int32_t" name="lon">Longitude, expressed as * 1E7</field>
+      <field type="int32_t" name="lat">Latitude, expressed as degrees * 1E7</field>
+      <field type="int32_t" name="lon">Longitude, expressed as degrees * 1E7</field>
       <field type="int32_t" name="alt" units="mm">Altitude in meters, expressed as * 1000 (millimeters)</field>
       <field type="int16_t" name="vx" units="cm/s">Ground X Speed (Latitude), expressed as m/s * 100</field>
       <field type="int16_t" name="vy" units="cm/s">Ground Y Speed (Longitude), expressed as m/s * 100</field>
@@ -3655,8 +3900,8 @@
       <field type="float" name="rollspeed" units="rad/s">Body frame roll / phi angular speed (rad/s)</field>
       <field type="float" name="pitchspeed" units="rad/s">Body frame pitch / theta angular speed (rad/s)</field>
       <field type="float" name="yawspeed" units="rad/s">Body frame yaw / psi angular speed (rad/s)</field>
-      <field type="int32_t" name="lat">Latitude, expressed as * 1E7</field>
-      <field type="int32_t" name="lon">Longitude, expressed as * 1E7</field>
+      <field type="int32_t" name="lat" units="degE7">Latitude, expressed as degrees * 1E7</field>
+      <field type="int32_t" name="lon" units="degE7">Longitude, expressed as degrees * 1E7</field>
       <field type="int32_t" name="alt" units="mm">Altitude in meters, expressed as * 1000 (millimeters)</field>
       <field type="int16_t" name="vx" units="cm/s">Ground X Speed (Latitude), expressed as cm/s</field>
       <field type="int16_t" name="vy" units="cm/s">Ground Y Speed (Longitude), expressed as cm/s</field>
@@ -3740,7 +3985,7 @@
       <field type="uint16_t" name="cog" units="cdeg">Course over ground (NOT heading, but direction of movement) in degrees * 100, 0.0..359.99 degrees. If unknown, set to: UINT16_MAX</field>
       <field type="uint8_t" name="satellites_visible">Number of satellites visible. If unknown, set to 255</field>
       <field type="uint8_t" name="dgps_numch">Number of DGPS satellites</field>
-      <field type="uint32_t" name="dgps_age">Age of DGPS info</field>
+      <field type="uint32_t" name="dgps_age" units="ms">Age of DGPS info</field>
     </message>
     <message id="125" name="POWER_STATUS">
       <description>Power supply status</description>
@@ -3766,7 +4011,7 @@
       <field type="uint8_t" name="rtk_health">GPS-specific health report for RTK data.</field>
       <field type="uint8_t" name="rtk_rate" units="Hz">Rate of baseline messages being received by GPS, in HZ</field>
       <field type="uint8_t" name="nsats">Current number of sats used for RTK calculation.</field>
-      <field type="uint8_t" name="baseline_coords_type">Coordinate system of baseline. 0 == ECEF, 1 == NED</field>
+      <field type="uint8_t" name="baseline_coords_type" enum="RTK_BASELINE_COORDINATE_SYSTEM">Coordinate system of baseline</field>
       <field type="int32_t" name="baseline_a_mm" units="mm">Current baseline in ECEF x or NED north component in mm.</field>
       <field type="int32_t" name="baseline_b_mm" units="mm">Current baseline in ECEF y or NED east component in mm.</field>
       <field type="int32_t" name="baseline_c_mm" units="mm">Current baseline in ECEF z or NED down component in mm.</field>
@@ -3782,7 +4027,7 @@
       <field type="uint8_t" name="rtk_health">GPS-specific health report for RTK data.</field>
       <field type="uint8_t" name="rtk_rate" units="Hz">Rate of baseline messages being received by GPS, in HZ</field>
       <field type="uint8_t" name="nsats">Current number of sats used for RTK calculation.</field>
-      <field type="uint8_t" name="baseline_coords_type">Coordinate system of baseline. 0 == ECEF, 1 == NED</field>
+      <field type="uint8_t" name="baseline_coords_type" enum="RTK_BASELINE_COORDINATE_SYSTEM">Coordinate system of baseline</field>
       <field type="int32_t" name="baseline_a_mm" units="mm">Current baseline in ECEF x or NED north component in mm.</field>
       <field type="int32_t" name="baseline_b_mm" units="mm">Current baseline in ECEF y or NED east component in mm.</field>
       <field type="int32_t" name="baseline_c_mm" units="mm">Current baseline in ECEF z or NED down component in mm.</field>
@@ -4068,6 +4313,37 @@
       <field type="uint8_t" name="wp_num">current waypoint number</field>
       <field type="uint16_t" name="wp_distance" units="m">distance to target (meters)</field>
     </message>
+    <message id="235" name="HIGH_LATENCY2">
+      <description>(DRAFT) Message appropriate for high latency connections like Iridium (version 2)</description>
+      <field type="uint32_t" name="timestamp" units="ms">Timestamp (milliseconds since boot or Unix epoch)</field>
+      <field type="uint8_t" name="type" enum="MAV_TYPE">Type of the MAV (quadrotor, helicopter, etc., up to 15 types, defined in MAV_TYPE ENUM)</field>
+      <field type="uint8_t" name="autopilot" enum="MAV_AUTOPILOT">Autopilot type / class. defined in MAV_AUTOPILOT ENUM</field>
+      <field type="uint8_t" name="flight_mode" enum="FLIGHT_MODE">Flight Mode of the vehicle as defined in the FLIGHT_MODE ENUM</field>
+      <field type="int32_t" name="latitude" units="degE7">Latitude, expressed as degrees * 1E7</field>
+      <field type="int32_t" name="longitude" units="degE7">Longitude, expressed as degrees * 1E7</field>
+      <field type="int16_t" name="altitude" units="m">Altitude above mean sea level</field>
+      <field type="int16_t" name="target_altitude" units="m">Altitude setpoint</field>
+      <field type="uint8_t" name="heading" units="deg / 2">Heading (degrees / 2)</field>
+      <field type="uint8_t" name="target_heading" units="deg / 2">Heading setpoint (degrees / 2)</field>
+      <field type="uint16_t" name="target_distance" units="m">Distance to target waypoint or position (meters / 10)</field>
+      <field type="uint8_t" name="throttle" units="%">Throttle (percentage)</field>
+      <field type="uint8_t" name="airspeed" units="m/s * 5">Airspeed (m/s * 5)</field>
+      <field type="uint8_t" name="airspeed_sp" units="m/s * 5">Airspeed setpoint (m/s * 5)</field>
+      <field type="uint8_t" name="groundspeed" units="m/s * 5">Groundspeed (m/s * 5)</field>
+      <field type="uint8_t" name="windspeed" units="m/s * 5">Windspeed (m/s * 5)</field>
+      <field type="uint8_t" name="wind_heading" units="deg / 2">Wind heading (deg / 2)</field>
+      <field type="uint8_t" name="eph" units="m * 10">Maximum error horizontal position since last message (m * 10)</field>
+      <field type="uint8_t" name="epv" units="m * 10">Maximum error vertical position since last message (m * 10)</field>
+      <field type="int8_t" name="temperature_air" units="degC">Air temperature (degrees C) from airspeed sensor</field>
+      <field type="int8_t" name="climb_rate" units="m/s * 10">Maximum climb rate magnitude since last message (m/s * 10)</field>
+      <field type="int8_t" name="battery" units="%">Battery (percentage, -1 for DNU)</field>
+      <field type="uint16_t" name="wp_num">Current waypoint number</field>
+      <field type="uint16_t" name="failure_flags" enum="MAV_FAILURE_FLAG">Indicates failures as defined in MAV_FAILURE_FLAG ENUM. </field>
+      <field type="uint8_t" name="failsafe" enum="MAV_FAILSAFE_FLAG">Indicates if a failsafe mode is triggered, defined in MAV_FAILSAFE_FLAG ENUM</field>
+      <field type="int8_t" name="custom0">Field for custom payload.</field>
+      <field type="int8_t" name="custom1">Field for custom payload.</field>
+      <field type="int8_t" name="custom2">Field for custom payload.</field>
+    </message>
     <message id="241" name="VIBRATION">
       <description>Vibration levels and accelerometer clipping</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (micros since boot or Unix epoch)</field>
@@ -4211,7 +4487,7 @@
       <field type="char[30]" name="tune">tune in board specific format</field>
     </message>
     <message id="259" name="CAMERA_INFORMATION">
-      <description>WIP: Information about a camera</description>
+      <description>Information about a camera</description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (milliseconds since system boot)</field>
       <field type="uint8_t[32]" name="vendor_name">Name of the camera vendor</field>
       <field type="uint8_t[32]" name="model_name">Name of the camera model</field>
@@ -4227,7 +4503,7 @@
       <field type="char[140]" name="cam_definition_uri">Camera definition URI (if any, otherwise only basic functions will be available).</field>
     </message>
     <message id="260" name="CAMERA_SETTINGS">
-      <description>WIP: Settings of a camera, can be requested using MAV_CMD_REQUEST_CAMERA_SETTINGS.</description>
+      <description>Settings of a camera, can be requested using MAV_CMD_REQUEST_CAMERA_SETTINGS.</description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (milliseconds since system boot)</field>
       <field type="uint8_t" name="mode_id" enum="CAMERA_MODE">Camera mode (CAMERA_MODE)</field>
     </message>
@@ -4244,7 +4520,7 @@
       <field type="float" name="write_speed" units="Mibytes/s">Write speed in MiB/s</field>
     </message>
     <message id="262" name="CAMERA_CAPTURE_STATUS">
-      <description>WIP: Information about the status of a capture</description>
+      <description>Information about the status of a capture</description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (milliseconds since system boot)</field>
       <field type="uint8_t" name="image_status">Current status of image capturing (0: idle, 1: capture in progress, 2: interval set but idle, 3: interval set and capture in progress)</field>
       <field type="uint8_t" name="video_status">Current status of video capturing (0: idle, 1: capture in progress)</field>
