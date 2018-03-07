@@ -8,6 +8,7 @@ Copyright Andrew Tridgell 2011
 Copyright Vladimir Ermakov 2016
 Released under GNU GPL version 3 or later
 '''
+from __future__ import print_function
 
 import sys, textwrap, os, time
 from . import mavparse, mavtemplate
@@ -448,7 +449,7 @@ def generate_one(basename, xml):
 def generate(basename, xml_list):
     '''generate serialization MAVLink C++ implemenation'''
     print("Generating C headers")
-    import mavgen_c
+    from . import mavgen_c
     mavgen_c.generate(basename, xml_list)
     for xml in xml_list:
         generate_one(basename, xml)
