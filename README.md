@@ -1,3 +1,26 @@
+## mavlink (kinetic) - 2018.3.7-0
+
+The packages in the `mavlink` repository were released into the `kinetic` distro by running `/usr/bin/bloom-release --rosdistro kinetic --track kinetic mavlink` on `Wed, 07 Mar 2018 07:16:43 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2018.2.2-0`
+- old version: `2018.2.2-0`
+- new version: `2018.3.7-0`
+
+Versions of tools used:
+
+- bloom version: `0.6.2`
+- catkin_pkg version: `0.4.1`
+- rosdep version: `0.12.1`
+- rosdistro version: `0.6.6`
+- vcstools version: `0.1.40`
+
+
 ## mavlink (lunar) - 2018.2.2-0
 
 The packages in the `mavlink` repository were released into the `lunar` distro by running `/usr/bin/bloom-release --rosdistro lunar --track lunar mavlink` on `Fri, 02 Feb 2018 15:31:28 -0000`
