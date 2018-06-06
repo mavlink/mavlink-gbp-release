@@ -128,8 +128,9 @@ setup (name = 'pymavlink',
                                                      'CPP11/include_v2.0/*.hpp',
                                                      'CS/common/*.cs',
                                                      'swift/*.swift',],
-                        'pymavlink' : ['mavnative/*.h'],
-                        'pymavlink' : ['message_definitions/v*/*.xml'] },
+                        'pymavlink'              : ['mavnative/*.h',
+                                                    'message_definitions/v*/*.xml']
+                        },
        packages = ['pymavlink',
                    'pymavlink.generator',
                    'pymavlink.dialects',
@@ -150,11 +151,15 @@ setup (name = 'pymavlink',
                    'tools/mavgen.py',
                    'tools/mavkml.py',
                    'tools/mavfft.py',
+                   'tools/mavfft_isb.py',
                    'tools/mavsummarize.py',
                    'tools/MPU6KSearch.py'],
        install_requires=[
             'future',
             'lxml',
+       ],
+       setup_requires=[
+           'future'  # future is required by mavgen, included by this file
        ],
        cmdclass={'build_py': custom_build_py},
        ext_modules = extensions
