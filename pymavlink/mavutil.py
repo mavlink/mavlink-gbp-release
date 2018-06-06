@@ -222,6 +222,15 @@ class mavfile(object):
         '''enable/disable RTS/CTS if applicable'''
         return
 
+    def probably_vehicle_heartbeat(self, msg):
+        if msg.get_srcComponent() == mavlink.MAV_COMP_ID_GIMBAL:
+            return False
+        if msg.type in (mavlink.MAV_TYPE_GCS,
+                        mavlink.MAV_TYPE_GIMBAL,
+                        mavlink.MAV_TYPE_ONBOARD_CONTROLLER):
+            return False
+        return True
+
     def post_message(self, msg):
         '''default post message call'''
         if '_posted' in msg.__dict__:
@@ -229,7 +238,7 @@ class mavfile(object):
         msg._posted = True
         msg._timestamp = time.time()
         type = msg.get_type()
-        if type != 'HEARTBEAT' or (msg.type != mavlink.MAV_TYPE_GCS and msg.type != mavlink.MAV_TYPE_GIMBAL):
+        if type != 'HEARTBEAT' or self.probably_vehicle_heartbeat(msg):
             self.messages[type] = msg
 
         if 'usec' in msg.__dict__:
@@ -262,10 +271,10 @@ class mavfile(object):
             self.mav_count += 1
         
         self.timestamp = msg._timestamp
-        if type == 'HEARTBEAT' and msg.get_srcComponent() != mavlink.MAV_COMP_ID_GIMBAL:
+        if type == 'HEARTBEAT' and self.probably_vehicle_heartbeat(msg):
             self.target_system = msg.get_srcSystem()
             self.target_component = msg.get_srcComponent()
-            if float(mavlink.WIRE_PROTOCOL_VERSION) >= 1 and msg.type != mavlink.MAV_TYPE_GCS:
+            if float(mavlink.WIRE_PROTOCOL_VERSION) >= 1:
                 self.flightmode = mode_string_v10(msg)
                 self.mav_type = msg.type
                 self.base_mode = msg.base_mode
@@ -510,6 +519,8 @@ class mavfile(object):
             map = mode_mapping_apm
         if mav_type == mavlink.MAV_TYPE_GROUND_ROVER:
             map = mode_mapping_rover
+        if mav_type == mavlink.MAV_TYPE_SURFACE_BOAT:
+            map = mode_mapping_rover # for the time being
         if mav_type == mavlink.MAV_TYPE_ANTENNA_TRACKER:
             map = mode_mapping_tracker
         if mav_type == mavlink.MAV_TYPE_SUBMARINE:
@@ -937,19 +948,19 @@ class mavtcp(mavfile):
             sys.exit(1)
         self.port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.destination_addr = (a[0], int(a[1]))
+        if retries <= 0:
+            # try to connect at least once:
+            retries = 1
         while retries >= 0:
             retries -= 1
-            if retries <= 0:
+            try:
                 self.port.connect(self.destination_addr)
-            else:
-                try:
-                    self.port.connect(self.destination_addr)
-                    break
-                except Exception as e:
-                    if retries > 0:
-                        print(e, "sleeping")
-                        time.sleep(1)
-                    continue
+                break
+            except Exception as e:
+                if retries == 0:
+                    raise e
+                print(e, "sleeping")
+                time.sleep(1)
         self.port.setblocking(0)
         set_close_on_exec(self.port.fileno())
         self.port.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
@@ -1459,12 +1470,15 @@ mode_mapping_acm = {
     19 : 'AVOID_ADSB',
     20 : 'GUIDED_NOGPS',
     21 : 'SMART_RTL',
+    22 : 'FLOWHOLD',
 }
 mode_mapping_rover = {
     0 : 'MANUAL',
+    1 : 'ACRO',
     2 : 'LEARNING',
     3 : 'STEERING',
     4 : 'HOLD',
+    5 : 'LOITER',
     10 : 'AUTO',
     11 : 'RTL',
     12 : 'SMART_RTL',
@@ -1607,6 +1621,8 @@ def mode_mapping_byname(mav_type):
         map = mode_mapping_apm
     if mav_type == mavlink.MAV_TYPE_GROUND_ROVER:
         map = mode_mapping_rover
+    if mav_type == mavlink.MAV_TYPE_SURFACE_BOAT:
+        map = mode_mapping_rover # for the time being
     if mav_type == mavlink.MAV_TYPE_ANTENNA_TRACKER:
         map = mode_mapping_tracker
     if mav_type == mavlink.MAV_TYPE_SUBMARINE:
@@ -1630,6 +1646,8 @@ def mode_mapping_bynumber(mav_type):
         map = mode_mapping_apm
     if mav_type == mavlink.MAV_TYPE_GROUND_ROVER:
         map = mode_mapping_rover
+    if mav_type == mavlink.MAV_TYPE_SURFACE_BOAT:
+        map = mode_mapping_rover # for the time being
     if mav_type == mavlink.MAV_TYPE_ANTENNA_TRACKER:
         map = mode_mapping_tracker
     if mav_type == mavlink.MAV_TYPE_SUBMARINE:
@@ -1655,6 +1673,9 @@ def mode_string_v10(msg):
         if msg.custom_mode in mode_mapping_apm:
             return mode_mapping_apm[msg.custom_mode]
     if msg.type == mavlink.MAV_TYPE_GROUND_ROVER:
+        if msg.custom_mode in mode_mapping_rover:
+            return mode_mapping_rover[msg.custom_mode]
+    if msg.type == mavlink.MAV_TYPE_SURFACE_BOAT:
         if msg.custom_mode in mode_mapping_rover:
             return mode_mapping_rover[msg.custom_mode]
     if msg.type == mavlink.MAV_TYPE_ANTENNA_TRACKER:
