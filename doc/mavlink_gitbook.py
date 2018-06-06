@@ -37,11 +37,13 @@ xslt = ET.fromstring(xsl_file)
 #initialise text for index file. 
 index_text='<!-- THIS FILE IS AUTO-GENERATED (DO NOT UPDATE GITBOOK): https://github.com/mavlink/mavlink/blob/master/doc/mavlink_gitbook.py -->'
 index_text+='\n# Message Definitions'
-index_text+='\n\nMAVLink messages are defined in XML files in the [mavlink/message definitions](https://github.com/mavlink/mavlink/blob/master/message_definitions/) folder. The messages that are common to all systems are defined in [common.xml](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/common.xml) (only messages contained in this file are considered *standard* messages). MAVLink protocol-specific messages and vendor-specific messages are stored in separate XML files that can either *replace* or *extend* (include) the standard messages.'
+index_text+='\n\nMAVLink messages are defined in XML files in the [mavlink/message definitions](https://github.com/mavlink/mavlink/blob/master/message_definitions/) folder. The messages that are common to all systems are defined in [common.xml](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/common.xml) (only messages contained in this file are considered standard messages).'
 index_text+='\n\nThe common messages are provided as human-readable tables in: [Common](../messages/common.md).'
-index_text+='\n\n> **Note** Vendor forks of MAVLink may contain messages that are not get merged, and hence will not appear in this documentation.'
+index_text+='\n\n## Vendor Specific Extensions (Dialects) {#dialects}'
+index_text+='\n\nMAVLink protocol-specific and vendor-specific messages (dialects) are stored in separate XML files. These often include the [common](../messages/common.md) message definition, extending it with needed vendor or protocol specific messages.'
+index_text+='\n\n> **Note** While a dialect can include any other message definition, care should be taken when including a definition file that includes another file (only a single level of nesting is tested).'
+index_text+='\n\n<span></span>\n> **Note** Vendor forks of MAVLink may contain messages that are not yet merged, and hence will not appear in this documentation.'
 index_text+='\n\nThe human-readable forms of the vendor XML files are linked below:'
-
 
 #Fix up the BeautifulSoup output so to fix build-link errors in the generated gitbook.
 ## BS puts each tag/content in its own line. Gitbook generates anchors using the spaces/newlines. 
@@ -132,8 +134,8 @@ for subdir, dirs, files in os.walk(xml_message_definitions_dir_name):
                 index_text+='\n* [%s](%s)' % (file,output_file_name)
             
 #Write the index - Disabled for now.
-#with open(index_file_name, 'w') as content_file:
-#    content_file.write(index_text)
+with open(index_file_name, 'w') as content_file:
+    content_file.write(index_text)
 
 
 print("COMPLETED")
