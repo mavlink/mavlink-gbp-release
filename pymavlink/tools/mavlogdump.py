@@ -39,6 +39,7 @@ parser.add_argument("--zero-time-base", action='store_true', help="use Z time ba
 parser.add_argument("--no-bad-data", action='store_true', help="Don't output corrupted messages")
 parser.add_argument("--show-source", action='store_true', help="Show source system ID and component ID")
 parser.add_argument("--show-seq", action='store_true', help="Show sequence numbers")
+parser.add_argument("--show-types", action='store_true', help="Shows all message types available on opened log")
 parser.add_argument("--source-system", type=int, default=None, help="filter by source system ID")
 parser.add_argument("--source-component", type=int, default=None, help="filter by source component ID")
 parser.add_argument("--link", type=int, default=None, help="filter by comms link ID")
@@ -114,12 +115,16 @@ if isbin and args.format == 'csv': # need to accumulate columns from message
 # Track the last timestamp value. Used for compressing data for the CSV output format.
 last_timestamp = None
 
+# Track types found
+available_types = set()
+
 # Keep track of data from the current timestep. If the following timestep has the same data, it's stored in here as well. Output should therefore have entirely unique timesteps.
 while True:
     m = mlog.recv_match(blocking=args.follow)
     if m is None:
         # FIXME: Make sure to output the last CSV message before dropping out of this loop
         break
+    available_types.add(m.get_type())
     if isbin and m.get_type() == "FMT" and args.format == 'csv':
         if m.Name == types[0]:
             fields += m.Columns.split(',')
@@ -135,7 +140,7 @@ while True:
             continue
         if m.get_type() == 'PARAM_VALUE' and args.parms:
             timestamp = getattr(m, '_timestamp', None)
-            output.write(struct.pack('>Q', timestamp*1.0e6) + m.get_msgbuf())
+            output.write(struct.pack('>Q', int(timestamp*1.0e6)) + m.get_msgbuf())
             continue
 
     if not mavutil.evaluate_condition(args.condition, mlog.messages):
@@ -164,7 +169,7 @@ while True:
     # If we're just logging, pack in the timestamp and data into the output file.
     if output:
         if not (isbin or islog):
-            output.write(struct.pack('>Q', timestamp*1.0e6))
+            output.write(struct.pack('>Q', int(timestamp*1.0e6)))
         try:
             output.write(m.get_msgbuf())
         except Exception as ex:
@@ -231,8 +236,12 @@ while True:
             s += " srcSystem=%u srcComponent=%u" % (m.get_srcSystem(), m.get_srcComponent())
         if args.show_seq:
             s += " seq=%u" % m.get_seq()
-        print(s)
+        if not args.show_types:
+            print(s)
 
     # Update our last timestamp value.
     last_timestamp = timestamp
 
+if args.show_types:
+    for msgType in available_types:
+        print(msgType)
