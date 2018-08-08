@@ -163,6 +163,7 @@ class DFMessage(object):
     def get_msgbuf(self):
         '''create a binary message buffer for a message'''
         values = []
+        is_py2 = sys.version_info < (3,0)
         for i in range(len(self.fmt.columns)):
             if i >= len(self.fmt.msg_mults):
                 continue
@@ -171,8 +172,15 @@ class DFMessage(object):
             if name == 'Mode' and 'ModeNum' in self.fmt.columns:
                 name = 'ModeNum'
             v = self.__getattr__(name)
+            if is_py2:
+                if isinstance(v,unicode): # NOQA
+                    v = str(v)
+            else:
+                if isinstance(v,str):
+                    v = bytes(v,'ascii')
             if mul is not None:
                 v /= mul
+                v = int(round(v))
             values.append(v)
         return (struct.pack("BBB", 0xA3, 0x95, self.fmt.type) +
                 struct.pack(self.fmt.msg_struct, *values))
@@ -514,6 +522,8 @@ class DFReader(object):
                 self.mav_type = mavutil.mavlink.MAV_TYPE_QUADROTOR
             elif m.Message.startswith("Antenna"):
                 self.mav_type = mavutil.mavlink.MAV_TYPE_ANTENNA_TRACKER
+            elif m.Message.find("ArduSub") != -1:
+                self.mav_type = mavutil.mavlink.MAV_TYPE_SUBMARINE
         if type == 'MODE':
             if isinstance(m.Mode, str):
                 self.flightmode = m.Mode.upper()
