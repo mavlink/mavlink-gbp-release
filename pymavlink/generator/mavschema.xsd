@@ -54,6 +54,14 @@
     </xs:restriction>
   </xs:simpleType>
 </xs:attribute>
+<xs:attribute name="since">
+  <xs:simpleType>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(20)\d{2}-(0[1-9]|1[012])"/>  <!-- restrict dates to 20YY-MM format -->
+    </xs:restriction>
+  </xs:simpleType>
+</xs:attribute>
+<xs:attribute name="replaced_by" type="xs:string"/>
 
 <xs:simpleType name="SI_Unit">
   <xs:restriction base="xs:string">
@@ -90,8 +98,10 @@
     <xs:enumeration value="cdeg"/>     <!-- centidegrees -->
     <xs:enumeration value="degE5"/>    <!-- degrees * 10E5 -->
     <xs:enumeration value="degE7"/>    <!-- degrees * 10E7 -->
+    <xs:enumeration value="rpm"/>      <!-- rotations per second -->
     <!-- electricity -->
     <xs:enumeration value="V"/>        <!-- Volt -->
+    <xs:enumeration value="cV"/>       <!-- centi-Volt -->
     <xs:enumeration value="mV"/>       <!-- milli-Volt -->
     <xs:enumeration value="A"/>        <!-- Ampere -->
     <xs:enumeration value="cA"/>       <!-- centi-Ampere -->
@@ -114,12 +124,14 @@
     <xs:enumeration value="c%"/>       <!-- centipercent -->
     <xs:enumeration value="dB"/>       <!-- Deci-Bell -->
     <!-- digital -->
-    <xs:enumeration value="Mibytes"/>  <!-- Megabytes (1024*1024 bytes) -->
-    <xs:enumeration value="Mibytes/s"/><!-- Megabytes (1024*1024 bytes) per second -->
+    <xs:enumeration value="KiB"/>      <!-- Kibibyte (1024 bytes) -->
+    <xs:enumeration value="KiB/s"/>    <!-- Kibibyte (1024 bytes) per second -->
+    <xs:enumeration value="MiB"/>      <!-- Mebibyte (1024*1024 bytes) -->
+    <xs:enumeration value="MiB/s"/>    <!-- Mebibyte (1024*1024 bytes) per second -->
     <xs:enumeration value="bytes"/>    <!-- bytes -->
     <xs:enumeration value="bits/s"/>   <!-- bits per second -->
     <xs:enumeration value="pix"/>      <!-- pixels -->
-    <xs:enumeration value="dpixels"/>  <!-- decipixels -->
+    <xs:enumeration value="dpix"/>     <!-- decipixels -->
   </xs:restriction>
 </xs:simpleType>
 
@@ -127,6 +139,24 @@
 <xs:element name="param">
     <xs:complexType mixed="true">
         <xs:attribute ref="index" use="required"/>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="deprecated">
+    <xs:complexType mixed="true">
+        <xs:sequence>
+            <xs:element ref="description" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute ref="since" use="required"/>
+        <xs:attribute ref="replaced_by" use="required"/>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="wip">
+    <xs:complexType mixed="true">
+        <xs:sequence>
+            <xs:element ref="description" minOccurs="0"/>
+        </xs:sequence>
     </xs:complexType>
 </xs:element>
 
@@ -151,6 +181,10 @@
 <xs:element name="entry">
     <xs:complexType>
         <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="1">
+                <xs:element ref="deprecated"/>
+                <xs:element ref="wip"/>
+            </xs:choice>
             <xs:element ref="description" minOccurs="0"/>
             <xs:element ref="param" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
@@ -162,6 +196,7 @@
 <xs:element name="enum">
     <xs:complexType>
         <xs:sequence>
+            <xs:element ref="deprecated" minOccurs="0" maxOccurs="1"/>
             <xs:element ref="description" minOccurs="0"/>
             <xs:element ref="entry" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -172,17 +207,19 @@
 <xs:element name="message">
     <xs:complexType>
         <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="2">
-                    <xs:sequence>
-                        <xs:element ref="description" minOccurs="0"/>
-                        <xs:element ref="field" minOccurs="0" maxOccurs="unbounded"/>
-                    </xs:sequence>
-                    <xs:element ref="extensions" minOccurs="0" maxOccurs="1"/>
-
-            </xs:choice>
-                    <xs:sequence>
-                        <xs:element ref="field" minOccurs="0" maxOccurs="unbounded"/>
-                    </xs:sequence>
+            <xs:sequence minOccurs="1" maxOccurs="1">
+                <xs:choice minOccurs="0" maxOccurs="1">
+                    <xs:element ref="deprecated"/>
+                    <xs:element ref="wip"/>
+                </xs:choice>
+                <xs:element ref="description" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="field" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <!-- MavLink 2.0 extensions are optional hence minOccurs="0" -->
+            <xs:sequence minOccurs="0" maxOccurs="1">
+                <xs:element ref="extensions" minOccurs="1" maxOccurs="1"/>
+                <xs:element ref="field" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
         </xs:sequence>
         <xs:attribute ref="id" use="required"/>
         <xs:attribute ref="name" use="required"/>

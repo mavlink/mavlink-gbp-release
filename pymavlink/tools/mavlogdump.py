@@ -43,12 +43,17 @@ parser.add_argument("--show-types", action='store_true', help="Shows all message
 parser.add_argument("--source-system", type=int, default=None, help="filter by source system ID")
 parser.add_argument("--source-component", type=int, default=None, help="filter by source component ID")
 parser.add_argument("--link", type=int, default=None, help="filter by comms link ID")
+parser.add_argument("--mav10", action='store_true', help="parse as MAVLink1")
 parser.add_argument("log", metavar="LOG")
 args = parser.parse_args()
+
+if not args.mav10:
+    os.environ['MAVLINK20'] = '1'
 
 import inspect
 
 from pymavlink import mavutil
+
 
 
 filename = args.log
@@ -105,7 +110,7 @@ if istlog and args.format == 'csv': # we know our fields from the get-go
 
     # The first line output are names for all columns
     csv_out = ["" for x in fields]
-    print(','.join(fields))
+    print(args.csv_sep.join(fields))
 
 if isbin and args.format == 'csv': # need to accumulate columns from message
     if types is None or len(types) != 1:
@@ -129,7 +134,7 @@ while True:
         if m.Name == types[0]:
             fields += m.Columns.split(',')
             csv_out = ["" for x in fields]
-            print(','.join(fields))
+            print(args.csv_sep.join(fields))
 
     if output is not None:
         if (isbin or islog) and m.get_type() == "FMT":
