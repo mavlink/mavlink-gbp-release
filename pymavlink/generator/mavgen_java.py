@@ -45,18 +45,11 @@ ${{entry:   public static final int ${name} = ${value}; /* ${description} |${{pa
 def generate_CRC(directory, xml):
     # and message CRCs array
     xml.message_crcs_array = ''
-    xml.message_ids_array = ''
-    for msgid in sorted(xml.message_crcs.keys()):
-        if xml.wire_protocol_version == mavparse.PROTOCOL_0_9 or xml.wire_protocol_version == mavparse.PROTOCOL_1_0:
-            if msgid > 255:
-                break
+    for msgid in range(256):
         crc = xml.message_crcs.get(msgid, 0)
-        xml.message_ids_array += '%u, ' % msgid
         xml.message_crcs_array += '%u, ' % crc
-    # remove trailing ', '
     xml.message_crcs_array = xml.message_crcs_array[:-2]
-    xml.message_ids_array = xml.message_ids_array[:-2]
-
+    
     f = open(os.path.join(directory, "CRC.java"), mode='w')
     t.write(f,'''
 /* AUTO-GENERATED FILE.  DO NOT MODIFY.
@@ -75,7 +68,6 @@ package com.MAVLink.${basename};
 */
 public class CRC {
     private static final int[] MAVLINK_MESSAGE_CRCS = {${message_crcs_array}};
-    private static final int[] MAVLINK_MESSAGE_IDS = {${message_ids_array}};
     private static final int CRC_INIT_VALUE = 0xffff;
     private int crcValue;
 
@@ -101,29 +93,9 @@ public class CRC {
     *
     * @param msgid
     *            The message id number
-    * @return crc_extra
-    *            The crc_extra value for the given message
     */
-    public int finish_checksum(int msgid) {
-        int crc = 0;
-        if (msgid == 0) {
-            /* special handling to high frequency heartbeat message */
-            crc = MAVLINK_MESSAGE_CRCS[0];
-        } else {
-            int low = 0, high = MAVLINK_MESSAGE_IDS.length - 1;
-            while (low <= high) {
-                int mid = (low + high) / 2;
-                if (msgid == MAVLINK_MESSAGE_IDS[mid]) {
-                    crc = MAVLINK_MESSAGE_CRCS[mid];
-                    break;
-                } else if (msgid < MAVLINK_MESSAGE_IDS[mid]) {
-                    high = mid - 1;
-                } else
-                    low = mid + 1;
-            }
-        }
-        update_checksum(crc);
-        return crc;
+    public void finish_checksum(int msgid) {
+        update_checksum(MAVLINK_MESSAGE_CRCS[msgid]);
     }
 
     /**
@@ -156,7 +128,9 @@ def generate_message_h(directory, m):
     '''generate per-message header for a XML file'''
     f = open(os.path.join(directory, 'msg_%s.java' % m.name_lower), mode='w')
 
-    path=directory.split('/')
+    (path_head, path_tail) = os.path.split(directory)
+    if path_tail == "":
+        (path_head, path_tail) = os.path.split(path_head)
     t.write(f, '''
 /* AUTO-GENERATED FILE.  DO NOT MODIFY.
  *
@@ -176,7 +150,6 @@ import com.MAVLink.Messages.MAVLinkPayload;
 public class msg_${name_lower} extends MAVLinkMessage{
 
     public static final int MAVLINK_MSG_ID_${name} = ${id};
-    public static final int MAVLINK_MSG_ID_${name}_CRC = ${crc_extra};
     public static final int MAVLINK_MSG_LENGTH = ${wire_length};
     private static final long serialVersionUID = MAVLINK_MSG_ID_${name};
 
@@ -197,7 +170,6 @@ public class msg_${name_lower} extends MAVLinkMessage{
         packet.sysid = 255;
         packet.compid = 190;
         packet.msgid = MAVLINK_MSG_ID_${name};
-        packet.crc_extra = MAVLINK_MSG_ID_${name}_CRC;
         ${{ordered_fields:      
         ${packField}
         }}
@@ -232,7 +204,7 @@ public class msg_${name_lower} extends MAVLinkMessage{
         this.sysid = mavLinkPacket.sysid;
         this.compid = mavLinkPacket.compid;
         this.msgid = MAVLINK_MSG_ID_${name};
-        unpack(mavLinkPacket.payload);
+        unpack(mavLinkPacket.payload);        
     }
 
     ${{ordered_fields: ${getText} }}
@@ -243,21 +215,11 @@ public class msg_${name_lower} extends MAVLinkMessage{
         return "MAVLINK_MSG_ID_${name} - sysid:"+sysid+" compid:"+compid+${{ordered_fields:" ${name}:"+${name}+}}"";
     }
 }
-        ''' % path[len(path)-1], m)
+        ''' % path_tail, m)
     f.close()
 
 
 def generate_MAVLinkMessage(directory, xml_list):
-
-    xml = xml_list[0]
-
-    if xml.wire_protocol_version == mavparse.PROTOCOL_2_0:
-        xml.protocol_version = "PROTOCOL_2_0"
-    elif xml.wire_protocol_version == mavparse.PROTOCOL_1_0:
-        xml.protocol_version = "PROTOCOL_1_0"
-    else:
-        xml.protocol_version = "PROTOCOL_0_9"
-
     f = open(os.path.join(directory, "MAVLinkPacket.java"), mode='w')
 
     imports = []
@@ -307,23 +269,10 @@ ${importString}
 public class MAVLinkPacket implements Serializable {
     private static final long serialVersionUID = 2095947771227815314L;
 
-    public static final int MAVLINK_STX = 253;
-
-    public static final int MAVLINK_STX_MAVLINK1 = 254;
-
-    public enum Protocol {
-        PROTOCOL_0_9,
-        PROTOCOL_1_0,
-        PROTOCOL_2_0
-    }
+    public static final int MAVLINK_STX = 254;
 
     /**
-    * protocol version
-    */
-    public Protocol protocol;
-
-    /**
-    * Message length. NOT counting STX, LENGTH, SEQ, INCOMPAT_FLAGS, COMPAT_FLAGS, SYSID, COMPID, MSGID, CRC1 and CRC2
+    * Message length. NOT counting STX, LENGTH, SEQ, SYSID, COMPID, MSGID, CRC1 and CRC2
     */
     public final int len;
 
@@ -331,16 +280,6 @@ public class MAVLinkPacket implements Serializable {
     * Message sequence
     */
     public int seq;
-
-    /**
-    * Flags that must be understood
-    */
-    public int incompat_flags;
-
-    /**
-    * Flags that can be ignored if not understood
-    */
-    public int compat_flags;
 
     /**
     * ID of the SENDING system. Allows to differentiate different MAVs on the
@@ -366,11 +305,6 @@ public class MAVLinkPacket implements Serializable {
     public MAVLinkPayload payload;
 
     /**
-    * crc extra value of the message.
-    */
-    public int crc_extra;
-
-    /**
     * ITU X.25/SAE AS-4 hash, excluding packet start sign, so bytes 1..(n+6)
     * Note: The checksum also includes MAVLINK_CRC_EXTRA (Number computed from
     * message fields. Protects the packet from decoding a different version of
@@ -378,24 +312,13 @@ public class MAVLinkPacket implements Serializable {
     */
     public CRC crc;
 
-    public MAVLinkPacket(int payloadLength) {
-        protocol = Protocol.${protocol_version};
-        incompat_flags = 0;
-        compat_flags = 0;
+    public MAVLinkPacket(int payloadLength){
         len = payloadLength;
         payload = new MAVLinkPayload(payloadLength);
-        crc_extra = -1;
     }
 
     /**
-    * Set the MAVLink protocol for this packet.
-    */
-    public void setProtocol(Protocol protocol) {
-        this.protocol = protocol;
-    }
-
-    /**
-    * Check if the size of the Payload is equal to the "len" byte.
+    * Check if the size of the Payload is equal to the "len" byte
     */
     public boolean payloadIsFilled() {
         return payload.size() >= len;
@@ -404,14 +327,7 @@ public class MAVLinkPacket implements Serializable {
     /**
     * Update CRC for this packet.
     */
-    public void generateCRC() {
-        generateCRC(payload.size());
-    }
-
-    /**
-    * Update CRC for this packet with given trimmed payload length.
-    */
-    private void generateCRC(int payloadSize){
+    public void generateCRC(){
         if(crc == null){
             crc = new CRC();
         }
@@ -420,42 +336,30 @@ public class MAVLinkPacket implements Serializable {
         }
         
         crc.update_checksum(len);
-        if (protocol == Protocol.PROTOCOL_2_0) {
-            crc.update_checksum(incompat_flags);
-            crc.update_checksum(compat_flags);
-        }
         crc.update_checksum(seq);
         crc.update_checksum(sysid);
         crc.update_checksum(compid);
         crc.update_checksum(msgid);
-        if (protocol == Protocol.PROTOCOL_2_0) {
-            crc.update_checksum(msgid >> 8);
-            crc.update_checksum(msgid >> 16);
-        }
 
         payload.resetIndex();
 
+        final int payloadSize = payload.size();
         for (int i = 0; i < payloadSize; i++) {
             crc.update_checksum(payload.getByte());
         }
-
-        if (crc_extra != -1) {
-            crc.update_checksum(crc_extra);
-        } else {
-            crc_extra = crc.finish_checksum(msgid);
-        }
+        crc.finish_checksum(msgid);
     }
 
     /**
-    * Encode this packet in MAVLink1 for transmission.
+    * Encode this packet for transmission.
     *
     * @return Array with bytes to be transmitted
     */
-    private byte[] encodeMavlink1Packet() {
+    public byte[] encodePacket() {
         byte[] buffer = new byte[6 + len + 2];
-
+        
         int i = 0;
-        buffer[i++] = (byte) MAVLINK_STX_MAVLINK1;
+        buffer[i++] = (byte) MAVLINK_STX;
         buffer[i++] = (byte) len;
         buffer[i++] = (byte) seq;
         buffer[i++] = (byte) sysid;
@@ -474,65 +378,6 @@ public class MAVLinkPacket implements Serializable {
     }
 
     /**
-    * Trim payload of any trailing zero bytes.
-    *
-    * @return Length of bytes to be transmitted
-    */
-    int trimPayload() {
-        for (int i = payload.size(); i > 0; i--) {
-            if (payload.get(i - 1) != 0) {
-                return i;
-            }
-        }
-        return 0;
-    }
-
-    /**
-    * Encode this packet in MAVLink2 for transmission.
-    *
-    * @return Array with bytes to be transmitted
-    */
-    private byte[] encodeMavlink2Packet() {
-        int length = trimPayload();
-
-        byte[] buffer = new byte[10 + length + 2];
-
-        int i = 0;
-        buffer[i++] = (byte) MAVLINK_STX;
-        buffer[i++] = (byte) length;
-        buffer[i++] = (byte) incompat_flags;
-        buffer[i++] = (byte) compat_flags;
-        buffer[i++] = (byte) seq;
-        buffer[i++] = (byte) sysid;
-        buffer[i++] = (byte) compid;
-        buffer[i++] = (byte) (msgid & 0xff);
-        buffer[i++] = (byte) ((msgid >> 8) & 0xff);
-        buffer[i++] = (byte) ((msgid >> 16) & 0xff);
-
-        for (int j = 0; j < length; j++) {
-            buffer[i++] = payload.payload.get(j);
-        }
-
-        generateCRC(length);
-        buffer[i++] = (byte) (crc.getLSB());
-        buffer[i++] = (byte) (crc.getMSB());
-        return buffer;
-    }
-
-    /**
-    * Encode this packet for transmission;
-    *
-    * @return Array with bytes to be transmitted
-    */
-    public byte[] encodePacket() {
-        if (protocol == Protocol.PROTOCOL_2_0) {
-            return encodeMavlink2Packet();
-        } else {
-            return encodeMavlink1Packet();
-        }
-    }
-
-    /**
     * Unpack the data in this packet and return a MAVLink message
     *
     * @return MAVLink message decoded from this packet
@@ -544,7 +389,7 @@ public class MAVLinkPacket implements Serializable {
         t.write(f, '''
             ${{message:     
             case msg_${name_lower}.MAVLINK_MSG_ID_${name}:
-                return new msg_${name_lower}(this);
+                return  new msg_${name_lower}(this);
             }}
             ''',xml)
     f.write('''
