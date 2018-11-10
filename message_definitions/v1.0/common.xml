@@ -15,7 +15,7 @@
         <description>SLUGS autopilot, http://slugsuav.soe.ucsc.edu</description>
       </entry>
       <entry value="3" name="MAV_AUTOPILOT_ARDUPILOTMEGA">
-        <description>ArduPilotMega / ArduCopter, http://diydrones.com</description>
+        <description>ArduPilot - Plane/Copter/Rover/Sub/Tracker, http://ardupilot.org</description>
       </entry>
       <entry value="4" name="MAV_AUTOPILOT_OPENPILOT">
         <description>OpenPilot, http://openpilot.org</description>
@@ -42,7 +42,7 @@
         <description>FlexiPilot</description>
       </entry>
       <entry value="12" name="MAV_AUTOPILOT_PX4">
-        <description>PX4 Autopilot - http://pixhawk.ethz.ch/px4/</description>
+        <description>PX4 Autopilot - http://px4.io/</description>
       </entry>
       <entry value="13" name="MAV_AUTOPILOT_SMACCMPILOT">
         <description>SMACCMPilot - http://smaccmpilot.org</description>
@@ -608,10 +608,10 @@
         <description>Offset in body NED frame. This makes sense if adding setpoints to the current flight path, to avoid an obstacle - e.g. useful to command 2 m/s^2 acceleration to the east.</description>
       </entry>
       <entry value="10" name="MAV_FRAME_GLOBAL_TERRAIN_ALT">
-        <description>Global coordinate frame with above terrain level altitude. WGS84 coordinate system, relative altitude over terrain with respect to the waypoint coordinate. First value / x: latitude in degrees, second value / y: longitude in degrees, third value / z: positive altitude in meters with 0 being at ground level in terrain model.</description>
+        <description>Global (WGS84) coordinate frame with AGL altitude (at the waypoint coordinate). First value / x: latitude in degrees, second value / y: longitude in degrees, third value / z: positive altitude in meters with 0 being at ground level in terrain model.</description>
       </entry>
       <entry value="11" name="MAV_FRAME_GLOBAL_TERRAIN_ALT_INT">
-        <description>Global coordinate frame with above terrain level altitude. WGS84 coordinate system, relative altitude over terrain with respect to the waypoint coordinate. First value / x: latitude in degrees*10e-7, second value / y: longitude in degrees*10e-7, third value / z: positive altitude in meters with 0 being at ground level in terrain model.</description>
+        <description>Global (WGS84) coordinate frame with AGL altitude (at the waypoint coordinate). First value / x: latitude in degrees*10e-7, second value / y: longitude in degrees*10e-7, third value / z: positive altitude in meters with 0 being at ground level in terrain model.</description>
       </entry>
       <entry value="12" name="MAV_FRAME_BODY_FRD">
         <description>Body fixed frame of reference, Z-down (x: forward, y: right, z: down).</description>
@@ -848,7 +848,7 @@
       </entry>
       <entry value="30" name="MAV_CMD_NAV_CONTINUE_AND_CHANGE_ALT">
         <description>Continue on the current course and climb/descend to specified altitude.  When the altitude is reached continue to the next command (i.e., don't proceed to the next command until the desired altitude is reached.</description>
-        <param index="1">Climb or Descend (0 = Neutral, command completes when within 5m of this command's altitude, 1 = Climbing, command completes when at or above this command's altitude, 2 = Descending, command completes when at or below this command's altitude. </param>
+        <param index="1">Climb or Descend (0 = Neutral, command completes when within 5m of this command's altitude, 1 = Climbing, command completes when at or above this command's altitude, 2 = Descending, command completes when at or below this command's altitude.</param>
         <param index="2">Empty</param>
         <param index="3">Empty</param>
         <param index="4">Empty</param>
@@ -857,7 +857,7 @@
         <param index="7">Desired altitude in meters</param>
       </entry>
       <entry value="31" name="MAV_CMD_NAV_LOITER_TO_ALT">
-        <description>Begin loiter at the specified Latitude and Longitude.  If Lat=Lon=0, then loiter at the current position.  Don't consider the navigation command complete (don't leave loiter) until the altitude has been reached.  Additionally, if the Heading Required parameter is non-zero the  aircraft will not leave the loiter until heading toward the next waypoint. </description>
+        <description>Begin loiter at the specified Latitude and Longitude.  If Lat=Lon=0, then loiter at the current position.  Don't consider the navigation command complete (don't leave loiter) until the altitude has been reached.  Additionally, if the Heading Required parameter is non-zero the  aircraft will not leave the loiter until heading toward the next waypoint.</description>
         <param index="1">Heading Required (0 = False)</param>
         <param index="2">Radius in meters. If positive loiter clockwise, negative counter-clockwise, 0 means no change to standard loiter.</param>
         <param index="3">Empty</param>
@@ -890,13 +890,13 @@
         <wip/>
         <!-- This message is work-in-progress it can therefore change, and should NOT be used in stable production environments -->
         <description>Start orbiting on the circumference of a circle defined by the parameters. Setting any value NaN results in using defaults.</description>
-        <param index="1">Radius of the circle in meters. positive: Orbit clockwise. negative: Orbit counter-clockwise. </param>
+        <param index="1">Radius of the circle in meters. positive: Orbit clockwise. negative: Orbit counter-clockwise.</param>
         <param index="2">Velocity tangential in m/s. NaN: Vehicle configuration default.</param>
         <param index="3">Yaw behavior of the vehicle. 0: vehicle front points to the center (default). 1: Hold last heading. 2: Leave yaw uncontrolled.</param>
         <param index="4">Reserved (e.g. for dynamic center beacon options)</param>
         <param index="5">Center point latitude (if no MAV_FRAME specified) / X coordinate according to MAV_FRAME. NaN: Use current vehicle position or current center if already orbiting.</param>
         <param index="6">Center point longitude (if no MAV_FRAME specified) / Y coordinate according to MAV_FRAME. NaN: Use current vehicle position or current center if already orbiting.</param>
-        <param index="7">Center point altitude (AMSL) (if no MAV_FRAME specified) / Z coordinate according to MAV_FRAME. NaN: Use current vehicle position or current center if already orbiting.</param>
+        <param index="7">Center point altitude (MSL) (if no MAV_FRAME specified) / Z coordinate according to MAV_FRAME. NaN: Use current vehicle position or current center if already orbiting.</param>
       </entry>
       <entry value="80" name="MAV_CMD_NAV_ROI">
         <deprecated since="2018-01" replaced_by="MAV_CMD_DO_SET_ROI_*"/>
@@ -1065,7 +1065,7 @@
       </entry>
       <entry value="178" name="MAV_CMD_DO_CHANGE_SPEED">
         <description>Change speed and/or throttle set points.</description>
-        <param index="1">Speed type (0=Airspeed, 1=Ground Speed)</param>
+        <param index="1">Speed type (0=Airspeed, 1=Ground Speed, 2=Climb Speed, 3=Descent Speed)</param>
         <param index="2">Speed  (m/s, -1 indicates no change)</param>
         <param index="3">Throttle  ( Percent, -1 indicates no change)</param>
         <param index="4">absolute or relative [0,1]</param>
@@ -1398,11 +1398,11 @@
         <param index="7">Empty</param>
       </entry>
       <entry value="222" name="MAV_CMD_DO_GUIDED_LIMITS">
-        <description>set limits for external control</description>
-        <param index="1">timeout - maximum time (in seconds) that external controller will be allowed to control vehicle. 0 means no timeout</param>
-        <param index="2">Absolute altitude (AMSL) min, in meters - if vehicle moves below this alt, the command will be aborted and the mission will continue. 0 means no lower altitude limit</param>
-        <param index="3">Absolute altitude (AMSL) max, in meters - if vehicle moves above this alt, the command will be aborted and the mission will continue. 0 means no upper altitude limit</param>
-        <param index="4">Horizontal move limit (AMSL), in meters - if vehicle moves more than this distance from its location at the moment the command was executed, the command will be aborted and the mission will continue. 0 means no horizontal altitude limit</param>
+        <description>Set limits for external control</description>
+        <param index="1">Timeout - maximum time (in seconds) that external controller will be allowed to control vehicle. 0 means no timeout.</param>
+        <param index="2">Altitude (MSL) min, in meters - if vehicle moves below this alt, the command will be aborted and the mission will continue. 0 means no lower altitude limit.</param>
+        <param index="3">Altitude (MSL) max, in meters - if vehicle moves above this alt, the command will be aborted and the mission will continue. 0 means no upper altitude limit.</param>
+        <param index="4">Horizontal move limit, in meters - if vehicle moves more than this distance from its location at the moment the command was executed, the command will be aborted and the mission will continue. 0 means no horizontal move limit.</param>
         <param index="5">Empty</param>
         <param index="6">Empty</param>
         <param index="7">Empty</param>
@@ -1821,7 +1821,7 @@
         <param index="4">Minimum altitude clearance to the release position in meters. A negative value indicates the system can define the clearance at will.</param>
         <param index="5">Latitude unscaled for MISSION_ITEM or in 1e7 degrees for MISSION_ITEM_INT</param>
         <param index="6">Longitude unscaled for MISSION_ITEM or in 1e7 degrees for MISSION_ITEM_INT</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="30002" name="MAV_CMD_PAYLOAD_CONTROL_DEPLOY">
         <description>Control the payload deployment.</description>
@@ -1843,7 +1843,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31001" name="MAV_CMD_WAYPOINT_USER_2">
         <description>User defined waypoint item. Ground Station will show the Vehicle as flying through this item.</description>
@@ -1853,7 +1853,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31002" name="MAV_CMD_WAYPOINT_USER_3">
         <description>User defined waypoint item. Ground Station will show the Vehicle as flying through this item.</description>
@@ -1863,7 +1863,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31003" name="MAV_CMD_WAYPOINT_USER_4">
         <description>User defined waypoint item. Ground Station will show the Vehicle as flying through this item.</description>
@@ -1873,7 +1873,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31004" name="MAV_CMD_WAYPOINT_USER_5">
         <description>User defined waypoint item. Ground Station will show the Vehicle as flying through this item.</description>
@@ -1883,7 +1883,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31005" name="MAV_CMD_SPATIAL_USER_1">
         <description>User defined spatial item. Ground Station will not show the Vehicle as flying through this item. Example: ROI item.</description>
@@ -1893,7 +1893,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31006" name="MAV_CMD_SPATIAL_USER_2">
         <description>User defined spatial item. Ground Station will not show the Vehicle as flying through this item. Example: ROI item.</description>
@@ -1903,7 +1903,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31007" name="MAV_CMD_SPATIAL_USER_3">
         <description>User defined spatial item. Ground Station will not show the Vehicle as flying through this item. Example: ROI item.</description>
@@ -1913,7 +1913,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31008" name="MAV_CMD_SPATIAL_USER_4">
         <description>User defined spatial item. Ground Station will not show the Vehicle as flying through this item. Example: ROI item.</description>
@@ -1923,7 +1923,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31009" name="MAV_CMD_SPATIAL_USER_5">
         <description>User defined spatial item. Ground Station will not show the Vehicle as flying through this item. Example: ROI item.</description>
@@ -1933,7 +1933,7 @@
         <param index="4">User defined</param>
         <param index="5">Latitude unscaled</param>
         <param index="6">Longitude unscaled</param>
-        <param index="7">Altitude (AMSL), in meters</param>
+        <param index="7">Altitude (MSL), in meters</param>
       </entry>
       <entry value="31010" name="MAV_CMD_USER_1">
         <description>User defined command. Ground Station will not show the Vehicle as flying through this item. Example: MAV_CMD_DO_SET_PARAMETER item.</description>
@@ -2960,42 +2960,42 @@
       </entry>
     </enum>
     <enum name="POSITION_TARGET_TYPEMASK">
-      <description>Bitmap to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 10 is set the floats afx afy afz should be interpreted as force instead of acceleration.</description>
+      <description>Bitmap to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 9 is set the floats afx afy afz should be interpreted as force instead of acceleration.</description>
       <entry value="1" name="POSITION_TARGET_TYPEMASK_X_IGNORE">
-        <description>0b0000000000000001 Ignore position x</description>
+        <description>Ignore position x</description>
       </entry>
       <entry value="2" name="POSITION_TARGET_TYPEMASK_Y_IGNORE">
-        <description>0b0000000000000010 Ignore position y</description>
+        <description>Ignore position y</description>
       </entry>
       <entry value="4" name="POSITION_TARGET_TYPEMASK_Z_IGNORE">
-        <description>0b0000000000000100 Ignore position z</description>
+        <description>Ignore position z</description>
       </entry>
       <entry value="8" name="POSITION_TARGET_TYPEMASK_VX_IGNORE">
-        <description>0b0000000000001000 Ignore velocity x</description>
+        <description>Ignore velocity x</description>
       </entry>
       <entry value="16" name="POSITION_TARGET_TYPEMASK_VY_IGNORE">
-        <description>0b0000000000010000 Ignore velocity y</description>
+        <description>Ignore velocity y</description>
       </entry>
       <entry value="32" name="POSITION_TARGET_TYPEMASK_VZ_IGNORE">
-        <description>0b0000000000100000 Ignore velocity z</description>
+        <description>Ignore velocity z</description>
       </entry>
       <entry value="64" name="POSITION_TARGET_TYPEMASK_AX_IGNORE">
-        <description>0b0000000001000000 Ignore acceleration x</description>
+        <description>Ignore acceleration x</description>
       </entry>
       <entry value="128" name="POSITION_TARGET_TYPEMASK_AY_IGNORE">
-        <description>0b0000000010000000 Ignore acceleration y</description>
+        <description>Ignore acceleration y</description>
       </entry>
       <entry value="256" name="POSITION_TARGET_TYPEMASK_AZ_IGNORE">
-        <description>0b0000000100000000 Ignore acceleration z</description>
+        <description>Ignore acceleration z</description>
       </entry>
       <entry value="512" name="POSITION_TARGET_TYPEMASK_FORCE_SET">
-        <description>0b0000001000000000 Use force instead of acceleration</description>
+        <description>Use force instead of acceleration</description>
       </entry>
       <entry value="1024" name="POSITION_TARGET_TYPEMASK_YAW_IGNORE">
-        <description>0b0000010000000000 Ignore yaw</description>
+        <description>Ignore yaw</description>
       </entry>
       <entry value="2048" name="POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE">
-        <description>0b0000100000000000 Ignore yaw rate</description>
+        <description>Ignore yaw rate</description>
       </entry>
     </enum>
   </enums>
@@ -3035,8 +3035,8 @@
       <description>A ping message either requesting or responding to a ping. This allows to measure the system latencies, including serial port, radio modem and UDP connections.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
       <field type="uint32_t" name="seq">PING sequence</field>
-      <field type="uint8_t" name="target_system">0: request ping from all receiving systems, if greater than 0: message is a ping response and number is the system id of the requesting system</field>
-      <field type="uint8_t" name="target_component">0: request ping from all receiving components, if greater than 0: message is a ping response and number is the system id of the requesting system</field>
+      <field type="uint8_t" name="target_system">0: request ping from all receiving systems. If greater than 0: message is a ping response and number is the system id of the requesting system</field>
+      <field type="uint8_t" name="target_component">0: request ping from all receiving components. If greater than 0: message is a ping response and number is the component id of the requesting component.</field>
     </message>
     <message id="5" name="CHANGE_OPERATOR_CONTROL">
       <description>Request to control this MAV</description>
@@ -3098,7 +3098,7 @@
       <field type="uint8_t" name="fix_type" enum="GPS_FIX_TYPE">GPS fix type.</field>
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84, EGM96 ellipsoid)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84, EGM96 ellipsoid)</field>
-      <field type="int32_t" name="alt" units="mm">Altitude (AMSL). Positive for up. Note that virtually all GPS modules provide the AMSL altitude in addition to the WGS84 altitude.</field>
+      <field type="int32_t" name="alt" units="mm">Altitude (MSL). Positive for up. Note that virtually all GPS modules provide the MSL altitude in addition to the WGS84 altitude.</field>
       <field type="uint16_t" name="eph">GPS HDOP horizontal dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="epv">GPS VDOP vertical dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="vel" units="cm/s">GPS ground speed. If unknown, set to: UINT16_MAX</field>
@@ -3198,7 +3198,7 @@
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
       <field type="int32_t" name="lat" units="degE7">Latitude, expressed</field>
       <field type="int32_t" name="lon" units="degE7">Longitude, expressed</field>
-      <field type="int32_t" name="alt" units="mm">Altitude (AMSL). Note that virtually all GPS modules provide both WGS84 and AMSL.</field>
+      <field type="int32_t" name="alt" units="mm">Altitude (MSL). Note that virtually all GPS modules provide both WGS84 and MSL.</field>
       <field type="int32_t" name="relative_alt" units="mm">Altitude above ground</field>
       <field type="int16_t" name="vx" units="cm/s">Ground X Speed (Latitude, positive north)</field>
       <field type="int16_t" name="vy" units="cm/s">Ground Y Speed (Longitude, positive east)</field>
@@ -3350,7 +3350,7 @@
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84)</field>
-      <field type="int32_t" name="altitude" units="mm">Altitude (AMSL). Positive for up.</field>
+      <field type="int32_t" name="altitude" units="mm">Altitude (MSL). Positive for up.</field>
       <extensions/>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
     </message>
@@ -3358,7 +3358,7 @@
       <description>Once the MAV sets a new GPS-Local correspondence, this message announces the origin (0,0,0) position</description>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84)</field>
-      <field type="int32_t" name="altitude" units="mm">Altitude (AMSL). Positive for up.</field>
+      <field type="int32_t" name="altitude" units="mm">Altitude (MSL). Positive for up.</field>
       <extensions/>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
     </message>
@@ -3671,7 +3671,7 @@
       <field type="uint16_t" name="type_mask" enum="POSITION_TARGET_TYPEMASK" display="bitmask">Bitmap to indicate which dimensions should be ignored by the vehicle.</field>
       <field type="int32_t" name="lat_int" units="degE7">X Position in WGS84 frame</field>
       <field type="int32_t" name="lon_int" units="degE7">Y Position in WGS84 frame</field>
-      <field type="float" name="alt" units="m">Altitude (AMSL) if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT</field>
+      <field type="float" name="alt" units="m">Altitude (MSL, Relative to home, or AGL - depending on frame)</field>
       <field type="float" name="vx" units="m/s">X velocity in NED frame</field>
       <field type="float" name="vy" units="m/s">Y velocity in NED frame</field>
       <field type="float" name="vz" units="m/s">Z velocity in NED frame</field>
@@ -3688,7 +3688,7 @@
       <field type="uint16_t" name="type_mask" enum="POSITION_TARGET_TYPEMASK" display="bitmask">Bitmap to indicate which dimensions should be ignored by the vehicle.</field>
       <field type="int32_t" name="lat_int" units="degE7">X Position in WGS84 frame</field>
       <field type="int32_t" name="lon_int" units="degE7">Y Position in WGS84 frame</field>
-      <field type="float" name="alt" units="m">Altitude (AMSL) if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT</field>
+      <field type="float" name="alt" units="m">Altitude (MSL, AGL or relative to home altitude, depending on frame)</field>
       <field type="float" name="vx" units="m/s">X velocity in NED frame</field>
       <field type="float" name="vy" units="m/s">Y velocity in NED frame</field>
       <field type="float" name="vz" units="m/s">Z velocity in NED frame</field>
@@ -3781,6 +3781,7 @@
       <field type="float" name="flow_rate_y" units="rad/s">Flow rate about Y axis</field>
     </message>
     <message id="101" name="GLOBAL_VISION_POSITION_ESTIMATE">
+      <description>Global position/attitude estimate from a vision source.</description>
       <field type="uint64_t" name="usec" units="us">Timestamp (UNIX time or since system boot)</field>
       <field type="float" name="x" units="m">Global X position</field>
       <field type="float" name="y" units="m">Global Y position</field>
@@ -3792,6 +3793,7 @@
       <field type="float[21]" name="covariance">Pose covariance matrix upper right triangular (first six entries are the first ROW, next five entries are the second ROW, etc.)</field>
     </message>
     <message id="102" name="VISION_POSITION_ESTIMATE">
+      <description>Global position/attitude estimate from a vision source.</description>
       <field type="uint64_t" name="usec" units="us">Timestamp (UNIX time or time since system boot)</field>
       <field type="float" name="x" units="m">Global X position</field>
       <field type="float" name="y" units="m">Global Y position</field>
@@ -3803,6 +3805,7 @@
       <field type="float[21]" name="covariance">Pose covariance matrix upper right triangular (first six entries are the first ROW, next five entries are the second ROW, etc.)</field>
     </message>
     <message id="103" name="VISION_SPEED_ESTIMATE">
+      <description>Speed estimate from a vision source.</description>
       <field type="uint64_t" name="usec" units="us">Timestamp (UNIX time or time since system boot)</field>
       <field type="float" name="x" units="m/s">Global X speed</field>
       <field type="float" name="y" units="m/s">Global Y speed</field>
@@ -3811,6 +3814,7 @@
       <field type="float[9]" name="covariance">Linear velocity covariance matrix (1st three entries - 1st row, etc.)</field>
     </message>
     <message id="104" name="VICON_POSITION_ESTIMATE">
+      <description>Global position estimate from a Vicon motion system source.</description>
       <field type="uint64_t" name="usec" units="us">Timestamp (UNIX time or time since system boot)</field>
       <field type="float" name="x" units="m">Global X position</field>
       <field type="float" name="y" units="m">Global Y position</field>
@@ -3930,7 +3934,7 @@
       <field type="uint8_t" name="fix_type">0-1: no fix, 2: 2D fix, 3: 3D fix. Some applications will not use the value of this field unless it is at least two, so always correctly fill in the fix.</field>
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84)</field>
-      <field type="int32_t" name="alt" units="mm">Altitude (AMSL). Positive for up.</field>
+      <field type="int32_t" name="alt" units="mm">Altitude (MSL). Positive for up.</field>
       <field type="uint16_t" name="eph" units="cm">GPS HDOP horizontal dilution of position. If unknown, set to: 65535</field>
       <field type="uint16_t" name="epv" units="cm">GPS VDOP vertical dilution of position. If unknown, set to: 65535</field>
       <field type="uint16_t" name="vel" units="cm/s">GPS ground speed. If unknown, set to: 65535</field>
@@ -4028,11 +4032,11 @@
       <field type="uint8_t" name="target_component">Component ID</field>
     </message>
     <message id="123" name="GPS_INJECT_DATA">
-      <description>data for injecting into the onboard GPS (used for DGPS)</description>
+      <description>Data for injecting into the onboard GPS (used for DGPS)</description>
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="uint8_t" name="target_component">Component ID</field>
-      <field type="uint8_t" name="len" units="bytes">data length</field>
-      <field type="uint8_t[110]" name="data">raw data (110 is enough for 12 satellites of RTCMv2)</field>
+      <field type="uint8_t" name="len" units="bytes">Data length</field>
+      <field type="uint8_t[110]" name="data">Raw data (110 is enough for 12 satellites of RTCMv2)</field>
     </message>
     <message id="124" name="GPS2_RAW">
       <description>Second GPS data.</description>
@@ -4040,7 +4044,7 @@
       <field type="uint8_t" name="fix_type" enum="GPS_FIX_TYPE">GPS fix type.</field>
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84)</field>
-      <field type="int32_t" name="alt" units="mm">Altitude (AMSL). Positive for up.</field>
+      <field type="int32_t" name="alt" units="mm">Altitude (MSL). Positive for up.</field>
       <field type="uint16_t" name="eph" units="cm">GPS HDOP horizontal dilution of position. If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="epv" units="cm">GPS VDOP vertical dilution of position. If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="vel" units="cm/s">GPS ground speed. If unknown, set to: UINT16_MAX</field>
@@ -4110,6 +4114,7 @@
       <field type="int16_t" name="zmag" units="mT">Z Magnetic field</field>
     </message>
     <message id="130" name="DATA_TRANSMISSION_HANDSHAKE">
+      <description>Handshake message to initiate, control and stop image streaming when using the Image Transmission Protocol: https://mavlink.io/en/protocol/image_transmission.html.</description>
       <field type="uint8_t" name="type" enum="DATA_TYPES">Type of requested/acknowledged data.</field>
       <field type="uint32_t" name="size" units="bytes">total data size (set on ACK only).</field>
       <field type="uint16_t" name="width">Width of a matrix or image.</field>
@@ -4119,10 +4124,12 @@
       <field type="uint8_t" name="jpg_quality" units="%">JPEG quality. Values: [1-100].</field>
     </message>
     <message id="131" name="ENCAPSULATED_DATA">
+      <description>Data packet for images sent using the Image Transmission Protocol: https://mavlink.io/en/protocol/image_transmission.html.</description>
       <field type="uint16_t" name="seqnr">sequence number (starting with 0 on every transmission)</field>
       <field type="uint8_t[253]" name="data">image data bytes</field>
     </message>
     <message id="132" name="DISTANCE_SENSOR">
+      <description>Distance sensor information for an onboard rangefinder.</description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
       <field type="uint16_t" name="min_distance" units="cm">Minimum distance the sensor can measure</field>
       <field type="uint16_t" name="max_distance" units="cm">Maximum distance the sensor can measure</field>
@@ -4145,7 +4152,7 @@
       <field type="int32_t" name="lon" units="degE7">Longitude of SW corner of first grid</field>
       <field type="uint16_t" name="grid_spacing" units="m">Grid spacing</field>
       <field type="uint8_t" name="gridbit">bit within the terrain request mask</field>
-      <field type="int16_t[16]" name="data" units="m">Terrain data AMSL</field>
+      <field type="int16_t[16]" name="data" units="m">Terrain data MSL</field>
     </message>
     <message id="135" name="TERRAIN_CHECK">
       <description>Request that the vehicle report terrain height at the given location. Used by GCS to check if vehicle has all terrain data needed for a mission.</description>
@@ -4157,7 +4164,7 @@
       <field type="int32_t" name="lat" units="degE7">Latitude</field>
       <field type="int32_t" name="lon" units="degE7">Longitude</field>
       <field type="uint16_t" name="spacing">grid spacing (zero if terrain at this location unavailable)</field>
-      <field type="float" name="terrain_height" units="m">Terrain height AMSL</field>
+      <field type="float" name="terrain_height" units="m">Terrain height MSL</field>
       <field type="float" name="current_height" units="m">Current vehicle height above lat/lon terrain height</field>
       <field type="uint16_t" name="pending">Number of 4x4 terrain blocks waiting to be received or read from disk</field>
       <field type="uint16_t" name="loaded">Number of 4x4 terrain blocks in memory</field>
@@ -4197,7 +4204,7 @@
       <description>The current system altitude.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
       <field type="float" name="altitude_monotonic" units="m">This altitude measure is initialized on system boot and monotonic (it is never reset, but represents the local altitude change). The only guarantee on this field is that it will never be reset and is consistent within a flight. The recommended value for this field is the uncorrected barometric altitude at boot time. This altitude will also drift and vary between flights.</field>
-      <field type="float" name="altitude_amsl" units="m">This altitude measure is strictly above mean sea level and might be non-monotonic (it might reset on events like GPS lock or when a new QNH value is set). It should be the altitude to which global altitude waypoints are compared to. Note that it is *not* the GPS altitude, however, most GPS modules already output AMSL by default and not the WGS84 altitude.</field>
+      <field type="float" name="altitude_amsl" units="m">This altitude measure is strictly above mean sea level and might be non-monotonic (it might reset on events like GPS lock or when a new QNH value is set). It should be the altitude to which global altitude waypoints are compared to. Note that it is *not* the GPS altitude, however, most GPS modules already output MSL by default and not the WGS84 altitude.</field>
       <field type="float" name="altitude_local" units="m">This is the local altitude in the local coordinate frame. It is not the altitude above home, but in reference to the coordinate origin (0, 0, 0). It is up-positive.</field>
       <field type="float" name="altitude_relative" units="m">This is the altitude above the home position. It resets on each change of the current home position.</field>
       <field type="float" name="altitude_terrain" units="m">This is the altitude above terrain. It might be fed by a terrain database or an altimeter. Values smaller than -1000 should be interpreted as unknown.</field>
@@ -4219,12 +4226,12 @@
       <field type="int16_t" name="temperature" units="cdegC">Temperature measurement</field>
     </message>
     <message id="144" name="FOLLOW_TARGET">
-      <description>current motion information from a designated system</description>
+      <description>Current motion information from a designated system</description>
       <field type="uint64_t" name="timestamp" units="ms">Timestamp (time since system boot).</field>
       <field type="uint8_t" name="est_capabilities">bit positions for tracker reporting capabilities (POS = 0, VEL = 1, ACCEL = 2, ATT + RATES = 3)</field>
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84)</field>
-      <field type="float" name="alt" units="m">Altitude (AMSL)</field>
+      <field type="float" name="alt" units="m">Altitude (MSL)</field>
       <field type="float[3]" name="vel" units="m/s">target velocity (0,0,0) for unknown</field>
       <field type="float[3]" name="acc" units="m/s/s">linear target acceleration (0,0,0) for unknown</field>
       <field type="float[4]" name="attitude_q">(1 0 0 0 for unknown)</field>
@@ -4284,7 +4291,7 @@
       <field type="uint8_t[18]" name="uid2">UID if provided by hardware (supersedes the uid field. If this is non-zero, use this field, otherwise use uid)</field>
     </message>
     <message id="149" name="LANDING_TARGET">
-      <description>The location of a landing area captured from a downward facing camera</description>
+      <description>The location of a landing target. See: https://mavlink.io/en/protocol/landing_target.html</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
       <field type="uint8_t" name="target_num">The ID of the target if multiple targets are present</field>
       <field type="uint8_t" name="frame" enum="MAV_FRAME">Coordinate frame used for following fields.</field>
@@ -4294,12 +4301,12 @@
       <field type="float" name="size_x" units="rad">Size of target along x-axis</field>
       <field type="float" name="size_y" units="rad">Size of target along y-axis</field>
       <extensions/>
-      <field type="float" name="x" units="m">X Position of the landing target on MAV_FRAME</field>
-      <field type="float" name="y" units="m">Y Position of the landing target on MAV_FRAME</field>
-      <field type="float" name="z" units="m">Z Position of the landing target on MAV_FRAME</field>
+      <field type="float" name="x" units="m">X Position of the landing target in MAV_FRAME</field>
+      <field type="float" name="y" units="m">Y Position of the landing target in MAV_FRAME</field>
+      <field type="float" name="z" units="m">Z Position of the landing target in MAV_FRAME</field>
       <field type="float[4]" name="q">Quaternion of landing target orientation (w, x, y, z order, zero-rotation is 1, 0, 0, 0)</field>
       <field type="uint8_t" name="type" enum="LANDING_TARGET_TYPE">Type of landing target</field>
-      <field type="uint8_t" name="position_valid">Boolean indicating known position (1) or default unknown position (0), for validation of positioning of the landing target</field>
+      <field type="uint8_t" name="position_valid">Boolean indicating whether the position fields (x, y, z, q, type) contain valid target position information (valid: 1, invalid: 0). Default is 0 (invalid).</field>
     </message>
     <!-- MESSAGE IDs 180 - 229: Space for custom messages in individual projectname_messages.xml files -->
     <message id="230" name="ESTIMATOR_STATUS">
@@ -4316,13 +4323,14 @@
       <field type="float" name="pos_vert_accuracy" units="m">Vertical position 1-STD accuracy relative to the EKF local origin</field>
     </message>
     <message id="231" name="WIND_COV">
+      <description>Wind covariance estimate from vehicle.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
       <field type="float" name="wind_x" units="m/s">Wind in X (NED) direction</field>
       <field type="float" name="wind_y" units="m/s">Wind in Y (NED) direction</field>
       <field type="float" name="wind_z" units="m/s">Wind in Z (NED) direction</field>
       <field type="float" name="var_horiz" units="m/s">Variability of the wind in XY. RMS of a 1 Hz lowpassed wind estimate.</field>
       <field type="float" name="var_vert" units="m/s">Variability of the wind in Z. RMS of a 1 Hz lowpassed wind estimate.</field>
-      <field type="float" name="wind_alt" units="m">Altitude (AMSL) that this measurement was taken at</field>
+      <field type="float" name="wind_alt" units="m">Altitude (MSL) that this measurement was taken at</field>
       <field type="float" name="horiz_accuracy" units="m">Horizontal speed 1-STD accuracy</field>
       <field type="float" name="vert_accuracy" units="m">Vertical speed 1-STD accuracy</field>
     </message>
@@ -4336,7 +4344,7 @@
       <field type="uint8_t" name="fix_type">0-1: no fix, 2: 2D fix, 3: 3D fix. 4: 3D with DGPS. 5: 3D with RTK</field>
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84)</field>
-      <field type="float" name="alt" units="m">Altitude (AMSL). Positive for up.</field>
+      <field type="float" name="alt" units="m">Altitude (MSL). Positive for up.</field>
       <field type="float" name="hdop" units="m">GPS HDOP horizontal dilution of position</field>
       <field type="float" name="vdop" units="m">GPS VDOP vertical dilution of position</field>
       <field type="float" name="vn" units="m/s">GPS velocity in NORTH direction in earth-fixed NED frame</field>
@@ -4426,7 +4434,7 @@
       <description>This message can be requested by sending the MAV_CMD_GET_HOME_POSITION command. The position the system will return to and land on. The position is set automatically by the system during the takeoff in case it was not explicitly set by the operator before or after. The position the system will return to and land on. The global and local positions encode the position in the respective coordinate frames, while the q parameter encodes the orientation of the surface. Under normal conditions it describes the heading and terrain slope, which can be used by the aircraft to adjust the approach. The approach 3D vector describes the point to which the system should fly in normal flight mode and then perform a landing sequence along the vector.</description>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84)</field>
-      <field type="int32_t" name="altitude" units="mm">Altitude (AMSL). Positive for up.</field>
+      <field type="int32_t" name="altitude" units="mm">Altitude (MSL). Positive for up.</field>
       <field type="float" name="x" units="m">Local X position of this position in the local coordinate frame</field>
       <field type="float" name="y" units="m">Local Y position of this position in the local coordinate frame</field>
       <field type="float" name="z" units="m">Local Z position of this position in the local coordinate frame</field>
@@ -4442,7 +4450,7 @@
       <field type="uint8_t" name="target_system">System ID.</field>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84)</field>
-      <field type="int32_t" name="altitude" units="mm">Altitude (AMSL). Positive for up.</field>
+      <field type="int32_t" name="altitude" units="mm">Altitude (MSL). Positive for up.</field>
       <field type="float" name="x" units="m">Local X position of this position in the local coordinate frame</field>
       <field type="float" name="y" units="m">Local Y position of this position in the local coordinate frame</field>
       <field type="float" name="z" units="m">Local Z position of this position in the local coordinate frame</field>
@@ -4608,7 +4616,7 @@
       <field type="uint8_t" name="camera_id">Camera ID (1 for first, 2 for second, etc.)</field>
       <field type="int32_t" name="lat" units="degE7">Latitude where image was taken</field>
       <field type="int32_t" name="lon" units="degE7">Longitude where capture was taken</field>
-      <field type="int32_t" name="alt" units="mm">Altitude (AMSL) where image was taken</field>
+      <field type="int32_t" name="alt" units="mm">Altitude (MSL) where image was taken</field>
       <field type="int32_t" name="relative_alt" units="mm">Altitude above ground</field>
       <field type="float[4]" name="q">Quaternion of camera orientation (w, x, y, z order, zero-rotation is 0, 0, 0, 0)</field>
       <field type="int32_t" name="image_index">Zero based index of this image (image count since armed -1)</field>
