@@ -15,6 +15,7 @@ from . import mavtemplate
 
 t = mavtemplate.MAVTemplate()
 
+
 def generate_preamble(outf, msgs, basename, args, xml):
     print("Generating preamble")
     t.write(outf, """
@@ -176,11 +177,11 @@ class MAVLink_message(object):
             return False
 
         if self.get_srcSystem() != other.get_srcSystem():
-            return False            
+            return False
 
         if self.get_srcComponent() != other.get_srcComponent():
-            return False   
-            
+            return False
+
         for a in self._fieldnames:
             if self.format_attr(a) != other.format_attr(a):
                 return False
@@ -231,11 +232,12 @@ class MAVLink_message(object):
             self.sign_packet(mav)
         return self._msgbuf
 
-""", {'FILELIST' : ",".join(args),
-      'PROTOCOL_MARKER' : xml.protocol_marker,
-      'DIALECT' : os.path.splitext(os.path.basename(basename))[0],
-      'crc_extra' : xml.crc_extra,
-      'WIRE_PROTOCOL_VERSION' : xml.wire_protocol_version })
+""", {'FILELIST': ",".join(args),
+      'PROTOCOL_MARKER': xml.protocol_marker,
+      'DIALECT': os.path.splitext(os.path.basename(basename))[0],
+      'crc_extra': xml.crc_extra,
+      'WIRE_PROTOCOL_VERSION': xml.wire_protocol_version})
+
 
 def generate_enums(outf, enums):
     print("Generating enums")
@@ -247,9 +249,9 @@ class EnumEntry(object):
         self.name = name
         self.description = description
         self.param = {}
-        
+
 enums = {}
-''')    
+''')
     wrapper = textwrap.TextWrapper(initial_indent="", subsequent_indent="                        # ")
     for e in enums:
         outf.write("\n# %s\n" % e.name)
@@ -265,12 +267,14 @@ enums = {}
                                                                        int(param.index),
                                                                        param.description))
 
+
 def generate_message_ids(outf, msgs):
     print("Generating message IDs")
     outf.write("\n# message IDs\n")
     outf.write("MAVLINK_MSG_ID_BAD_DATA = -1\n")
     for m in msgs:
         outf.write("MAVLINK_MSG_ID_%s = %u\n" % (m.name.upper(), m.id))
+
 
 def generate_classes(outf, msgs):
     print("Generating class definitions")
@@ -280,6 +284,7 @@ def generate_classes(outf, msgs):
         fieldname_str = ", ".join(["'%s'" % s for s in m.fieldnames])
         ordered_fieldname_str = ", ".join(["'%s'" % s for s in m.ordered_fieldnames])
 
+        fieldtypes_str = ", ".join(["'%s'" % s for s in m.fieldtypes])
         outf.write("""
 class %s(MAVLink_message):
         '''
@@ -288,29 +293,34 @@ class %s(MAVLink_message):
         id = MAVLINK_MSG_ID_%s
         name = '%s'
         fieldnames = [%s]
-        ordered_fieldnames = [ %s ]
+        ordered_fieldnames = [%s]
+        fieldtypes = [%s]
         format = '%s'
         native_format = bytearray('%s', 'ascii')
         orders = %s
         lengths = %s
         array_lengths = %s
         crc_extra = %s
+        unpacker = struct.Struct('%s')
 
-        def __init__(self""" % (classname, wrapper.fill(m.description.strip()), 
-            m.name.upper(), 
+        def __init__(self""" % (classname, wrapper.fill(m.description.strip()),
+            m.name.upper(),
             m.name.upper(),
             fieldname_str,
             ordered_fieldname_str,
+            fieldtypes_str,
             m.fmtstr,
             m.native_fmtstr,
             m.order_map,
             m.len_map,
             m.array_len_map,
-            m.crc_extra))
+            m.crc_extra,
+            m.fmtstr))
         for i in range(len(m.fields)):
                 fname = m.fieldnames[i]
                 if m.extensions_start is not None and i >= m.extensions_start:
-                        outf.write(", %s=0" % fname)
+                        fdefault = m.fielddefaults[i]
+                        outf.write(", %s=%s" % (fname, fdefault))
                 else:
                         outf.write(", %s" % fname)
         outf.write("):\n")
@@ -324,7 +334,7 @@ class %s(MAVLink_message):
         for field in m.ordered_fields:
                 if (field.type != "char" and field.array_length > 1):
                         for i in range(field.array_length):
-                                outf.write(", self.{0:s}[{1:d}]".format(field.name,i))
+                                outf.write(", self.{0:s}[{1:d}]".format(field.name, i))
                 else:
                         outf.write(", self.{0:s}".format(field.name))
         outf.write("), force_mavlink1=force_mavlink1)\n")
@@ -333,36 +343,37 @@ class %s(MAVLink_message):
 def native_mavfmt(field):
     '''work out the struct format for a type (in a form expected by mavnative)'''
     map = {
-        'float'    : 'f',
-        'double'   : 'd',
-        'char'     : 'c',
-        'int8_t'   : 'b',
-        'uint8_t'  : 'B',
-        'uint8_t_mavlink_version'  : 'v',
-        'int16_t'  : 'h',
-        'uint16_t' : 'H',
-        'int32_t'  : 'i',
-        'uint32_t' : 'I',
-        'int64_t'  : 'q',
-        'uint64_t' : 'Q',
+        'float': 'f',
+        'double': 'd',
+        'char': 'c',
+        'int8_t': 'b',
+        'uint8_t': 'B',
+        'uint8_t_mavlink_version': 'v',
+        'int16_t': 'h',
+        'uint16_t': 'H',
+        'int32_t': 'i',
+        'uint32_t': 'I',
+        'int64_t': 'q',
+        'uint64_t': 'Q',
         }
     return map[field.type]
+
 
 def mavfmt(field):
     '''work out the struct format for a type'''
     map = {
-        'float'    : 'f',
-        'double'   : 'd',
-        'char'     : 'c',
-        'int8_t'   : 'b',
-        'uint8_t'  : 'B',
-        'uint8_t_mavlink_version'  : 'B',
-        'int16_t'  : 'h',
-        'uint16_t' : 'H',
-        'int32_t'  : 'i',
-        'uint32_t' : 'I',
-        'int64_t'  : 'q',
-        'uint64_t' : 'Q',
+        'float': 'f',
+        'double': 'd',
+        'char': 'c',
+        'int8_t': 'b',
+        'uint8_t': 'B',
+        'uint8_t_mavlink_version': 'B',
+        'int16_t': 'h',
+        'uint16_t': 'H',
+        'int32_t': 'i',
+        'uint32_t': 'I',
+        'int64_t': 'q',
+        'uint64_t': 'Q',
         }
 
     if field.array_length:
@@ -371,10 +382,18 @@ def mavfmt(field):
         return str(field.array_length)+map[field.type]
     return map[field.type]
 
+
+def mavdefault(field):
+    '''returns default value for field (as string) for mavlink2 extensions'''
+    if field.type == 'char':
+        return "''"
+    return "0"
+
+
 def generate_mavlink_class(outf, msgs, xml):
     print("Generating MAVLink class")
 
-    outf.write("\n\nmavlink_map = {\n");
+    outf.write("\n\nmavlink_map = {\n")
     for m in msgs:
         outf.write("        MAVLINK_MSG_ID_%s : MAVLink_%s_message,\n" % (
             m.name.upper(), m.name.lower()))
@@ -463,6 +482,10 @@ class MAVLink(object):
                     self.native = None
                 if native_testing:
                     self.test_buf = bytearray()
+                self.mav20_unpacker = struct.Struct('<cBBBBBBHB')
+                self.mav10_unpacker = struct.Struct('<cBBBBB')
+                self.mav20_h3_unpacker = struct.Struct('BBB')
+                self.mav_csum_unpacker = struct.Struct('<H')
 
         def set_callback(self, callback, *args, **kwargs):
             self.callback = callback
@@ -493,7 +516,7 @@ class MAVLink(object):
                 ret = self.native.expected_length - self.buf_len()
             else:
                 ret = self.expected_length - self.buf_len()
-            
+
             if ret <= 0:
                 return 1
             return ret
@@ -544,7 +567,7 @@ class MAVLink(object):
             header_len = HEADER_LEN_V1
             if self.buf_len() >= 1 and self.buf[self.buf_index] == PROTOCOL_MARKER_V2:
                 header_len = HEADER_LEN_V2
-                
+
             if self.buf_len() >= 1 and self.buf[self.buf_index] != PROTOCOL_MARKER_V1 and self.buf[self.buf_index] != PROTOCOL_MARKER_V2:
                 magic = self.buf[self.buf_index]
                 self.buf_index += 1
@@ -561,9 +584,9 @@ class MAVLink(object):
             self.have_prefix_error = False
             if self.buf_len() >= 3:
                 sbuf = self.buf[self.buf_index:3+self.buf_index]
-                if sys.version_info[0] < 3:
+                if sys.version_info.major < 3:
                     sbuf = str(sbuf)
-                (magic, self.expected_length, incompat_flags) = struct.unpack('BBB', sbuf)
+                (magic, self.expected_length, incompat_flags) = self.mav20_h3_unpacker.unpack(sbuf)
                 if magic == PROTOCOL_MARKER_V2 and (incompat_flags & MAVLINK_IFLAG_SIGNED):
                         self.expected_length += MAVLINK_SIGNATURE_BLOCK_LEN
                 self.expected_length += header_len + 2
@@ -605,7 +628,7 @@ class MAVLink(object):
                 msgbuf = msgbuf.tostring()
             timestamp_buf = msgbuf[-12:-6]
             link_id = msgbuf[-13]
-            (tlow, thigh) = struct.unpack('<IH', timestamp_buf)
+            (tlow, thigh) = self.mav_csum_unpacker.unpack(timestamp_buf)
             timestamp = tlow + (thigh<<32)
 
             # see if the timestamp is acceptable
@@ -644,7 +667,7 @@ class MAVLink(object):
                 if msgbuf[0] != PROTOCOL_MARKER_V1:
                     headerlen = 10
                     try:
-                        magic, mlen, incompat_flags, compat_flags, seq, srcSystem, srcComponent, msgIdlow, msgIdhigh = struct.unpack('<cBBBBBBHB', msgbuf[:headerlen])
+                        magic, mlen, incompat_flags, compat_flags, seq, srcSystem, srcComponent, msgIdlow, msgIdhigh = self.mav20_unpacker.unpack(msgbuf[:headerlen])
                     except struct.error as emsg:
                         raise MAVError('Unable to unpack MAVLink header: %s' % emsg)
                     msgId = msgIdlow | (msgIdhigh<<16)
@@ -652,7 +675,7 @@ class MAVLink(object):
                 else:
                     headerlen = 6
                     try:
-                        magic, mlen, seq, srcSystem, srcComponent, msgId = struct.unpack('<cBBBBB', msgbuf[:headerlen])
+                        magic, mlen, seq, srcSystem, srcComponent, msgId = self.mav10_unpacker.unpack(msgbuf[:headerlen])
                         incompat_flags = 0
                         compat_flags = 0
                     except struct.error as emsg:
@@ -680,7 +703,7 @@ class MAVLink(object):
 
                 # decode the checksum
                 try:
-                    crc, = struct.unpack('<H', msgbuf[-(2+signature_len):][:2])
+                    crc, = self.mav_csum_unpacker.unpack(msgbuf[-(2+signature_len):][:2])
                 except struct.error as emsg:
                     raise MAVError('Unable to unpack MAVLink CRC: %s' % emsg)
                 crcbuf = msgbuf[1:-(2+signature_len)]
@@ -717,7 +740,7 @@ class MAVLink(object):
                     if not accept_signature:
                         raise MAVError('Invalid signature')
 
-                csize = struct.calcsize(fmt)
+                csize = type.unpacker.size
                 mbuf = msgbuf[headerlen:-(2+signature_len)]
                 if len(mbuf) < csize:
                     # zero pad to give right size
@@ -727,7 +750,7 @@ class MAVLink(object):
                         type, len(mbuf), csize))
                 mbuf = mbuf[:csize]
                 try:
-                    t = struct.unpack(fmt, mbuf)
+                    t = type.unpacker.unpack(mbuf)
                 except struct.error as emsg:
                     raise MAVError('Unable to unpack MAVLink payload type=%s fmt=%s payloadLength=%u: %s' % (
                         type, fmt, len(mbuf), emsg))
@@ -755,7 +778,9 @@ class MAVLink(object):
 
                 # terminate any strings
                 for i in range(0, len(tlist)):
-                    if isinstance(tlist[i], str):
+                    if type.fieldtypes[i] == 'char':
+                        if sys.version_info.major >= 3:
+                            tlist[i] = tlist[i].decode('utf-8')
                         tlist[i] = str(MAVString(tlist[i]))
                 t = tuple(tlist)
                 # construct the message object
@@ -773,13 +798,21 @@ class MAVLink(object):
                 return m
 """, xml)
 
+
 def generate_methods(outf, msgs):
     print("Generating methods")
 
     def field_descriptions(fields):
         ret = ""
         for f in fields:
-            ret += "                %-18s        : %s (%s)\n" % (f.name, f.description.strip(), f.type)
+            field_info = ""
+            if f.units:
+                field_info += "%s " % f.units
+            field_info += "(type:%s" % f.type
+            if f.enum:
+                field_info += ", values:%s" % f.enum
+            field_info += ")"
+            ret += "                %-18s        : %s %s\n" % (f.name, f.description.strip(), field_info)
         return ret
 
     wrapper = textwrap.TextWrapper(initial_indent="", subsequent_indent="                ")
@@ -793,15 +826,16 @@ def generate_methods(outf, msgs):
             if f.omit_arg:
                 selffieldnames += '%s=%s, ' % (f.name, f.const_value)
             elif m.extensions_start is not None and i >= m.extensions_start:
-                selffieldnames += '%s=0, ' % f.name
+                fdefault = m.fielddefaults[i]
+                selffieldnames += "%s=%s, " % (f.name, fdefault)
             else:
                 selffieldnames += '%s, ' % f.name
         selffieldnames = selffieldnames[:-2]
 
-        sub = {'NAMELOWER'      : m.name.lower(),
-               'SELFFIELDNAMES' : selffieldnames,
-               'COMMENT'        : comment,
-               'FIELDNAMES'     : ", ".join(m.fieldnames)}
+        sub = {'NAMELOWER': m.name.lower(),
+               'SELFFIELDNAMES': selffieldnames,
+               'COMMENT': comment,
+               'FIELDNAMES': ", ".join(m.fieldnames)}
 
         t.write(outf, """
         def ${NAMELOWER}_encode(${SELFFIELDNAMES}):
@@ -823,7 +857,7 @@ def generate_methods(outf, msgs):
 
 
 def generate(basename, xml):
-    '''generate complete python implemenation'''
+    '''generate complete python implementation'''
     if basename.endswith('.py'):
         filename = basename
     else:
@@ -838,6 +872,7 @@ def generate(basename, xml):
         filelist.append(os.path.basename(x.filename))
 
     for m in msgs:
+        m.fielddefaults = []
         if xml[0].little_endian:
             m.fmtstr = '<'
         else:
@@ -845,10 +880,11 @@ def generate(basename, xml):
         m.native_fmtstr = m.fmtstr
         for f in m.ordered_fields:
             m.fmtstr += mavfmt(f)
+            m.fielddefaults.append(mavdefault(f))
             m.native_fmtstr += native_mavfmt(f)
-        m.order_map = [ 0 ] * len(m.fieldnames)
-        m.len_map = [ 0 ] * len(m.fieldnames)
-        m.array_len_map = [ 0 ] * len(m.fieldnames)
+        m.order_map = [0] * len(m.fieldnames)
+        m.len_map = [0] * len(m.fieldnames)
+        m.array_len_map = [0] * len(m.fieldnames)
         for i in range(0, len(m.fieldnames)):
             m.order_map[i] = m.ordered_fieldnames.index(m.fieldnames[i])
             m.array_len_map[i] = m.ordered_fields[i].array_length
