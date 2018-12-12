@@ -163,7 +163,7 @@ class MAVLink_message(object):
         return not self.__eq__(other)
 
     def __eq__(self, other):
-        if other == None:
+        if other is None:
             return False
 
         if self.get_type() != other.get_type():
@@ -386,8 +386,12 @@ def mavfmt(field):
 def mavdefault(field):
     '''returns default value for field (as string) for mavlink2 extensions'''
     if field.type == 'char':
-        return "''"
-    return "0"
+        default_value = "''"
+    else:
+        default_value = "0"
+    if field.array_length == 0:
+        return default_value
+    return "[" + ",".join([default_value] * field.array_length) + "]"
 
 
 def generate_mavlink_class(outf, msgs, xml):
@@ -486,6 +490,7 @@ class MAVLink(object):
                 self.mav10_unpacker = struct.Struct('<cBBBBB')
                 self.mav20_h3_unpacker = struct.Struct('BBB')
                 self.mav_csum_unpacker = struct.Struct('<H')
+                self.mav_sign_unpacker = struct.Struct('<IH')
 
         def set_callback(self, callback, *args, **kwargs):
             self.callback = callback
@@ -550,7 +555,7 @@ class MAVLink(object):
             else:
                 m = self.__parse_char_legacy()
 
-            if m != None:
+            if m is not None:
                 self.total_packets_received += 1
                 self.__callbacks(m)
             else:
@@ -628,7 +633,7 @@ class MAVLink(object):
                 msgbuf = msgbuf.tostring()
             timestamp_buf = msgbuf[-12:-6]
             link_id = msgbuf[-13]
-            (tlow, thigh) = self.mav_csum_unpacker.unpack(timestamp_buf)
+            (tlow, thigh) = self.mav_sign_unpacker.unpack(timestamp_buf)
             timestamp = tlow + (thigh<<32)
 
             # see if the timestamp is acceptable
