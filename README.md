@@ -1,3 +1,26 @@
+## mavlink (melodic) - 2018.12.12-0
+
+The packages in the `mavlink` repository were released into the `melodic` distro by running `/usr/local/bin/bloom-release -t melodic -r melodic mavlink` on `Wed, 12 Dec 2018 16:27:54 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2018.11.11-0`
+- old version: `2018.11.11-0`
+- new version: `2018.12.12-0`
+
+Versions of tools used:
+
+- bloom version: `0.6.8`
+- catkin_pkg version: `0.4.9`
+- rosdep version: `0.13.0`
+- rosdistro version: `0.7.0`
+- vcstools version: `0.1.40`
+
+
 ## mavlink (lunar) - 2018.12.12-0
 
 The packages in the `mavlink` repository were released into the `lunar` distro by running `/usr/local/bin/bloom-release -t lunar -r lunar mavlink` on `Wed, 12 Dec 2018 15:49:03 -0000`
