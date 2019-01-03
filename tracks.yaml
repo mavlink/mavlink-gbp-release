@@ -109,7 +109,7 @@ tracks:
       :{release_inc}
     devel_branch: master
     last_release: master
-    last_version: 2018.12.12
+    last_version: 2019.01.03
     name: upstream
     patches: patch
     release_inc: '0'
