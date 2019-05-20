@@ -586,9 +586,10 @@ def generate_one(basename, xml):
     if xml.command_24bit:
         # we sort with primary key msgid
         for msgid in sorted(xml.message_crcs.keys()):
-            xml.message_crcs_array += '{%u, %u, %u, %u, %u, %u}, ' % (msgid,
+            xml.message_crcs_array += '{%u, %u, %u, %u, %u, %u, %u}, ' % (msgid,
                                                                       xml.message_crcs[msgid],
                                                                       xml.message_min_lengths[msgid],
+                                                                      xml.message_lengths[msgid],
                                                                       xml.message_flags[msgid],
                                                                       xml.message_target_system_ofs[msgid],
                                                                       xml.message_target_component_ofs[msgid])
