@@ -351,6 +351,11 @@ class mavfile(object):
 
         self.sysid_state[src_system].messages[type] = msg
 
+        if src_tuple == radio_tuple:
+            # as a special case radio msgs are added for all sysids
+            for s in self.sysid_state.keys():
+                self.sysid_state[s].messages[type] = msg
+
         if not (src_tuple == radio_tuple or msg.get_type() == 'BAD_DATA'):
             if not src_tuple in self.last_seq:
                 last_seq = -1
@@ -361,7 +366,7 @@ class mavfile(object):
             if seq != seq2 and last_seq != -1:
                 diff = (seq2 - seq) % 256
                 self.mav_loss += diff
-                #print("lost %u seq=%u seq2=%u last_seq=%u src_system=%u %s" % (diff, seq, seq2, last_seq, src_system, msg.get_type()))
+                #print("lost %u seq=%u seq2=%u last_seq=%u src_tupe=%s %s" % (diff, seq, seq2, last_seq, str(src_tuple), msg.get_type()))
             self.last_seq[src_tuple] = seq2
             self.mav_count += 1
         
@@ -1160,12 +1165,14 @@ class mavtcp(mavfile):
 
         self.autoreconnect = autoreconnect
 
-        self.do_connect(retries)
+        self.retries = retries
+        self.do_connect()
 
         mavfile.__init__(self, self.port.fileno(), "tcp:" + device, source_system=source_system, source_component=source_component, use_native=use_native)
 
-    def do_connect(self, retries=3):
+    def do_connect(self):
         self.port = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        retries = self.retries
         if retries <= 0:
             # try to connect at least once:
             retries = 1
@@ -1186,7 +1193,19 @@ class mavtcp(mavfile):
     def close(self):
         self.port.close()
 
+    def handle_eof(self):
+        # EOF
+        print("EOF on TCP socket")
+        if self.autoreconnect:
+            print("Attempting reconnect")
+            if self.port is not None:
+                self.port.close()
+                self.port = None
+            self.do_connect()
+
     def recv(self,n=None):
+        if self.port is None:
+            self.handle_eof()
         if n is None:
             n = self.mav.bytes_needed()
         try:
@@ -1196,16 +1215,13 @@ class mavtcp(mavfile):
                 return ""
             raise
         if len(data) == 0:
-            # EOF
-            print("EOF on TCP socket")
-            if self.autoreconnect:
-                print("Attempting reconnect")
-                self.port.close()
-                self.do_connect()
+            self.handle_eof()
 
         return data
 
     def write(self, buf):
+        if self.port is None:
+            self.do_connect()
         try:
             self.port.send(buf)
         except socket.error:
@@ -1221,8 +1237,8 @@ class mavtcpin(mavfile):
             sys.exit(1)
         self.listen = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listen_addr = (a[0], int(a[1]))
-        self.listen.bind(self.listen_addr)
         self.listen.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.listen.bind(self.listen_addr)
         self.listen.listen(1)
         self.listen.setblocking(0)
         set_close_on_exec(self.listen.fileno())
@@ -1430,6 +1446,10 @@ class mavmmaplog(mavlogfile):
                 incompat_flags = u_ord(self.data_map[ofs+10])
                 if incompat_flags & mavlink.MAVLINK_IFLAG_SIGNED:
                     mlen += mavlink.MAVLINK_SIGNATURE_BLOCK_LEN
+            else:
+                # unrecognised marker; probably a malformed log
+                ofs += 1
+                continue
 
             if not mtype in self.offsets:
                 if not mtype in mavlink.mavlink_map:
@@ -1691,7 +1711,7 @@ def is_printable(c):
 def all_printable(buf):
     '''see if a string is all printable'''
     for c in buf:
-        if not is_printable(c) and not c in ['\r', '\n', '\t']:
+        if not is_printable(c) and not c in ['\r', '\n', '\t'] and not c in [ord('\r'), ord('\n'), ord('\t')]:
             return False
     return True
 
