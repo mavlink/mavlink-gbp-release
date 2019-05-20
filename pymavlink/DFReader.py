@@ -237,7 +237,7 @@ class DFReaderClock(object):
 
     def _gpsTimeToTime(self, week, msec):
         '''convert GPS week and TOW to a time in seconds since 1970'''
-        epoch = 86400*(10*365 + (1980-1969)/4 + 1 + 6 - 2)
+        epoch = 86400*(10*365 + int((1980-1969)/4) + 1 + 6 - 2)
         return epoch + 86400*7*week + msec*0.001 - 15
 
     def set_timebase(self, base):
@@ -670,7 +670,9 @@ class DFReader_binary(DFReader):
                            "Type,Length,Name,Format,Columns")
         }
         self._zero_time_base = zero_time_base
+        self.prev_type = None
         self.init_clock()
+        self.prev_type = None
         self._rewind()
         self.init_arrays(progress_callback)
 
@@ -713,7 +715,8 @@ class DFReader_binary(DFReader):
 
             if lengths[mtype] == -1:
                 if not mtype in self.formats:
-                    print("unknown msg type 0x%02x" % mtype, file=sys.stderr)
+                    print("unknown msg type 0x%02x (%u)" % (mtype, mtype),
+                          file=sys.stderr)
                     break
                 self.offset = ofs
                 self._parse_next()
@@ -738,10 +741,11 @@ class DFReader_binary(DFReader):
                 self.id_to_name[mfmt.type] = mfmt.name
 
             ofs += mlen
-            new_pct = (100 * ofs) // self.data_len
-            if progress_callback is not None and new_pct != pct:
-                progress_callback(new_pct)
-                pct = new_pct
+            if progress_callback is not None:
+                new_pct = (100 * ofs) // self.data_len
+                if new_pct != pct:
+                    progress_callback(new_pct)
+                    pct = new_pct
 
         for i in range(256):
             self._count += self.counts[i]
@@ -800,30 +804,43 @@ class DFReader_binary(DFReader):
 
     def _parse_next(self):
         '''read one message, returning it as an object'''
-        if self.data_len - self.offset < 3:
-            return None
 
-        hdr = self.data_map[self.offset:self.offset+3]
-        skip_bytes = 0
+        # skip over bad messages; after this loop has run msg_type
+        # indicates the message which starts at self.offset (including
+        # signature bytes and msg_type itself)
         skip_type = None
-        # skip over bad messages
-        msg_type = u_ord(hdr[2])
-        while (hdr[0] != self.HEAD1 or hdr[1] != self.HEAD2 or
-               msg_type not in self.formats):
+        skip_start = 0
+        while True:
+            if self.data_len - self.offset < 3:
+                return None
+
+            hdr = self.data_map[self.offset:self.offset+3]
+            if hdr[0] == self.HEAD1 and hdr[1] == self.HEAD2:
+                # signature found
+                if skip_type is not None:
+                    # emit message about skipped bytes
+                    if self.remaining >= 528:
+                        # APM logs often contain garbage at end
+                        skip_bytes = self.offset - skip_start
+                        print("Skipped %u bad bytes in log at offset %u, type=%s (prev=%s)" %
+                              (skip_bytes, skip_start, skip_type, self.prev_type),
+                          file=sys.stderr)
+                    skip_type = None
+                # check we recognise this message type:
+                msg_type = u_ord(hdr[2])
+                if msg_type in self.formats:
+                    # recognised message found
+                    self.prev_type = msg_type
+                    break;
+                # message was not recognised; fall through so these
+                # bytes are considered "skipped".  The signature bytes
+                # are easily recognisable in the "Skipped bytes"
+                # message.
             if skip_type is None:
                 skip_type = (u_ord(hdr[0]), u_ord(hdr[1]), u_ord(hdr[2]))
                 skip_start = self.offset
-            skip_bytes += 1
             self.offset += 1
-            if self.data_len - self.offset < 3:
-                return None
-            hdr = self.data_map[self.offset:self.offset+3]
-            msg_type = u_ord(hdr[2])
-        if skip_bytes != 0:
-            if self.remaining < 528:
-                return None
-            print("Skipped %u bad bytes in log at offset %u, type=%s" %
-                  (skip_bytes, skip_start, skip_type), file=sys.stderr)
+            self.remaining -= 1
 
         self.offset += 3
         self.remaining = self.data_len - self.offset
