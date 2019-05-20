@@ -8,6 +8,7 @@ header. The timestamp is in microseconds since 1970 (unix epoch)
 '''
 from __future__ import print_function
 
+import array
 import fnmatch
 import json
 import os
@@ -134,6 +135,10 @@ if types is not None and hasattr(mlog, 'name_to_id'):
                 match_types = []
             match_types.append(k)
 
+if isbin and args.format == 'csv':
+    # we need FMT messages for column headings
+    match_types.append("FMT")
+
 # Keep track of data from the current timestep. If the following timestep has the same data, it's stored in here as well. Output should therefore have entirely unique timesteps.
 while True:
     m = mlog.recv_match(blocking=args.follow, type=match_types)
@@ -213,6 +218,11 @@ while True:
         if args.show_source:
             meta["srcSystem"] = m.get_srcSystem()
             meta["srcComponent"] = m.get_srcComponent()
+
+        # convert any array.array (e.g. packed-16-bit fft readings) into lists:
+        for key in data.keys():
+            if type(data[key]) == array.array:
+                data[key] = list(data[key])
         outMsg = {"meta": meta, "data": data}
 
         # Now print out this object with stringified properly.
