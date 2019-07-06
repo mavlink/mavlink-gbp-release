@@ -1,3 +1,26 @@
+## mavlink (kinetic) - 2019.7.7-1
+
+The packages in the `mavlink` repository were released into the `kinetic` distro by running `/usr/bin/bloom-release -t kinetic -r kinetic mavlink` on `Sat, 06 Jul 2019 19:28:43 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2019.6.7-1`
+- old version: `2019.6.7-1`
+- new version: `2019.7.7-1`
+
+Versions of tools used:
+
+- bloom version: `0.8.0`
+- catkin_pkg version: `0.4.12`
+- rosdep version: `0.15.2`
+- rosdistro version: `0.7.4`
+- vcstools version: `0.1.40`
+
+
 ## mavlink (melodic) - 2019.6.7-1
 
 The packages in the `mavlink` repository were released into the `melodic` distro by running `/usr/bin/bloom-release --rosdistro melodic --track melodic mavlink` on `Fri, 07 Jun 2019 08:48:34 -0000`
