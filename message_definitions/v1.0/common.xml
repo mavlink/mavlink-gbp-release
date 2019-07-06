@@ -894,7 +894,7 @@
         <param index="7">Altitude</param>
       </entry>
       <entry value="32" name="MAV_CMD_DO_FOLLOW" hasLocation="false" isDestination="false">
-        <description>Being following a target</description>
+        <description>Begin following a target</description>
         <param index="1" label="System ID" minValue="0" maxValue="255" increment="1">System ID (of the FOLLOW_TARGET beacon). Send 0 to disable follow-me and return to the default position hold mode.</param>
         <param index="2">RESERVED</param>
         <param index="3">RESERVED</param>
@@ -1571,7 +1571,7 @@
         <param index="2">Reserved (all remaining params)</param>
       </entry>
       <entry value="520" name="MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES" hasLocation="false" isDestination="false">
-        <description>Request autopilot capabilities</description>
+        <description>Request autopilot capabilities. The receiver should ACK the command and then emit its capabilities in an AUTOPILOT_VERSION message</description>
         <param index="1" label="Version">1: Request autopilot version</param>
         <param index="2">Reserved (all remaining params)</param>
       </entry>
@@ -3292,8 +3292,8 @@
       <field type="uint32_t" name="tx_rate" units="bytes/s">Transmit rate</field>
       <field type="uint32_t" name="rx_rate" units="bytes/s">Receive rate</field>
       <field type="uint16_t" name="rx_parse_err" units="bytes">Number of bytes that could not be parsed correctly.</field>
-      <field type="uint16_t" name="tx_overflows">Transmit buffer overflows. This number wraps around as it reaches UINT16_MAX</field>
-      <field type="uint16_t" name="rx_overflows">Receive buffer overflows. This number wraps around as it reaches UINT16_MAX</field>
+      <field type="uint16_t" name="tx_overflows" units="bytes">Transmit buffer overflows. This number wraps around as it reaches UINT16_MAX</field>
+      <field type="uint16_t" name="rx_overflows" units="bytes">Receive buffer overflows. This number wraps around as it reaches UINT16_MAX</field>
       <field type="uint32_t" name="messages_sent">Messages sent</field>
       <field type="uint32_t" name="messages_received">Messages received (estimated from counting seq)</field>
       <field type="uint32_t" name="messages_lost">Messages lost (estimated from counting seq)</field>
@@ -4535,7 +4535,7 @@
       <field type="uint8_t" name="charge_state" enum="MAV_BATTERY_CHARGE_STATE">State for extent of discharge, provided by autopilot for warning or external reactions</field>
     </message>
     <message id="148" name="AUTOPILOT_VERSION">
-      <description>Version and capability of autopilot software</description>
+      <description>Version and capability of autopilot software. This should be emitted in response to a MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES command.</description>
       <field type="uint64_t" name="capabilities" enum="MAV_PROTOCOL_CAPABILITY" display="bitmask">Bitmap of capabilities</field>
       <field type="uint32_t" name="flight_sw_version">Firmware version number</field>
       <field type="uint32_t" name="middleware_sw_version">Middleware version number</field>
@@ -5077,6 +5077,7 @@
       <field type="float[5]" name="acc_z" units="m/s/s">Z-acceleration of waypoint, set to NaN if not being used</field>
       <field type="float[5]" name="pos_yaw" units="rad">Yaw angle, set to NaN if not being used</field>
       <field type="float[5]" name="vel_yaw" units="rad/s">Yaw rate, set to NaN if not being used</field>
+      <field type="uint16_t[5]" name="command" enum="MAV_CMD">Scheduled action for each waypoint, UINT16_MAX if not being used.</field>
     </message>
     <message id="333" name="TRAJECTORY_REPRESENTATION_BEZIER">
       <wip/>
@@ -5100,6 +5101,17 @@
       <field type="uint16_t" name="mnc">Mobile network code. If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="lac">Location area code. If unknown, set to: 0</field>
       <field type="uint32_t" name="cid">Cell ID. If unknown, set to: UINT32_MAX</field>
+    </message>
+    <message id="335" name="ISBD_LINK_STATUS">
+      <description>Status of the Iridium SBD link.</description>
+      <field type="uint64_t" name="timestamp" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
+      <field type="uint64_t" name="last_heartbeat" units="us">Timestamp of the last successful sbd session. The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
+      <field type="uint16_t" name="failed_sessions">Number of failed SBD sessions.</field>
+      <field type="uint16_t" name="successful_sessions">Number of successful SBD sessions.</field>
+      <field type="uint8_t" name="signal_quality">Signal quality equal to the number of bars displayed on the ISU signal strength indicator. Range is 0 to 5, where 0 indicates no signal and 5 indicates maximum signal strength.</field>
+      <field type="uint8_t" name="ring_pending">1: Ring call pending, 0: No call pending.</field>
+      <field type="uint8_t" name="tx_session_pending">1: Transmission session pending, 0: No transmission session pending.</field>
+      <field type="uint8_t" name="rx_session_pending">1: Receiving session pending, 0: No receiving session pending.</field>
     </message>
     <message id="340" name="UTM_GLOBAL_POSITION">
       <wip/>
