@@ -11,7 +11,7 @@
 
   <maintainer email="vooon341@gmail.com">Vladimir Ermakov</maintainer>
 
-  <url type="website">http://qgroundcontrol.org/mavlink/</url>
+  <url type="website">https://mavlink.io/en/</url>
   <url type="repository">https://github.com/mavlink/mavlink.git</url>
   <url type="bugtracker">https://github.com/mavlink/mavlink/issues</url>
 
