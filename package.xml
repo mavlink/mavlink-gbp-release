@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>mavlink</name>
-  <version>2019.7.7</version>
+  <version>2019.8.8</version>
   <description>MAVLink message marshaling library.
   This package provides C-headers and C++11 library
   for both 1.0 and 2.0 versions of protocol.
@@ -11,7 +11,7 @@
 
   <maintainer email="vooon341@gmail.com">Vladimir Ermakov</maintainer>
 
-  <url type="website">http://qgroundcontrol.org/mavlink/</url>
+  <url type="website">https://mavlink.io/en/</url>
   <url type="repository">https://github.com/mavlink/mavlink.git</url>
   <url type="bugtracker">https://github.com/mavlink/mavlink/issues</url>
 
