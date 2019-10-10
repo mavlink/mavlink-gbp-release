@@ -1,5 +1,8 @@
 '''
 module for loading/saving waypoints
+
+Copyright the ArduPilot Project
+Released under GNU LGPL version 3 or later
 '''
 from __future__ import print_function
 from builtins import range
@@ -465,7 +468,7 @@ class MAVRallyLoader(object):
     def create_and_append_rally_point(self, lat, lon, alt, break_alt, land_dir, flags):
         '''add a point via latitude/longitude'''
         p = mavutil.mavlink.MAVLink_rally_point_message(self.target_system, self.target_component,
-                                                        self.rally_count(), 0, lat, lon, alt, break_alt, land_dir, flags)
+                                                        self.rally_count(), 0, int(lat), int(lon), int(alt), int(break_alt), int(land_dir), flags)
         self.append_rally_point(p)
 
     def clear(self):
