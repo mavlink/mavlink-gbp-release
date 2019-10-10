@@ -13,7 +13,7 @@ except LookupError:
 from setuptools import setup, Extension
 import glob, os, shutil, fnmatch, platform, sys
 
-version = '2.3.5'
+version = '2.3.8'
 
 
 def generate_content():
@@ -153,7 +153,9 @@ setup (name = 'pymavlink',
                    'tools/mavfft.py',
                    'tools/mavfft_isb.py',
                    'tools/mavsummarize.py',
-                   'tools/MPU6KSearch.py'],
+                   'tools/MPU6KSearch.py',
+                   'tools/mavlink_bitmask_decoder.py',
+       ],
        install_requires=[
             'future',
             'lxml',
