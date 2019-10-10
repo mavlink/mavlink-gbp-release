@@ -212,7 +212,11 @@ class MAVLink_message(object):
         if WIRE_PROTOCOL_VERSION != '1.0' and not force_mavlink1:
             # in MAVLink2 we can strip trailing zeros off payloads. This allows for simple
             # variable length arrays and smaller packets
-            while plen > 1 and payload[plen-1] == chr(0):
+            nullbyte = chr(0)
+            # in Python2, type("fred') is str but also type("fred")==bytes
+            if str(type(payload)) == "<class 'bytes'>":
+                nullbyte = 0
+            while plen > 1 and payload[plen-1] == nullbyte:
                 plen -= 1
         self._payload = payload[:plen]
         incompat_flags = 0
@@ -276,6 +280,19 @@ def generate_message_ids(outf, msgs):
         outf.write("MAVLINK_MSG_ID_%s = %u\n" % (m.name.upper(), m.id))
 
 
+def byname_hash_from_field_attribute(m, attribute):
+    strings = []
+    for field in m.fields:
+        value = getattr(field, attribute, None)
+        if value is None or value == "":
+            continue
+        if attribute == 'units':
+            # hack; remove the square brackets further up
+            if value[0] == "[":
+                value = value[1:-1]
+        strings.append('"%s": "%s"' % (field.name, value))
+    return ", ".join(strings)
+
 def generate_classes(outf, msgs):
     print("Generating class definitions")
     wrapper = textwrap.TextWrapper(initial_indent="        ", subsequent_indent="        ")
@@ -283,6 +300,9 @@ def generate_classes(outf, msgs):
         classname = "MAVLink_%s_message" % m.name.lower()
         fieldname_str = ", ".join(["'%s'" % s for s in m.fieldnames])
         ordered_fieldname_str = ", ".join(["'%s'" % s for s in m.ordered_fieldnames])
+        fielddisplays_str = byname_hash_from_field_attribute(m, "display")
+        fieldenums_str = byname_hash_from_field_attribute(m, "enum")
+        fieldunits_str = byname_hash_from_field_attribute(m, "units")
 
         fieldtypes_str = ", ".join(["'%s'" % s for s in m.fieldtypes])
         outf.write("""
@@ -295,6 +315,9 @@ class %s(MAVLink_message):
         fieldnames = [%s]
         ordered_fieldnames = [%s]
         fieldtypes = [%s]
+        fielddisplays_by_name = {%s}
+        fieldenums_by_name = {%s}
+        fieldunits_by_name = {%s}
         format = '%s'
         native_format = bytearray('%s', 'ascii')
         orders = %s
@@ -309,6 +332,9 @@ class %s(MAVLink_message):
             fieldname_str,
             ordered_fieldname_str,
             fieldtypes_str,
+            fielddisplays_str,
+            fieldenums_str,
+            fieldunits_str,
             m.fmtstr,
             m.native_fmtstr,
             m.order_map,
@@ -655,8 +681,13 @@ class MAVLink(object):
             h = hashlib.new('sha256')
             h.update(self.signing.secret_key)
             h.update(msgbuf[:-6])
-            sig1 = str(h.digest())[:6]
-            sig2 = str(msgbuf)[-6:]
+            if str(type(msgbuf)) == "<class 'bytes'>":
+                # Python 3
+                sig1 = h.digest()[:6]
+                sig2 = msgbuf[-6:]
+            else:
+                sig1 = str(h.digest())[:6]
+                sig2 = str(msgbuf)[-6:]
             if sig1 != sig2:
                 # print('sig mismatch')
                 return False
