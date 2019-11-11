@@ -1831,11 +1831,13 @@
         <description>Set the interval between messages for a particular MAVLink message ID. This interface replaces REQUEST_DATA_STREAM.</description>
         <param index="1" label="Message ID" minValue="0" maxValue="16777215" increment="1">The MAVLink message ID</param>
         <param index="2" label="Interval" units="us" minValue="-1" increment="1">The interval between two messages. Set to -1 to disable and 0 to request default rate.</param>
+        <param index="7" label="Response Target" minValue="0" maxValue="2" increment="1">Target address of message stream (if message has target address fields). 0: Flight-stack default (recommended), 1: address of requestor, 2: broadcast.</param>
       </entry>
       <entry value="512" name="MAV_CMD_REQUEST_MESSAGE" hasLocation="false" isDestination="false">
         <description>Request the target system(s) emit a single instance of a specified message (i.e. a "one-shot" version of MAV_CMD_SET_MESSAGE_INTERVAL).</description>
         <param index="1" label="Message ID" minValue="0" maxValue="16777215" increment="1">The MAVLink message ID of the requested message.</param>
         <param index="2" label="Index ID" minValue="0" increment="1">Index id (if appropriate). The use of this parameter (if any), must be defined in the requested message.</param>
+        <param index="7" label="Response Target" minValue="0" maxValue="2" increment="1">Target address for requested message (if message has target address fields). 0: Flight-stack default, 1: address of requestor, 2: broadcast.</param>
       </entry>
       <entry value="519" name="MAV_CMD_REQUEST_PROTOCOL_VERSION" hasLocation="false" isDestination="false">
         <description>Request MAVLink protocol version compatibility</description>
@@ -2473,24 +2475,24 @@
       </entry>
     </enum>
     <enum name="MAV_RESULT">
-      <description>result from a mavlink command</description>
+      <description>Result from a MAVLink command (MAV_CMD)</description>
       <entry value="0" name="MAV_RESULT_ACCEPTED">
-        <description>Command ACCEPTED and EXECUTED</description>
+        <description>Command is valid (is supported and has valid parameters), and was executed.</description>
       </entry>
       <entry value="1" name="MAV_RESULT_TEMPORARILY_REJECTED">
-        <description>Command TEMPORARY REJECTED/DENIED</description>
+        <description>Command is valid, but cannot be executed at this time. This is used to indicate a problem that should be fixed just by waiting (e.g. a state machine is busy, can't arm because have not got GPS lock, etc.). Retrying later should work.</description>
       </entry>
       <entry value="2" name="MAV_RESULT_DENIED">
-        <description>Command PERMANENTLY DENIED</description>
+        <description>Command is invalid (is supported but has invalid parameters). Retrying same command and parameters will not work.</description>
       </entry>
       <entry value="3" name="MAV_RESULT_UNSUPPORTED">
-        <description>Command UNKNOWN/UNSUPPORTED</description>
+        <description>Command is not supported (unknown).</description>
       </entry>
       <entry value="4" name="MAV_RESULT_FAILED">
-        <description>Command executed, but failed</description>
+        <description>Command is valid, but execution has failed. This is used to indicate any non-temporary or unexpected problem, i.e. any problem that must be fixed before the command can succeed/be retried. For example, attempting to write a file when out of memory, attempting to arm when sensors are not calibrated, etc.</description>
       </entry>
       <entry value="5" name="MAV_RESULT_IN_PROGRESS">
-        <description>WIP: Command being executed</description>
+        <description>Command is valid and is being executed. This will be followed by further progress updates, i.e. the component may send further COMMAND_ACK messages with result MAV_RESULT_IN_PROGRESS (at a rate decided by the implementation), and must terminate by sending a COMMAND_ACK message with final result of the operation. The COMMAND_ACK.progress field can be used to indicate the progress of the operation. There is no need for the sender to retry the command, but if done during execution, the component will return MAV_RESULT_IN_PROGRESS with an updated progress.</description>
       </entry>
     </enum>
     <enum name="MAV_MISSION_RESULT">
@@ -3217,7 +3219,7 @@
         <description>Earth-centered, Earth-fixed</description>
       </entry>
       <entry value="1" name="RTK_BASELINE_COORDINATE_SYSTEM_NED">
-        <description>North, East, Down</description>
+        <description>RTK basestation centered, north, east, down</description>
       </entry>
     </enum>
     <enum name="LANDING_TARGET_TYPE">
@@ -3802,6 +3804,15 @@
         <description>CAA (Civil Aviation Authority) registered operator ID.</description>
       </entry>
     </enum>
+    <enum name="TUNE_FORMAT">
+      <description>Tune formats (used for vehicle buzzer/tone generation).</description>
+      <entry value="1" name="TUNE_FORMAT_QBASIC1_1">
+        <description>Format is QBasic 1.1 Play: https://www.qbasic.net/en/reference/qb11/Statement/PLAY-006.htm.</description>
+      </entry>
+      <entry value="2" name="TUNE_FORMAT_MML_MODERN">
+        <description>Format is Modern Music Markup Language (MML): https://en.wikipedia.org/wiki/Music_Macro_Language#Modern_MML.</description>
+      </entry>
+    </enum>
   </enums>
   <messages>
     <message id="0" name="HEARTBEAT">
@@ -4006,6 +4017,8 @@
       <field type="float" name="rollspeed" units="rad/s">Roll angular speed</field>
       <field type="float" name="pitchspeed" units="rad/s">Pitch angular speed</field>
       <field type="float" name="yawspeed" units="rad/s">Yaw angular speed</field>
+      <extensions/>
+      <field type="float[4]" name="repr_offset_q">Rotation offset by which the attitude quaternion and angular speed vector should be rotated for user display (quaternion with [w, x, y, z] order, zero-rotation is [1, 0, 0, 0], send [0, 0, 0, 0] if field not supported). This field is intended for systems in which the reference attitude may change during flight. For example, tailsitters VTOLs rotate their reference attitude by 90 degrees between hover mode and fixed wing mode, thus repr_offset_q is equal to [1, 0, 0, 0] in hover mode and equal to [0.7071, 0, 0.7071, 0] in fixed wing mode.</field>
     </message>
     <message id="32" name="LOCAL_POSITION_NED">
       <description>The filtered local position (e.g. fused computer vision and accelerometers). Coordinate frame is right-handed, Z-axis down (aeronautical frame, NED / north-east-down convention)</description>
@@ -4059,7 +4072,7 @@
       <field type="uint8_t" name="rssi">Receive signal strength indicator in device-dependent units/scale. Values: [0-254], 255: invalid/unknown.</field>
     </message>
     <message id="36" name="SERVO_OUTPUT_RAW">
-      <description>The RAW values of the servo outputs (for RC input from the remote, use the RC_CHANNELS messages). The standard PPM modulation is as follows: 1000 microseconds: 0%, 2000 microseconds: 100%.</description>
+      <description>Superseded by ACTUATOR_OUTPUT_STATUS. The RAW values of the servo outputs (for RC input from the remote, use the RC_CHANNELS messages). The standard PPM modulation is as follows: 1000 microseconds: 0%, 2000 microseconds: 100%.</description>
       <field type="uint32_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
       <field type="uint8_t" name="port">Servo output port (set of 8 outputs = 1 port). Flight stacks running on Pixhawk should use: 0 = MAIN, 1 = AUX.</field>
       <field type="uint16_t" name="servo1_raw" units="us">Servo output 1 value</field>
@@ -4736,9 +4749,9 @@
       <field type="float" name="alt" units="m">Altitude</field>
       <field type="float" name="std_dev_horz">Horizontal position standard deviation</field>
       <field type="float" name="std_dev_vert">Vertical position standard deviation</field>
-      <field type="float" name="vn" units="m/s">True velocity in NORTH direction in earth-fixed NED frame</field>
-      <field type="float" name="ve" units="m/s">True velocity in EAST direction in earth-fixed NED frame</field>
-      <field type="float" name="vd" units="m/s">True velocity in DOWN direction in earth-fixed NED frame</field>
+      <field type="float" name="vn" units="m/s">True velocity in north direction in earth-fixed NED frame</field>
+      <field type="float" name="ve" units="m/s">True velocity in east direction in earth-fixed NED frame</field>
+      <field type="float" name="vd" units="m/s">True velocity in down direction in earth-fixed NED frame</field>
     </message>
     <message id="109" name="RADIO_STATUS">
       <description>Status generated by radio and injected into MAVLink stream.</description>
@@ -4778,9 +4791,9 @@
       <field type="uint16_t" name="eph" units="cm">GPS HDOP horizontal dilution of position. If unknown, set to: 65535</field>
       <field type="uint16_t" name="epv" units="cm">GPS VDOP vertical dilution of position. If unknown, set to: 65535</field>
       <field type="uint16_t" name="vel" units="cm/s">GPS ground speed. If unknown, set to: 65535</field>
-      <field type="int16_t" name="vn" units="cm/s">GPS velocity in NORTH direction in earth-fixed NED frame</field>
-      <field type="int16_t" name="ve" units="cm/s">GPS velocity in EAST direction in earth-fixed NED frame</field>
-      <field type="int16_t" name="vd" units="cm/s">GPS velocity in DOWN direction in earth-fixed NED frame</field>
+      <field type="int16_t" name="vn" units="cm/s">GPS velocity in north direction in earth-fixed NED frame</field>
+      <field type="int16_t" name="ve" units="cm/s">GPS velocity in east direction in earth-fixed NED frame</field>
+      <field type="int16_t" name="vd" units="cm/s">GPS velocity in down direction in earth-fixed NED frame</field>
       <field type="uint16_t" name="cog" units="cdeg">Course over ground (NOT heading, but direction of movement), 0.0..359.99 degrees. If unknown, set to: 65535</field>
       <field type="uint8_t" name="satellites_visible">Number of satellites visible. If unknown, set to 255</field>
     </message>
@@ -5205,13 +5218,15 @@
       <field type="float" name="alt" units="m">Altitude (MSL). Positive for up.</field>
       <field type="float" name="hdop" units="m">GPS HDOP horizontal dilution of position</field>
       <field type="float" name="vdop" units="m">GPS VDOP vertical dilution of position</field>
-      <field type="float" name="vn" units="m/s">GPS velocity in NORTH direction in earth-fixed NED frame</field>
-      <field type="float" name="ve" units="m/s">GPS velocity in EAST direction in earth-fixed NED frame</field>
-      <field type="float" name="vd" units="m/s">GPS velocity in DOWN direction in earth-fixed NED frame</field>
+      <field type="float" name="vn" units="m/s">GPS velocity in north direction in earth-fixed NED frame</field>
+      <field type="float" name="ve" units="m/s">GPS velocity in east direction in earth-fixed NED frame</field>
+      <field type="float" name="vd" units="m/s">GPS velocity in down direction in earth-fixed NED frame</field>
       <field type="float" name="speed_accuracy" units="m/s">GPS speed accuracy</field>
       <field type="float" name="horiz_accuracy" units="m">GPS horizontal accuracy</field>
       <field type="float" name="vert_accuracy" units="m">GPS vertical accuracy</field>
       <field type="uint8_t" name="satellites_visible">Number of satellites visible.</field>
+      <extensions/>
+      <field type="uint16_t" name="yaw" units="cdeg">Yaw of vehicle relative to Earth's North, zero means not available, use 36000 for north</field>
     </message>
     <message id="233" name="GPS_RTCM_DATA">
       <description>RTCM message for injecting into the onboard GPS (used for DGPS)</description>
@@ -5416,7 +5431,8 @@
       <field type="uint8_t" name="state" display="bitmask">Bitmap for state of buttons.</field>
     </message>
     <message id="258" name="PLAY_TUNE">
-      <description>Control vehicle tone generation (buzzer)</description>
+      <deprecated since="2019-10" replaced_by="PLAY_TUNE_V2">New version explicitly defines format. More interoperable.</deprecated>
+      <description>Control vehicle tone generation (buzzer).</description>
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="uint8_t" name="target_component">Component ID</field>
       <field type="char[30]" name="tune">tune in board specific format</field>
@@ -5496,9 +5512,9 @@
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
       <field type="float" name="roll" units="deg">Roll in global frame (set to NaN for invalid).</field>
       <field type="float" name="pitch" units="deg">Pitch in global frame (set to NaN for invalid).</field>
-      <field type="float" name="yaw" units="deg">Yaw relative to vehicle(set to NaN for invalid).</field>
+      <field type="float" name="yaw" units="deg">Yaw relative to vehicle (set to NaN for invalid).</field>
       <extensions/>
-      <field type="float" name="yaw_absolute" units="deg">Yaw in absolute frame, North is 0 (set to NaN for invalid).</field>
+      <field type="float" name="yaw_absolute" units="deg">Yaw in absolute frame relative to Earth's North, north is 0 (set to NaN for invalid).</field>
     </message>
     <message id="266" name="LOGGING_DATA">
       <description>A message containing logged data (see also MAV_CMD_LOGGING_START)</description>
@@ -5630,14 +5646,14 @@
       <description>Obstacle distances in front of the sensor, starting from the left in increment degrees to the right</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
       <field type="uint8_t" name="sensor_type" enum="MAV_DISTANCE_SENSOR">Class id of the distance sensor type.</field>
-      <field type="uint16_t[72]" name="distances" units="cm">Distance of obstacles around the vehicle with index 0 corresponding to North + angle_offset, unless otherwise specified in the frame. A value of 0 is valid and means that the obstacle is practically touching the sensor. A value of max_distance +1 means no obstacle is present. A value of UINT16_MAX for unknown/not used. In a array element, one unit corresponds to 1cm.</field>
+      <field type="uint16_t[72]" name="distances" units="cm">Distance of obstacles around the vehicle with index 0 corresponding to north + angle_offset, unless otherwise specified in the frame. A value of 0 is valid and means that the obstacle is practically touching the sensor. A value of max_distance +1 means no obstacle is present. A value of UINT16_MAX for unknown/not used. In a array element, one unit corresponds to 1cm.</field>
       <field type="uint8_t" name="increment" units="deg">Angular width in degrees of each array element. Increment direction is clockwise. This field is ignored if increment_f is non-zero.</field>
       <field type="uint16_t" name="min_distance" units="cm">Minimum distance the sensor can measure.</field>
       <field type="uint16_t" name="max_distance" units="cm">Maximum distance the sensor can measure.</field>
       <extensions/>
       <field type="float" name="increment_f" units="deg">Angular width in degrees of each array element as a float. If non-zero then this value is used instead of the uint8_t increment field. Positive is clockwise direction, negative is counter-clockwise.</field>
       <field type="float" name="angle_offset" units="deg">Relative angle offset of the 0-index element in the distances array. Value of 0 corresponds to forward. Positive is clockwise direction, negative is counter-clockwise.</field>
-      <field type="uint8_t" name="frame" enum="MAV_FRAME">Coordinate frame of reference for the yaw rotation and offset of the sensor data. Defaults to MAV_FRAME_GLOBAL, which is North aligned. For body-mounted sensors use MAV_FRAME_BODY_FRD, which is vehicle front aligned.</field>
+      <field type="uint8_t" name="frame" enum="MAV_FRAME">Coordinate frame of reference for the yaw rotation and offset of the sensor data. Defaults to MAV_FRAME_GLOBAL, which is north aligned. For body-mounted sensors use MAV_FRAME_BODY_FRD, which is vehicle front aligned.</field>
     </message>
     <message id="331" name="ODOMETRY">
       <description>Odometry message to communicate odometry information with an external interface. Fits ROS REP 147 standard for aerial vehicles (http://www.ros.org/reps/rep-0147.html).</description>
@@ -5790,7 +5806,7 @@
       <field type="uint16_t[16]" name="voltages" units="mV">Individual cell voltages. Batteries with more 16 cells can use the cell_offset field to specify the cell offset for the array specified in the current message . Index values above the valid cell count for this battery should have the UINT16_MAX value.</field>
     </message>
     <message id="375" name="ACTUATOR_OUTPUT_STATUS">
-      <description>The raw values of the actuator outputs.</description>
+      <description>The raw values of the actuator outputs (e.g. on Pixhawk, from MAIN, AUX ports). This message supersedes SERVO_OUTPUT_RAW.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (since system boot).</field>
       <field type="uint32_t" name="active" display="bitmask">Active outputs</field>
       <field type="float[32]" name="actuator">Servo / motor output array values. Zero values indicate unused channels.</field>
@@ -5839,6 +5855,23 @@
       <field type="uint32_t[6]" name="link_rx_rate" units="KiB/s">Network traffic to the component system. A value of UINT32_MAX implies the field is unused.</field>
       <field type="uint32_t[6]" name="link_tx_max" units="KiB/s">Network capacity from the component system. A value of UINT32_MAX implies the field is unused.</field>
       <field type="uint32_t[6]" name="link_rx_max" units="KiB/s">Network capacity to the component system. A value of UINT32_MAX implies the field is unused.</field>
+    </message>
+    <message id="400" name="PLAY_TUNE_V2">
+      <wip/>
+      <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
+      <description>Play vehicle tone/tune (buzzer). Supersedes message PLAY_TUNE.</description>
+      <field type="uint8_t" name="target_system">System ID</field>
+      <field type="uint8_t" name="target_component">Component ID</field>
+      <field type="uint32_t" name="format" enum="TUNE_FORMAT">Tune format</field>
+      <field type="char[248]" name="tune">Tune definition as a NULL-terminated string.</field>
+    </message>
+    <message id="401" name="SUPPORTED_TUNES">
+      <wip/>
+      <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
+      <description>Tune formats supported by vehicle. This should be emitted as response to MAV_CMD_REQUEST_MESSAGE.</description>
+      <field type="uint8_t" name="target_system">System ID</field>
+      <field type="uint8_t" name="target_component">Component ID</field>
+      <field type="uint32_t" name="format" enum="TUNE_FORMAT" display="bitmask">Bitfield of supported tune formats.</field>
     </message>
     <!-- Rover specific messages -->
     <message id="9000" name="WHEEL_DISTANCE">
