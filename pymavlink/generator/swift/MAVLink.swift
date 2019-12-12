@@ -60,6 +60,61 @@ extension Enumeration {
     }
 }
 
+// MARK: - MAVLinkBitmask protocol
+
+public protocol MAVLinkBitmask: OptionSet, MAVLinkEntity {
+    /// Array with all members of current bitmask
+    static var allMembers: [Self.Element] { get }
+
+    // Array with `Name` - `Description` tuples (values from declarations xml file)
+    static var membersDescriptions: [(String, String)] { get }
+
+    /// `ENUM_END` flag for checking if enum case value is valid
+    static var enumEnd: UInt { get }
+
+    /// Original MAVLinks enum member name (as declared in definition's xml file)
+    var usedMemberName: [String] { get }
+
+    /// Specific member description from definitions xml
+    var usedMemberDescriptions: [String] { get }
+}
+
+/// MAVLinkBitmask protocol default behaviour implementation.
+extension MAVLinkBitmask {
+    public static var typeDebugDescription: String {
+        let cases = membersDescriptions.map { "\($0.0): \($0.1)" }.joined(separator: "\\n\\t")
+        return "Bitmask \(typeName): \(typeDescription)\\nMembers:\\n\\t\(cases)"
+    }
+
+    public var description: String {
+        return metadataForUsedMembers().map { $0.1 }.joined(separator:", ")
+    }
+
+    public var debugDescription: String {
+        let usedValuesExplained = metadataForUsedMembers().map {
+            "\($0.0): \($0.1)"
+            }.joined(separator: "\n")
+
+        return usedValuesExplained
+    }
+
+    public var usedMemberName: [String] {
+        return metadataForUsedMembers().map { $0.0 }
+    }
+
+    public var usedMemberDescriptions: [String] {
+        return metadataForUsedMembers().map { $0.1 }
+    }
+
+    private func metadataForUsedMembers() -> [(String, String)] {
+        return zip(Self.allMembers, Self.membersDescriptions).filter {
+                self.contains($0.0)
+            }.map {
+                $0.1
+            }
+    }
+}
+
 // MARK: - Message protocol
 
 /// Message field definition tuple.
@@ -108,7 +163,8 @@ extension Message {
     }
     
     public var description: String {
-        let describeField: ((String, Any)) -> String = { (name, value) in
+        let describeField: ((String, Any)) -> String = { (arg) in
+            let (name, value) = arg
             let valueString = value is String ? "\"\(value)\"" : value
             return "\(name): \(valueString)"
         }
@@ -117,7 +173,8 @@ extension Message {
     }
     
     public var debugDescription: String {
-        let describeFieldVerbose: ((String, Any)) -> String = { (name, value) in
+        let describeFieldVerbose: ((String, Any)) -> String = { (arg) in
+            let (name, value) = arg
             let valueString = value is String ? "\"\(value)\"" : value
             let (_, _, _, _, description) = Self.fieldDefinitions.filter { $0.name == name }.first!
             return "\(name) = \(valueString) : \(description)"
@@ -784,11 +841,11 @@ public struct Checksum {
     }
     
     public var lowByte: UInt8 {
-        return UInt8(truncatingBitPattern: value)
+        return UInt8(truncatingIfNeeded: value)
     }
     
     public var highByte: UInt8 {
-        return UInt8(truncatingBitPattern: value >> 8)
+        return UInt8(truncatingIfNeeded: value >> 8)
     }
     
     public private(set) var value: UInt16 = 0
@@ -808,7 +865,7 @@ public struct Checksum {
     ///
     /// - parameter char: New char to hash
     mutating func accumulate(_ char: UInt8) {
-        var tmp: UInt8 = char ^ UInt8(truncatingBitPattern: value)
+        var tmp: UInt8 = char ^ UInt8(truncatingIfNeeded: value)
         tmp ^= (tmp << 4)
         value = (UInt16(value) >> 8) ^ (UInt16(tmp) << 8) ^ (UInt16(tmp) << 3) ^ (UInt16(tmp) >> 4)
     }
@@ -930,7 +987,7 @@ extension Data {
         }
         
         let bytes = subdata(in: range)
-        let emptySubSequence = Data.SubSequence(base: Data(), bounds: 0 ..< 0)
+        let emptySubSequence = Data.SubSequence(capacity: 0)
         let firstSubSequence = bytes.split(separator: 0x0, maxSplits: 1, omittingEmptySubsequences: false).first ?? emptySubSequence
         
         guard let string = String(bytes: firstSubSequence, encoding: .ascii) else {
@@ -956,6 +1013,18 @@ extension Data {
         }
         
         return enumerationCase
+    }
+
+    /// Returns a bitmask that is based on enumeration field. Throws ParseError.
+    ///
+    /// - parameter offset: Offset in receiver's bytes.
+    ///
+    /// - throws: Throws `ParseError`.
+    ///
+    /// - returns: Bitmask subtype value.
+    func bitmask<T: MAVLinkBitmask>(at offset: Data.Index) throws -> T where T.RawValue: MAVLinkNumber {
+        let rawValue: T.RawValue = try number(at: offset)
+        return T(rawValue: rawValue)
     }
 }
 
@@ -1055,6 +1124,17 @@ extension Data {
     ///
     /// - throws: Throws `PackError`.
     mutating func set<T: Enumeration>(_ enumeration: T, at offset: Data.Index) throws where T.RawValue: MAVLinkNumber {
+        try set(enumeration.rawValue, at: offset)
+    }
+
+    /// Sets correctly formated `bitmask` raw value at `offset` or throws
+    /// `PackError`.
+    ///
+    /// - parameter enumeration: Value to set.
+    /// - parameter offset:      Offset in receiver's bytes.
+    ///
+    /// - throws: Throws `PackError`.
+    mutating func set<T: MAVLinkBitmask>(_ enumeration: T, at offset: Data.Index) throws where T.RawValue: MAVLinkNumber {
         try set(enumeration.rawValue, at: offset)
     }
 }
