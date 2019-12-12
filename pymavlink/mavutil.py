@@ -2,8 +2,8 @@
 '''
 mavlink python utility functions
 
-Copyright Andrew Tridgell 2011
-Released under GNU GPL version 3 or later
+Copyright Andrew Tridgell 2011-2019
+Released under GNU LGPL version 3 or later
 '''
 from __future__ import print_function
 from builtins import object
@@ -1867,6 +1867,7 @@ mode_mapping_apm = {
     10 : 'AUTO',
     11 : 'RTL',
     12 : 'LOITER',
+    13 : 'TAKEOFF',
     14 : 'LAND',
     15 : 'GUIDED',
     16 : 'INITIALISING',
@@ -1910,6 +1911,8 @@ mode_mapping_rover = {
     3 : 'STEERING',
     4 : 'HOLD',
     5 : 'LOITER',
+    6 : 'FOLLOW',
+    7 : 'SIMPLE',
     10 : 'AUTO',
     11 : 'RTL',
     12 : 'SMART_RTL',
