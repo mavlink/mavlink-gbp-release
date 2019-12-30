@@ -1,3 +1,26 @@
+## mavlink (eloquent) - 2019.12.30-1
+
+The packages in the `mavlink` repository were released into the `eloquent` distro by running `/usr/bin/bloom-release -r eloquent mavlink` on `Mon, 30 Dec 2019 12:35:33 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `null`
+- new version: `2019.12.30-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.0`
+- catkin_pkg version: `0.4.15`
+- rosdep version: `0.18.0`
+- rosdistro version: `0.8.0`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (melodic) - 2019.12.30-1
 
 The packages in the `mavlink` repository were released into the `melodic` distro by running `/usr/bin/bloom-release -r melodic mavlink` on `Mon, 30 Dec 2019 11:35:34 -0000`
