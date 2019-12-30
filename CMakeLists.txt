@@ -1,10 +1,10 @@
+cmake_minimum_required (VERSION 3.5)
 project (mavlink NONE)
 
 # Note: patched version for installation as ROS 3-rd party library
 # Provides C-headers and C++11
 
 # settings
-cmake_minimum_required (VERSION 2.8.2)
 set(PROJECT_VERSION_MAJOR "1")
 set(PROJECT_VERSION_MINOR "0")
 set(PROJECT_VERSION_PATCH "9")
@@ -17,9 +17,21 @@ include(GNUInstallDirs)
 # hack from urdfdom: by default this would be 'lib/x86_64-linux-gnu'
 set(CMAKE_INSTALL_LIBDIR lib)
 
-# find libraries with cmake modules
-set(PythonInterp_FIND_VERSION "2")
-find_package(PythonInterp REQUIRED)
+if (DEFINED ENV{ROS_PYTHON_VERSION})
+    set(Py_VERSION $ENV{ROS_PYTHON_VERSION})
+else()
+    set(Py_VERSION "2")
+endif()
+
+if (NOT CMAKE_VERSION VERSION_LESS "3.12")
+    find_package(Python${Py_VERSION} COMPONENTS Interpretator)
+else()
+    # find libraries with cmake modules
+    find_package(PythonInterp ${Py_VERSION} REQUIRED)
+    set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
+endif()
+
+message(STATUS "Python ${Py_VERSION} iterpretator: ${Python_EXECUTABLE}")
 
 # Try to read package version from package.xml
 if(EXISTS ${CMAKE_SOURCE_DIR}/package.xml)
@@ -36,7 +48,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/package.xml)
         )
 
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/package_version.py
+        COMMAND ${Python_EXECUTABLE} ${CMAKE_BINARY_DIR}/package_version.py
         OUTPUT_VARIABLE XML_VERSION
         RESULT_VARIABLE XML_RESULT
         )
@@ -64,7 +76,7 @@ macro(generateMavlink_v10 definitions)
         add_custom_command(
             OUTPUT include/v1.0/${definition}/${definition}.h
             COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
-                ${PYTHON_EXECUTABLE} ${mavgen_path} --lang=C --wire-protocol=1.0
+                ${Python_EXECUTABLE} ${mavgen_path} --lang=C --wire-protocol=1.0
                 --output=include/v1.0 ${definitionAbsPath}
             DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
             )
@@ -83,7 +95,7 @@ macro(generateMavlink_v20 definitions)
             OUTPUT ${definition}-v2.0-cxx-stamp
             #OUTPUT include/v2.0/${definition}/${definition}.hpp
             COMMAND /usr/bin/env PYTHONPATH="${CMAKE_SOURCE_DIR}:$ENV{PYTHONPATH}"
-                ${PYTHON_EXECUTABLE} ${mavgen_path} --lang=C++11 --wire-protocol=2.0
+                ${Python_EXECUTABLE} ${mavgen_path} --lang=C++11 --wire-protocol=2.0
                 --output=include/v2.0 ${definitionAbsPath}
             COMMAND touch ${definition}-v2.0-cxx-stamp
             DEPENDS ${definitionAbsPath} ${common_xml_path} ${mavgen_path}
@@ -168,4 +180,4 @@ install(FILES ${PROJECT_BINARY_DIR}/COPYING.txt
 install(FILES ${CMAKE_SOURCE_DIR}/package.xml
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/ COMPONENT catkin)
 
-# vim:sw=4:ts=4:expandtab
+# vim:sw=4 ts=4 expandtab:
