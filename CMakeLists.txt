@@ -20,6 +20,7 @@ set(CMAKE_INSTALL_LIBDIR lib)
 if (DEFINED ENV{ROS_PYTHON_VERSION})
     set(Py_VERSION $ENV{ROS_PYTHON_VERSION})
 else()
+    message(WARNING "ENV ROS_PYTHON_VERSION is not set. Use default: 2")
     set(Py_VERSION "2")
 endif()
 
