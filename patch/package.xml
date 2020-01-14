@@ -21,10 +21,11 @@
 
   <buildtool_depend>cmake</buildtool_depend>
 
-  <depend condition="$ROS_VERSION == 1">python</depend>
-
+  <build_depend condition="$ROS_PYTHON_VERSION == 2">python</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 2">python-lxml</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 2">python-future</build_depend>
+
+  <build_depend condition="$ROS_PYTHON_VERSION == 3">python3-dev</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 3">python3-lxml</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 3">python3-future</build_depend>
 
