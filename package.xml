@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>mavlink</name>
-  <version>2019.12.30</version>
+  <version>2020.1.14</version>
   <description>MAVLink message marshaling library.
   This package provides C-headers and C++11 library
   for both 1.0 and 2.0 versions of protocol.
@@ -21,10 +21,11 @@
 
   <buildtool_depend>cmake</buildtool_depend>
 
-  <depend condition="$ROS_VERSION == 1">python</depend>
-
+  <build_depend condition="$ROS_PYTHON_VERSION == 2">python</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 2">python-lxml</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 2">python-future</build_depend>
+
+  <build_depend condition="$ROS_PYTHON_VERSION == 3">python3-dev</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 3">python3-lxml</build_depend>
   <build_depend condition="$ROS_PYTHON_VERSION == 3">python3-future</build_depend>
 
