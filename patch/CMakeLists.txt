@@ -25,7 +25,7 @@ else()
 endif()
 
 if (NOT CMAKE_VERSION VERSION_LESS "3.12")
-    find_package(Python${Py_VERSION} COMPONENTS Interpretator)
+    find_package(Python${Py_VERSION} COMPONENTS Interpreter)
 else()
     # find libraries with cmake modules
     find_package(PythonInterp ${Py_VERSION} REQUIRED)
