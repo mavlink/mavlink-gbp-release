@@ -20,11 +20,12 @@ set(CMAKE_INSTALL_LIBDIR lib)
 if (DEFINED ENV{ROS_PYTHON_VERSION})
     set(Py_VERSION $ENV{ROS_PYTHON_VERSION})
 else()
+    message(WARNING "ENV ROS_PYTHON_VERSION is not set. Use default: 2")
     set(Py_VERSION "2")
 endif()
 
 if (NOT CMAKE_VERSION VERSION_LESS "3.12")
-    find_package(Python${Py_VERSION} COMPONENTS Interpretator)
+    find_package(Python${Py_VERSION} COMPONENTS Interpreter)
 else()
     # find libraries with cmake modules
     find_package(PythonInterp ${Py_VERSION} REQUIRED)
