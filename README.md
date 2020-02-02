@@ -1,3 +1,26 @@
+## mavlink (melodic) - 2020.02.02-1
+
+The packages in the `mavlink` repository were released into the `melodic` distro by running `/usr/bin/bloom-release --rosdistro melodic mavlink` on `Sun, 02 Feb 2020 14:29:05 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2019.12.30-1`
+- old version: `2019.12.30-1`
+- new version: `2020.02.02-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.0`
+- catkin_pkg version: `0.4.16`
+- rosdep version: `0.18.0`
+- rosdistro version: `0.8.0`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (kinetic) - 2020.02.02-1
 
 The packages in the `mavlink` repository were released into the `kinetic` distro by running `/usr/bin/bloom-release --rosdistro kinetic --track kinetic mavlink` on `Sun, 02 Feb 2020 14:19:30 -0000`
