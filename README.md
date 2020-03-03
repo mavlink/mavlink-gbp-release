@@ -1,3 +1,26 @@
+## mavlink (eloquent) - 2020.3.3-1
+
+The packages in the `mavlink` repository were released into the `eloquent` distro by running `/usr/bin/bloom-release --rosdistro eloquent mavlink` on `Tue, 03 Mar 2020 14:00:36 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2020.2.2-1`
+- old version: `2020.2.2-1`
+- new version: `2020.3.3-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.3`
+- catkin_pkg version: `0.4.16`
+- rosdep version: `0.18.0`
+- rosdistro version: `0.8.0`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (melodic) - 2020.3.3-1
 
 The packages in the `mavlink` repository were released into the `melodic` distro by running `/usr/bin/bloom-release --rosdistro melodic mavlink` on `Tue, 03 Mar 2020 13:32:31 -0000`
