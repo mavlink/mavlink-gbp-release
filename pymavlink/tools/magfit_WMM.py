@@ -279,7 +279,7 @@ def magfit(logfile):
                                        parameters.get('COMPASS_MOT%s_Y' % mag_idx,0.0),
                                        parameters.get('COMPASS_MOT%s_Z' % mag_idx,0.0))
     old_corrections.scaling = parameters.get('COMPASS_SCALE%s' % mag_idx, None)
-    if old_corrections.scaling is None:
+    if old_corrections.scaling is None or old_corrections.scaling < 0.1:
         force_scale = False
         old_corrections.scaling = 1.0
     else:
@@ -302,9 +302,15 @@ def magfit(logfile):
     # normalise diagonals to scale factor
     if force_scale:
         avgdiag = (c.diag.x + c.diag.y + c.diag.z)/3.0
+        calc_scale = c.scaling
         c.scaling *= avgdiag
-        c.diag *= 1.0/avgdiag
-        c.offdiag *= 1.0/avgdiag
+        if c.scaling > args.max_scale:
+            c.scaling = args.max_scale
+        if c.scaling < args.min_scale:
+            c.scaling = args.min_scale
+        scale_change = c.scaling / calc_scale
+        c.diag *= 1.0/scale_change
+        c.offdiag *= 1.0/scale_change
 
     print("New: %s diag: %s offdiag: %s cmot: %s scale: %.2f" % (
         c.offsets, c.diag, c.offdiag, c.cmot, c.scaling))
