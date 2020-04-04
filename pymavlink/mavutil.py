@@ -1460,6 +1460,8 @@ class mavmmaplog(mavlogfile):
                 mtype = u_ord(self.data_map[ofs+13])
                 mlen += 8
             elif marker == MARKER_V2:
+                if ofs+8+10 > self.data_len:
+                    break
                 mtype = u_ord(self.data_map[ofs+15]) | (u_ord(self.data_map[ofs+16])<<8) | (u_ord(self.data_map[ofs+17])<<16)
                 mlen += 12
                 incompat_flags = u_ord(self.data_map[ofs+10])
@@ -1868,7 +1870,7 @@ mode_mapping_apm = {
     11 : 'RTL',
     12 : 'LOITER',
     13 : 'TAKEOFF',
-    14 : 'LAND',
+    14 : 'AVOID_ADSB',
     15 : 'GUIDED',
     16 : 'INITIALISING',
     17 : 'QSTABILIZE',
@@ -1877,6 +1879,7 @@ mode_mapping_apm = {
     20 : 'QLAND',
     21 : 'QRTL',
     22 : 'QAUTOTUNE',
+    23 : 'QACRO',
     }
 mode_mapping_acm = {
     0 : 'STABILIZE',
