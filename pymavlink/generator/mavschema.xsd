@@ -103,7 +103,7 @@
     <xs:enumeration value="cdeg/s"/>     <!-- centidegrees per second -->
     <xs:enumeration value="degE5"/>    <!-- degrees * 10E5 -->
     <xs:enumeration value="degE7"/>    <!-- degrees * 10E7 -->
-    <xs:enumeration value="rpm"/>      <!-- rotations per second -->
+    <xs:enumeration value="rpm"/>      <!-- rotations per minute -->
     <!-- electricity -->
     <xs:enumeration value="V"/>        <!-- Volt -->
     <xs:enumeration value="cV"/>       <!-- centi-Volt -->
@@ -230,6 +230,9 @@
     </xs:complexType>
 </xs:element>
 
+<!-- definition entry elements attributes (like the ones used on MAV_CMD for example) -->
+<xs:attribute name="bitmask" type="xs:boolean" default="false"/>
+
 <xs:element name="enum">
     <xs:complexType>
         <xs:sequence>
@@ -238,6 +241,7 @@
             <xs:element ref="entry" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute ref="name" use="required"/>
+        <xs:attribute ref="bitmask"/>
     </xs:complexType>
 </xs:element>
 
