@@ -1,3 +1,26 @@
+## mavlink (noetic) - 2020.5.21-1
+
+The packages in the `mavlink` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic mavlink` on `Thu, 21 May 2020 08:22:58 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `2020.5.5-1`
+- new version: `2020.5.21-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.7`
+- catkin_pkg version: `0.4.20`
+- rosdep version: `0.19.0`
+- rosdistro version: `0.8.1`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (melodic) - 2020.5.21-1
 
 The packages in the `mavlink` repository were released into the `melodic` distro by running `/usr/bin/bloom-release -r melodic mavlink` on `Thu, 21 May 2020 07:46:41 -0000`
