@@ -38,9 +38,11 @@ tracks:
     - git-bloom-generate -y rosrpm --prefix release/:{ros_distro} :{ros_distro} -i
       :{release_inc}
     devel_branch: master
+    last_release: master
+    last_version: 2020.8.8
     name: upstream
     patches: patch
-    release_inc: 0
+    release_inc: '1'
     release_repo_url: git@github.com:mavlink/mavlink-gbp-release.git
     release_tag: :{ask}
     ros_distro: foxy
