@@ -1,4 +1,4 @@
-From 11074e741bf686abaa4196fd77405361256b960e Mon Sep 17 00:00:00 2001
+From 9bb82d8f2707eb321dc216c9b6a81dd0d57ce9d2 Mon Sep 17 00:00:00 2001
 From: "Dr.-Ing. Amilcar do Carmo Lucas" <amilcar.lucas@iav.de>
 Date: Fri, 26 Jul 2019 16:29:54 +0200
 Subject: [PATCH] Ignore generated files
@@ -16,5 +16,5 @@ index 00000000..0d20b648
 @@ -0,0 +1 @@
 +*.pyc
 -- 
-2.17.1
+2.25.1
 
