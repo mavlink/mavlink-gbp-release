@@ -643,9 +643,17 @@ class mavfile(object):
                 return
             mode = mode_map[mode]
         # set mode by integer mode number for ArduPilot
-        self.mav.set_mode_send(self.target_system,
-                               mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
-                               mode)
+        self.mav.command_long_send(self.target_system,
+                                   self.target_component,
+                                   mavlink.MAV_CMD_DO_SET_MODE,
+                                   0,
+                                   mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+                                   mode,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   0)
 
     def set_mode_px4(self, mode, custom_mode, custom_sub_mode):
         '''enter arbitrary mode'''
@@ -758,11 +766,6 @@ class mavfile(object):
             self.mav.command_long_send(self.target_system, self.target_component,
                                        mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN, 0,
                                        param1, 0, 0, 0, 0, 0, 0)
-            # send an old style reboot immediately afterwards in case it is an older firmware
-            # that doesn't understand the new convention
-            self.mav.command_long_send(self.target_system, self.target_component,
-                                       mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN, 0,
-                                       1, 0, 0, 0, 0, 0, 0)
 
     def wait_gps_fix(self):
         self.recv_match(type='VFR_HUD', blocking=True)
