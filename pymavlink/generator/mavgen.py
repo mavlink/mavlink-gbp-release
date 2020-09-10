@@ -1,10 +1,24 @@
 #!/usr/bin/env python
 
-'''
-parse a MAVLink protocol XML file and generate a python implementation
+'''parse a MAVLink protocol XML file and generate a python implementation
 
 Copyright Andrew Tridgell 2011
 Released under GNU GPL version 3 or later
+
+General process:
+ - each filename passed in:
+    - may be validated, based on --validate
+    - is parsed using mavparse.MAVXML into an xml document and appended to a list, "xml"
+
+ - expand_includes is called to do a breadth-first search of the xml
+    documents structure inferred by the <include> tags in each
+    document, expanding the xml list from its base (just the ones on
+    the commandline) to the entire structure
+
+ - update_includes works on the xml list created by expand_includes
+    - any xml document with no includes is added to the "done" list (there must be at least one of these)
+    - it repeatedly calls update_one_iteration
+    - each iteration is intended to include the crcs and other information from includes into the xml document doing the include
 
 '''
 
@@ -66,37 +80,116 @@ def mavgen(opts, args):
             opts.validate = False
 
     def expand_includes():
-        """Expand includes in current list of all files, ignoring those already parsed."""
-        for x in xml[:]:
-            for i in x.include:
-                fname = os.path.join(os.path.dirname(x.filename), i)
+        """Expand includes. Root files already parsed objects in the xml list."""
 
-                # Only parse new include files
-                if fname in all_files:
+        def expand_oneiteration():
+            '''takes the list of xml files to process and finds includes which
+            have not already been turned into xml documents added to
+            xml files to process, turns them into xml documents and
+            adds them to the xml files list.  Returns false if no more
+            documents were added.
+            '''
+            includeadded = False
+            for x in xml[:]:
+                for i in x.include:
+                    fname = os.path.join(os.path.dirname(x.filename), i)
+                    # Only parse new include files
+                    if fname in all_files:
+                        continue
+                    # Validate XML file with XSD file if possible.
+                    if opts.validate:
+                        print("Validating %s" % fname)
+                        if not mavgen_validate(fname):
+                            print("ERROR Validation of %s failed" % fname)
+                            exit(1)
+                    else:
+                        print("Validation skipped for %s." % fname)
+                    # Parsing
+                    print("Parsing %s" % fname)
+                    xml.append(mavparse.MAVXML(fname, opts.wire_protocol))
+                    all_files.add(fname)
+                    includeadded = True
+            return includeadded
+
+        for i in range(MAXIMUM_INCLUDE_FILE_NESTING):
+            if not expand_oneiteration():
+                break
+
+        if mavparse.check_duplicates(xml):
+            sys.exit(1)
+
+    def update_includes():
+        """Update dialects with crcs etc of included files.  Included files
+        were already found and parsed into xml list in
+        expand_includes().
+        """
+
+        # 1: Mark files that don't have includes as "done"
+        done = []
+        for x in xml:
+            #print("\n",x)
+            if len(x.include) == 0:
+                done.append(x)
+                #print("\nFile with no includes found (ENDPOINT): %s" % x.filename )
+        if len(done) == 0:
+            print("\nERROR in includes tree, no base found!")
+            exit(1)
+
+        #print("\n",done)
+
+        # 2: Update all 'not done' files for which all includes have
+        # been done.  Returns True if any updates were made
+        def update_oneiteration():
+            initial_done_length = len(done)
+            for x in xml:
+                #print("\nCHECK %s" % x.filename)
+                if x in done:
+                    #print("  already done, skip")
                     continue
-                all_files.add(fname)
+                #check if all its includes were already done
+                all_includes_done = True
+                for i in x.include:
+                    fname = os.path.join(os.path.dirname(x.filename), i)
+                    if fname not in [d.filename for d in done]:
+                        all_includes_done = False
+                        break
+                if not all_includes_done:
+                    #print("  not all includes ready, skip")
+                    continue
+                #Found file where all includes are done
+                done.append(x)
+                #print("  all includes ready, add" )
+                #now update it with the facts from all it's includes
+                for i in x.include:
+                    fname = os.path.join(os.path.dirname(x.filename), i)
+                    #print("  include file %s" % i )
+                    #Find the corresponding x
+                    for ix in xml:
+                        if ix.filename != fname:
+                            continue
+                        #print("    add %s" % ix.filename )
+                        x.message_crcs.update(ix.message_crcs)
+                        x.message_lengths.update(ix.message_lengths)
+                        x.message_min_lengths.update(ix.message_min_lengths)
+                        x.message_flags.update(ix.message_flags)
+                        x.message_target_system_ofs.update(ix.message_target_system_ofs)
+                        x.message_target_component_ofs.update(ix.message_target_component_ofs)
+                        x.message_names.update(ix.message_names)
+                        x.largest_payload = max(x.largest_payload, ix.largest_payload)
+                        break
 
-                # Validate XML file with XSD file if possible.
-                if opts.validate:
-                    print("Validating %s" % fname)
-                    if not mavgen_validate(fname):
-                        return False
-                else:
-                    print("Validation skipped for %s." % fname)
+            if len(done) == len(xml):
+                return False  # finished
+            if len(done) == initial_done_length:
+                # we've made no progress
+                print("ERROR include tree can't be resolved, no base found!")
+                exit(1)
+            return True
 
-                # Parsing
-                print("Parsing %s" % fname)
-                xml.append(mavparse.MAVXML(fname, opts.wire_protocol))
-
-                # include message lengths and CRCs too
-                x.message_crcs.update(xml[-1].message_crcs)
-                x.message_lengths.update(xml[-1].message_lengths)
-                x.message_min_lengths.update(xml[-1].message_min_lengths)
-                x.message_flags.update(xml[-1].message_flags)
-                x.message_target_system_ofs.update(xml[-1].message_target_system_ofs)
-                x.message_target_component_ofs.update(xml[-1].message_target_component_ofs)
-                x.message_names.update(xml[-1].message_names)
-                x.largest_payload = max(x.largest_payload, xml[-1].largest_payload)
+        for i in range(MAXIMUM_INCLUDE_FILE_NESTING):
+            #print("\nITERATION "+str(i))
+            if not update_oneiteration():
+                break
 
     def mavgen_validate(xmlfile):
         """Uses lxml to validate an XML file. We define mavgen_validate
@@ -143,20 +236,8 @@ def mavgen(opts, args):
         xml.append(mavparse.MAVXML(fname, opts.wire_protocol))
 
     # expand includes
-    for i in range(MAXIMUM_INCLUDE_FILE_NESTING):
-        len_allfiles = len(all_files)
-        expand_includes()
-        if len(all_files) == len_allfiles:
-            # stop when loop doesn't add any more included files
-            break
-
-    # work out max payload size across all includes
-    largest_payload = max(x.largest_payload for x in xml) if xml else 0
-    for x in xml:
-        x.largest_payload = largest_payload
-
-    if mavparse.check_duplicates(xml):
-        sys.exit(1)
+    expand_includes()
+    update_includes()
 
     print("Found %u MAVLink message types in %u XML files" % (
         mavparse.total_msgs(xml), len(xml)))
