@@ -209,7 +209,7 @@ tracks:
       :{release_inc}
     devel_branch: master
     last_release: master
-    last_version: 2020.9.10
+    last_version: 2020.10.11
     name: upstream
     patches: patch
     release_inc: '1'
