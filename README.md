@@ -1,3 +1,26 @@
+## mavlink (kinetic) - 2020.11.11-1
+
+The packages in the `mavlink` repository were released into the `kinetic` distro by running `/usr/bin/bloom-release -r kinetic mavlink` on `Wed, 11 Nov 2020 16:22:22 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2020.10.11-1`
+- old version: `2020.10.11-1`
+- new version: `2020.11.11-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.0`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.19.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (foxy) - 2020.10.11-1
 
 The packages in the `mavlink` repository were released into the `foxy` distro by running `/usr/bin/bloom-release -r foxy mavlink` on `Sun, 11 Oct 2020 20:36:50 -0000`
