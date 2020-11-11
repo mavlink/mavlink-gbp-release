@@ -1,3 +1,26 @@
+## mavlink (eloquent) - 2020.11.11-1
+
+The packages in the `mavlink` repository were released into the `eloquent` distro by running `/usr/bin/bloom-release -r eloquent mavlink` on `Wed, 11 Nov 2020 20:41:52 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2020.10.11-1`
+- old version: `2020.10.11-1`
+- new version: `2020.11.11-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.0`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.19.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (noetic) - 2020.11.11-1
 
 The packages in the `mavlink` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic mavlink` on `Wed, 11 Nov 2020 20:00:25 -0000`
