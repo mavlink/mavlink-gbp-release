@@ -25,6 +25,7 @@ parser.add_argument("--elliptical", action='store_true', help="fit elliptical co
 parser.add_argument("--cmot", action='store_true', help="fit compassmot corrections")
 parser.add_argument("--lat", type=float, default=0, help="latitude")
 parser.add_argument("--lon", type=float, default=0, help="longitude")
+parser.add_argument("--att-source", default=None, help="attitude source message")
 
 parser.add_argument("log", metavar="LOG")
 
@@ -69,6 +70,8 @@ class Correction:
         print("COMPASS_MOT%s_Y %.3f" % (mag_idx, self.cmot.y))
         print("COMPASS_MOT%s_Z %.3f" % (mag_idx, self.cmot.z))
         print("COMPASS_SCALE%s %.2f" % (mag_idx, self.scaling))
+        if args.cmot:
+            print("COMPASS_MOTCT 2")
 
 def correct(MAG, BAT, c):
     '''correct a mag sample, returning a Vector3'''
@@ -170,7 +173,8 @@ def fit_WWW():
         p.extend([c.cmot.x, c.cmot.y, c.cmot.z])
 
     ofs = args.max_offset
-    bounds = [(-ofs,ofs),(-ofs,ofs),(-ofs,ofs),(args.min_scale,args.max_scale)]
+    min_scale_delta = 0.00001
+    bounds = [(-ofs,ofs),(-ofs,ofs),(-ofs,ofs),(args.min_scale,max(args.min_scale+min_scale_delta,args.max_scale))]
     if args.no_offset_change:
         bounds[0] = (c.offsets.x, c.offsets.x)
         bounds[1] = (c.offsets.y, c.offsets.y)
@@ -191,7 +195,10 @@ def fit_WWW():
             for i in range(3):
                 bounds.append((-args.max_cmot,args.max_cmot))
 
-    p = optimize.fmin_slsqp(wmm_error, p, bounds=bounds)
+    (p,err,iterations,imode,smode) = optimize.fmin_slsqp(wmm_error, p, bounds=bounds, full_output=True)
+    if imode != 0:
+        print("Fit failed: %s" % smode)
+        sys.exit(1)
     p = list(p)
 
     c.offsets = Vector3(p.pop(0), p.pop(0), p.pop(0))
@@ -266,17 +273,27 @@ def magfit(logfile):
         earth_field = mavextra.expected_earth_field_lat_lon(args.lat, args.lon)
         (declination,inclination,intensity) = mavextra.get_mag_field_ef(args.lat, args.lon)
         print("Earth field: %s  strength %.0f declination %.1f degrees" % (earth_field, earth_field.length(), declination))
-    
+
+    if args.att_source is not None:
+        ATT_NAME = args.att_source
+    if parameters['AHRS_EKF_TYPE'] == 2:
+        ATT_NAME = 'NKF1'
+    elif parameters['AHRS_EKF_TYPE'] == 3:
+        ATT_NAME = 'XKF1'
+    else:
+        ATT_NAME = 'ATT'
+    print("Attitude source %s" % ATT_NAME);
+
     # extract MAG data
     while True:
-        msg = mlog.recv_match(type=['GPS',mag_msg,'ATT','CTUN','BARO', 'BAT'], condition=args.condition)
+        msg = mlog.recv_match(type=['GPS',mag_msg,ATT_NAME,'CTUN','BARO', 'BAT'], condition=args.condition)
         if msg is None:
             break
         if msg.get_type() == 'GPS' and msg.Status >= 3 and earth_field is None:
             earth_field = mavextra.expected_earth_field(msg)
             (declination,inclination,intensity) = mavextra.get_mag_field_ef(msg.Lat, msg.Lng)
             print("Earth field: %s  strength %.0f declination %.1f degrees" % (earth_field, earth_field.length(), declination))
-        if msg.get_type() == 'ATT':
+        if msg.get_type() == ATT_NAME:
             ATT = msg
         if msg.get_type() == 'BAT':
             BAT = msg
