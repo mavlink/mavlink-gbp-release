@@ -11,6 +11,7 @@ from builtins import object
 import socket, math, struct, time, os, fnmatch, array, sys, errno
 import select
 import copy
+import re
 from pymavlink import mavexpression
 
 # adding these extra imports allows pymavlink to be used directly with pyinstaller
@@ -637,6 +638,7 @@ class mavfile(object):
                         mavlink.MAV_TYPE_OCTOROTOR,
                         mavlink.MAV_TYPE_DODECAROTOR,
                         mavlink.MAV_TYPE_COAXIAL,
+                        mavlink.MAV_TYPE_DECAROTOR,
                         mavlink.MAV_TYPE_TRICOPTER]:
             map = mode_mapping_acm
         if mav_type == mavlink.MAV_TYPE_FIXED_WING:
@@ -1657,7 +1659,7 @@ def mavlink_connection(device, baud=115200, source_system=255, source_component=
                        robust_parsing=True, notimestamps=False, input=True,
                        dialect=None, autoreconnect=False, zero_time_base=False,
                        retries=3, use_native=default_native,
-                       force_connected=False, progress_callback=None):
+                       force_connected=False, progress_callback=None, **opts):
     '''open a serial, UDP, TCP or file mavlink connection'''
     global mavfile_global
 
@@ -1692,6 +1694,26 @@ def mavlink_connection(device, baud=115200, source_system=255, source_component=
         # support dataflash logs
         from pymavlink import DFReader
         m = DFReader.DFReader_binary(device, zero_time_base=zero_time_base, progress_callback=progress_callback)
+        mavfile_global = m
+        return m
+
+    if device.lower().startswith('csv:'):
+        # support CSV logs
+        from pymavlink import CSVReader
+        # special-case for users wanting a : separator:
+        colon_separator_re = ""
+        if re.match(".*separator=::?.*", device):
+            opts["separator"] = ":"
+            device = re.sub(":separator=:", "", device)
+        components = device.split(":")
+        filename = components[1]
+        for nv in components[2:]:
+            (name, value) = nv.split('=')
+            opts[name] = value
+        m = CSVReader.CSVReader(filename,
+                                zero_time_base=zero_time_base,
+                                progress_callback=progress_callback,
+                                **opts)
         mavfile_global = m
         return m
 
@@ -2092,6 +2114,7 @@ def mode_mapping_byname(mav_type):
                     mavlink.MAV_TYPE_HELICOPTER,
                     mavlink.MAV_TYPE_HEXAROTOR,
                     mavlink.MAV_TYPE_OCTOROTOR,
+                    mavlink.MAV_TYPE_DECAROTOR,
                     mavlink.MAV_TYPE_COAXIAL,
                     mavlink.MAV_TYPE_TRICOPTER]:
         map = mode_mapping_acm
@@ -2116,6 +2139,7 @@ def mode_mapping_bynumber(mav_type):
     if mav_type in [mavlink.MAV_TYPE_QUADROTOR,
                     mavlink.MAV_TYPE_HELICOPTER,
                     mavlink.MAV_TYPE_HEXAROTOR,
+                    mavlink.MAV_TYPE_DECAROTOR,
                     mavlink.MAV_TYPE_OCTOROTOR,
                     mavlink.MAV_TYPE_DODECAROTOR,
                     mavlink.MAV_TYPE_COAXIAL,
@@ -2142,10 +2166,15 @@ def mode_string_v10(msg):
         return interpret_px4_mode(msg.base_mode, msg.custom_mode)
     if not msg.base_mode & mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
         return "Mode(0x%08x)" % msg.base_mode
-    if msg.type in [ mavlink.MAV_TYPE_QUADROTOR, mavlink.MAV_TYPE_HEXAROTOR,
-                     mavlink.MAV_TYPE_OCTOROTOR, mavlink.MAV_TYPE_TRICOPTER,
-                     mavlink.MAV_TYPE_COAXIAL,
-                     mavlink.MAV_TYPE_HELICOPTER ]:
+    if msg.type in [
+            mavlink.MAV_TYPE_HELICOPTER,
+            mavlink.MAV_TYPE_COAXIAL,
+            mavlink.MAV_TYPE_TRICOPTER,
+            mavlink.MAV_TYPE_QUADROTOR,
+            mavlink.MAV_TYPE_HEXAROTOR,
+            mavlink.MAV_TYPE_OCTOROTOR,
+            mavlink.MAV_TYPE_DECAROTOR,
+    ]:
         if msg.custom_mode in mode_mapping_acm:
             return mode_mapping_acm[msg.custom_mode]
     if msg.type == mavlink.MAV_TYPE_FIXED_WING:
@@ -2178,7 +2207,7 @@ def mode_string_acm(mode_number):
     return "Mode(%u)" % mode_number
 
 class x25crc(object):
-    '''x25 CRC - based on checksum.h from mavlink library'''
+    '''CRC-16/MCRF4XX - based on checksum.h from mavlink library'''
     def __init__(self, buf=''):
         self.crc = 0xffff
         self.accumulate(buf)
