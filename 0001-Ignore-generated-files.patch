@@ -1,4 +1,4 @@
-From f51a9566cc9c3c682fc1cc0b59c3ba90465faeb7 Mon Sep 17 00:00:00 2001
+From 94dfa17046d453c4d8a220a9c60d564116ecf8c6 Mon Sep 17 00:00:00 2001
 From: "Dr.-Ing. Amilcar do Carmo Lucas" <amilcar.lucas@iav.de>
 Date: Fri, 26 Jul 2019 16:29:54 +0200
 Subject: [PATCH] Ignore generated files
