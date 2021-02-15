@@ -848,7 +848,7 @@
         <description>Land at location.</description>
         <param index="1" label="Abort Alt" units="m">Minimum target altitude if landing is aborted (0 = undefined/use system default).</param>
         <param index="2" label="Land Mode" enum="PRECISION_LAND_MODE">Precision land mode.</param>
-        <param index="3">Empty</param>
+        <param index="3">Empty.</param>
         <param index="4" label="Yaw Angle" units="deg">Desired yaw angle. NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.).</param>
         <param index="5" label="Latitude">Latitude.</param>
         <param index="6" label="Longitude">Longitude.</param>
@@ -1193,7 +1193,7 @@
       </entry>
       <entry value="186" name="MAV_CMD_DO_CHANGE_ALTITUDE" hasLocation="false" isDestination="false">
         <description>Change altitude set point.</description>
-        <param index="1" label="Altitude" units="m">Altitude</param>
+        <param index="1" label="Altitude" units="m">Altitude.</param>
         <param index="2" label="Frame" enum="MAV_FRAME">Frame of new altitude.</param>
         <param index="3">Empty</param>
         <param index="4">Empty</param>
@@ -1290,8 +1290,8 @@
         <param index="3">Empty</param>
         <param index="4">Empty</param>
         <param index="5" label="Pitch Offset">Pitch offset from next waypoint, positive pitching up</param>
-        <param index="6" label="Roll Offset">roll offset from next waypoint, positive rolling to the right</param>
-        <param index="7" label="Yaw Offset">yaw offset from next waypoint, positive yawing to the right</param>
+        <param index="6" label="Roll Offset">Roll offset from next waypoint, positive rolling to the right</param>
+        <param index="7" label="Yaw Offset">Yaw offset from next waypoint, positive yawing to the right</param>
       </entry>
       <entry value="197" name="MAV_CMD_DO_SET_ROI_NONE" hasLocation="false" isDestination="false">
         <description>Cancels any previous ROI command returning the vehicle/sensors to default flight characteristics. This can then be used by the vehicle's control system to control the vehicle attitude and the attitude of various sensors such as cameras. This command can be sent to a gimbal manager but not to a gimbal device. A gimbal device is not to react to this message. After this command the gimbal manager should go back to manual input if available, and otherwise assume a neutral position.</description>
@@ -1967,7 +1967,6 @@
         <param index="7" label="Altitude" units="m">Altitude</param>
       </entry>
       <entry value="5000" name="MAV_CMD_NAV_FENCE_RETURN_POINT" hasLocation="true" isDestination="true">
-        <deprecated since="2020-09" replaced_by="MAV_CMD_NAV_RALLY_POINT">This mechanism was superseded by rally points. If rally points are defined then they take precedence.</deprecated>
         <description>Fence return point. There can only be one fence return point.
         </description>
         <param index="1">Reserved</param>
@@ -3378,13 +3377,13 @@
     </enum>
     <enum name="CAMERA_TRACKING_MODE">
       <description>Camera tracking modes</description>
-      <entry value="0" name="CAMERA_TRACKING_NONE">
+      <entry value="0" name="CAMERA_TRACKING_MODE_NONE">
         <description>Not tracking</description>
       </entry>
-      <entry value="1" name="CAMERA_TRACKING_POINT">
+      <entry value="1" name="CAMERA_TRACKING_MODE_POINT">
         <description>Target is a point</description>
       </entry>
-      <entry value="2" name="CAMERA_TRACKING_RECTANGLE">
+      <entry value="2" name="CAMERA_TRACKING_MODE_RECTANGLE">
         <description>Target is a rectangle</description>
       </entry>
     </enum>
@@ -4852,7 +4851,7 @@
       <field type="uint16_t" name="chan15_raw" units="us">RC channel 15 value. A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.</field>
       <field type="uint16_t" name="chan16_raw" units="us">RC channel 16 value. A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.</field>
       <field type="uint16_t" name="chan17_raw" units="us">RC channel 17 value. A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.</field>
-      <field type="uint16_t" name="chan18_raw" units="us">RC channel 18 val1ue. A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.</field>
+      <field type="uint16_t" name="chan18_raw" units="us">RC channel 18 value. A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.</field>
     </message>
     <message id="73" name="MISSION_ITEM_INT">
       <description>Message encoding a mission item. This message is emitted to announce
@@ -5279,8 +5278,8 @@
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84)</field>
       <field type="int32_t" name="alt" units="mm">Altitude (MSL). Positive for up.</field>
-      <field type="uint16_t" name="eph" units="cm">GPS HDOP horizontal dilution of position. If unknown, set to: 65535</field>
-      <field type="uint16_t" name="epv" units="cm">GPS VDOP vertical dilution of position. If unknown, set to: 65535</field>
+      <field type="uint16_t" name="eph">GPS HDOP horizontal dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
+      <field type="uint16_t" name="epv">GPS VDOP vertical dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="vel" units="cm/s">GPS ground speed. If unknown, set to: 65535</field>
       <field type="int16_t" name="vn" units="cm/s">GPS velocity in north direction in earth-fixed NED frame</field>
       <field type="int16_t" name="ve" units="cm/s">GPS velocity in east direction in earth-fixed NED frame</field>
@@ -5394,8 +5393,8 @@
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84)</field>
       <field type="int32_t" name="alt" units="mm">Altitude (MSL). Positive for up.</field>
-      <field type="uint16_t" name="eph" units="cm">GPS HDOP horizontal dilution of position. If unknown, set to: UINT16_MAX</field>
-      <field type="uint16_t" name="epv" units="cm">GPS VDOP vertical dilution of position. If unknown, set to: UINT16_MAX</field>
+      <field type="uint16_t" name="eph">GPS HDOP horizontal dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
+      <field type="uint16_t" name="epv">GPS VDOP vertical dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="vel" units="cm/s">GPS ground speed. If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="cog" units="cdeg">Course over ground (NOT heading, but direction of movement): 0.0..359.99 degrees. If unknown, set to: UINT16_MAX</field>
       <field type="uint8_t" name="satellites_visible">Number of satellites visible. If unknown, set to 255</field>
@@ -5765,8 +5764,8 @@
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84)</field>
       <field type="float" name="alt" units="m">Altitude (MSL). Positive for up.</field>
-      <field type="float" name="hdop" units="m">GPS HDOP horizontal dilution of position</field>
-      <field type="float" name="vdop" units="m">GPS VDOP vertical dilution of position</field>
+      <field type="float" name="hdop">GPS HDOP horizontal dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
+      <field type="float" name="vdop">GPS VDOP vertical dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
       <field type="float" name="vn" units="m/s">GPS velocity in north direction in earth-fixed NED frame</field>
       <field type="float" name="ve" units="m/s">GPS velocity in east direction in earth-fixed NED frame</field>
       <field type="float" name="vd" units="m/s">GPS velocity in down direction in earth-fixed NED frame</field>
@@ -6143,13 +6142,13 @@
       <field type="uint8_t" name="tracking_status" enum="CAMERA_TRACKING_STATUS_FLAGS">Current tracking status</field>
       <field type="uint8_t" name="tracking_mode" enum="CAMERA_TRACKING_MODE">Current tracking mode</field>
       <field type="uint8_t" name="target_data" enum="CAMERA_TRACKING_TARGET_DATA">Defines location of target data</field>
-      <field type="float" name="point_x">Current tracked point x value if CAMERA_TRACKING_POINT (normalized 0..1, 0 is left, 1 is right), NAN if unknown</field>
-      <field type="float" name="point_y">Current tracked point y value if CAMERA_TRACKING_POINT (normalized 0..1, 0 is top, 1 is bottom), NAN if unknown</field>
-      <field type="float" name="radius">Current tracked radius if CAMERA_TRACKING_POINT (normalized 0..1, 0 is image left, 1 is image right), NAN if unknown</field>
-      <field type="float" name="rec_top_x">Current tracked rectangle top x value if CAMERA_TRACKING_RECTANGLE (normalized 0..1, 0 is left, 1 is right), NAN if unknown</field>
-      <field type="float" name="rec_top_y">Current tracked rectangle top y value if CAMERA_TRACKING_RECTANGLE (normalized 0..1, 0 is top, 1 is bottom), NAN if unknown</field>
-      <field type="float" name="rec_bottom_x">Current tracked rectangle bottom x value if CAMERA_TRACKING_RECTANGLE (normalized 0..1, 0 is left, 1 is right), NAN if unknown</field>
-      <field type="float" name="rec_bottom_y">Current tracked rectangle bottom y value if CAMERA_TRACKING_RECTANGLE (normalized 0..1, 0 is top, 1 is bottom), NAN if unknown</field>
+      <field type="float" name="point_x">Current tracked point x value if CAMERA_TRACKING_MODE_POINT (normalized 0..1, 0 is left, 1 is right), NAN if unknown</field>
+      <field type="float" name="point_y">Current tracked point y value if CAMERA_TRACKING_MODE_POINT (normalized 0..1, 0 is top, 1 is bottom), NAN if unknown</field>
+      <field type="float" name="radius">Current tracked radius if CAMERA_TRACKING_MODE_POINT (normalized 0..1, 0 is image left, 1 is image right), NAN if unknown</field>
+      <field type="float" name="rec_top_x">Current tracked rectangle top x value if CAMERA_TRACKING_MODE_RECTANGLE (normalized 0..1, 0 is left, 1 is right), NAN if unknown</field>
+      <field type="float" name="rec_top_y">Current tracked rectangle top y value if CAMERA_TRACKING_MODE_RECTANGLE (normalized 0..1, 0 is top, 1 is bottom), NAN if unknown</field>
+      <field type="float" name="rec_bottom_x">Current tracked rectangle bottom x value if CAMERA_TRACKING_MODE_RECTANGLE (normalized 0..1, 0 is left, 1 is right), NAN if unknown</field>
+      <field type="float" name="rec_bottom_y">Current tracked rectangle bottom y value if CAMERA_TRACKING_MODE_RECTANGLE (normalized 0..1, 0 is top, 1 is bottom), NAN if unknown</field>
     </message>
     <message id="276" name="CAMERA_TRACKING_GEO_STATUS">
       <wip/>
@@ -6471,6 +6470,7 @@
     </message>
     <message id="334" name="CELLULAR_STATUS">
       <wip/>
+      <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>Report current used cellular network status</description>
       <field type="uint8_t" name="status" enum="CELLULAR_STATUS_FLAG">Cellular modem status</field>
       <field type="uint8_t" name="failure_reason" enum="CELLULAR_NETWORK_FAILED_REASON">Failure reason when status in in CELLUAR_STATUS_FAILED</field>
