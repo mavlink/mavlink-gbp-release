@@ -760,14 +760,17 @@
     </enum>
     <enum name="COMP_METADATA_TYPE">
       <description>Possible values for COMPONENT_INFORMATION.comp_metadata_type.</description>
-      <entry value="0" name="COMP_METADATA_TYPE_VERSION">
-        <description>Version information which also includes information on other optional supported COMP_METADATA_TYPE's. Must be supported. Only downloadable from vehicle.</description>
+      <entry value="0" name="COMP_METADATA_TYPE_GENERAL">
+        <description>General information which also includes information on other optional supported COMP_METADATA_TYPE's. Must be supported. Only downloadable from vehicle.</description>
       </entry>
       <entry value="1" name="COMP_METADATA_TYPE_PARAMETER">
         <description>Parameter meta data.</description>
       </entry>
       <entry value="2" name="COMP_METADATA_TYPE_COMMANDS">
         <description>Meta data which specifies the commands the vehicle supports. (WIP)</description>
+      </entry>
+      <entry value="3" name="COMP_METADATA_TYPE_PERIPHERALS">
+        <description>Meta data which specifies potential external peripherals that do not talk MAVLink</description>
       </entry>
     </enum>
     <enum name="PARAM_TRANSACTION_TRANSPORT">
@@ -1562,7 +1565,7 @@
       </entry>
       <entry value="245" name="MAV_CMD_PREFLIGHT_STORAGE" hasLocation="false" isDestination="false">
         <description>Request storage of different parameter values and logs. This command will be only accepted if in pre-flight mode.</description>
-        <param index="1" label="Parameter Storage" minValue="0" maxValue="2" increment="1">Parameter storage: 0: READ FROM FLASH/EEPROM, 1: WRITE CURRENT TO FLASH/EEPROM, 2: Reset to defaults</param>
+        <param index="1" label="Parameter Storage" minValue="0" maxValue="3" increment="1">Parameter storage: 0: READ FROM FLASH/EEPROM, 1: WRITE CURRENT TO FLASH/EEPROM, 2: Reset to defaults, 3: Reset sensor calibration parameter data to factory default (or firmware default if not available)</param>
         <param index="2" label="Mission Storage" minValue="0" maxValue="2" increment="1">Mission storage: 0: READ FROM FLASH/EEPROM, 1: WRITE CURRENT TO FLASH/EEPROM, 2: Reset to defaults</param>
         <param index="3" label="Logging Rate" units="Hz" minValue="-1" increment="1">Onboard logging: 0: Ignore, 1: Start default rate logging, -1: Stop logging, &gt; 1: logging rate (e.g. set to 1000 for 1000 Hz logging)</param>
         <param index="4">Reserved</param>
@@ -2932,6 +2935,12 @@
       <entry value="64" name="MAV_BATTERY_FAULT_INCOMPATIBLE_VOLTAGE">
         <description>Vehicle voltage is not compatible with this battery (batteries on same power rail should have similar voltage).</description>
       </entry>
+      <entry value="128" name="MAV_BATTERY_FAULT_INCOMPATIBLE_FIRMWARE">
+        <description>Battery firmware is not compatible with current autopilot firmware.</description>
+      </entry>
+      <entry value="256" name="BATTERY_FAULT_INCOMPATIBLE_CELLS_CONFIGURATION">
+        <description>Battery is not compatible due to cell configuration (e.g. 5s1p when vehicle requires 6s).</description>
+      </entry>
     </enum>
     <enum name="MAV_GENERATOR_STATUS_FLAG" bitmask="true">
       <description>Flags to report status/failure cases for a power generator (used in GENERATOR_STATUS). Note that FAULTS are conditions that cause the generator to fail. Warnings are conditions that require attention before the next use (they indicate the system is not operating properly).</description>
@@ -3540,6 +3549,9 @@
       </entry>
       <entry value="4" name="ATTITUDE_TARGET_TYPEMASK_BODY_YAW_RATE_IGNORE">
         <description>Ignore body yaw rate</description>
+      </entry>
+      <entry value="32" name="ATTITUDE_TARGET_TYPEMASK_THRUST_BODY_SET">
+        <description>Use 3D body thrust setpoint instead of throttle</description>
       </entry>
       <entry value="64" name="ATTITUDE_TARGET_TYPEMASK_THROTTLE_IGNORE">
         <description>Ignore throttle</description>
@@ -4408,8 +4420,8 @@
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84, EGM96 ellipsoid)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84, EGM96 ellipsoid)</field>
       <field type="int32_t" name="alt" units="mm">Altitude (MSL). Positive for up. Note that virtually all GPS modules provide the MSL altitude in addition to the WGS84 altitude.</field>
-      <field type="uint16_t" name="eph">GPS HDOP horizontal dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
-      <field type="uint16_t" name="epv">GPS VDOP vertical dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
+      <field type="uint16_t" name="eph">GPS HDOP horizontal dilution of position (unitless * 100). If unknown, set to: UINT16_MAX</field>
+      <field type="uint16_t" name="epv">GPS VDOP vertical dilution of position (unitless * 100). If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="vel" units="cm/s">GPS ground speed. If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="cog" units="cdeg">Course over ground (NOT heading, but direction of movement) in degrees * 100, 0.0..359.99 degrees. If unknown, set to: UINT16_MAX</field>
       <field type="uint8_t" name="satellites_visible">Number of satellites visible. If unknown, set to 255</field>
@@ -4954,6 +4966,8 @@
       <field type="float" name="body_pitch_rate" units="rad/s">Body pitch rate</field>
       <field type="float" name="body_yaw_rate" units="rad/s">Body yaw rate</field>
       <field type="float" name="thrust">Collective thrust, normalized to 0 .. 1 (-1 .. 1 for vehicles capable of reverse trust)</field>
+      <extensions/>
+      <field type="float[3]" name="thrust_body">3D thrust setpoint in the body NED frame, normalized to -1 .. 1</field>
     </message>
     <message id="83" name="ATTITUDE_TARGET">
       <description>Reports the current commanded attitude of the vehicle as specified by the autopilot. This should match the commands sent in a SET_ATTITUDE_TARGET message if the vehicle is being controlled this way.</description>
@@ -5281,8 +5295,8 @@
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84)</field>
       <field type="int32_t" name="alt" units="mm">Altitude (MSL). Positive for up.</field>
-      <field type="uint16_t" name="eph">GPS HDOP horizontal dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
-      <field type="uint16_t" name="epv">GPS VDOP vertical dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
+      <field type="uint16_t" name="eph">GPS HDOP horizontal dilution of position (unitless * 100). If unknown, set to: UINT16_MAX</field>
+      <field type="uint16_t" name="epv">GPS VDOP vertical dilution of position (unitless * 100). If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="vel" units="cm/s">GPS ground speed. If unknown, set to: 65535</field>
       <field type="int16_t" name="vn" units="cm/s">GPS velocity in north direction in earth-fixed NED frame</field>
       <field type="int16_t" name="ve" units="cm/s">GPS velocity in east direction in earth-fixed NED frame</field>
@@ -5396,8 +5410,8 @@
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="lon" units="degE7">Longitude (WGS84)</field>
       <field type="int32_t" name="alt" units="mm">Altitude (MSL). Positive for up.</field>
-      <field type="uint16_t" name="eph">GPS HDOP horizontal dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
-      <field type="uint16_t" name="epv">GPS VDOP vertical dilution of position (unitless). If unknown, set to: UINT16_MAX</field>
+      <field type="uint16_t" name="eph">GPS HDOP horizontal dilution of position (unitless * 100). If unknown, set to: UINT16_MAX</field>
+      <field type="uint16_t" name="epv">GPS VDOP vertical dilution of position (unitless * 100). If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="vel" units="cm/s">GPS ground speed. If unknown, set to: UINT16_MAX</field>
       <field type="uint16_t" name="cog" units="cdeg">Course over ground (NOT heading, but direction of movement): 0.0..359.99 degrees. If unknown, set to: UINT16_MAX</field>
       <field type="uint8_t" name="satellites_visible">Number of satellites visible. If unknown, set to 255</field>
@@ -6037,7 +6051,7 @@
       <field type="uint8_t" name="image_status">Current status of image capturing (0: idle, 1: capture in progress, 2: interval set but idle, 3: interval set and capture in progress)</field>
       <field type="uint8_t" name="video_status">Current status of video capturing (0: idle, 1: capture in progress)</field>
       <field type="float" name="image_interval" units="s">Image capture interval</field>
-      <field type="uint32_t" name="recording_time_ms" units="ms">Time since recording started</field>
+      <field type="uint32_t" name="recording_time_ms" units="ms">Elapsed time since recording started (0: Not supported/available). A GCS should compute recording time and use non-zero values of this field to correct any discrepancy.</field>
       <field type="float" name="available_capacity" units="MiB">Available storage capacity.</field>
       <extensions/>
       <field type="int32_t" name="image_count">Total number of images captured ('forever', or until reset using MAV_CMD_STORAGE_FORMAT).</field>
@@ -6640,13 +6654,12 @@
     <message id="395" name="COMPONENT_INFORMATION">
       <wip/>
       <!-- This message is work-in-progress it can therefore change, and should NOT be used in stable production environments -->
-      <description>Information about a component. For camera components instead use CAMERA_INFORMATION, and for autopilots use AUTOPILOT_VERSION. Components including GCSes should consider supporting requests of this message via MAV_CMD_REQUEST_MESSAGE.</description>
+      <description>Information about a component. For camera components instead use CAMERA_INFORMATION, and for autopilots additionally use AUTOPILOT_VERSION. Components including GCSes should consider supporting requests of this message via MAV_CMD_REQUEST_MESSAGE.</description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
-      <field type="uint32_t" name="metadata_type" enum="COMP_METADATA_TYPE">The type of metadata being requested.</field>
-      <field type="uint32_t" name="metadata_uid">Unique uid for this metadata which a gcs can use for created cached metadata and understanding whether it's cache it up to date or whether it needs to download new data.</field>
-      <field type="char[70]" name="metadata_uri">Component definition URI. If prefix mavlinkftp:// file is downloaded from vehicle over mavlink ftp protocol. If prefix http[s]:// file is downloaded over internet. Files are json format. They can end in .gz to indicate file is in gzip format.</field>
-      <field type="uint32_t" name="translation_uid">Unique uid for the translation file associated with the metadata.</field>
-      <field type="char[70]" name="translation_uri">The translations for strings within the metadata file. If null the either do not exist or may be included in the metadata file itself. The translations specified here supercede any which may be in the metadata file itself. The uri format is the same as component_metadata_uri . Files are in Json Translation spec format. Empty string indicates no tranlsation file.</field>
+      <field type="uint32_t" name="general_metadata_file_crc">CRC32 of the TYPE_GENERAL file (can be used by a GCS for file caching).</field>
+      <field type="char[100]" name="general_metadata_uri">Component definition URI for TYPE_GENERAL. This must be a MAVLink FTP URI and the file might be compressed with xz.</field>
+      <field type="uint32_t" name="peripherals_metadata_file_crc">CRC32 of the TYPE_PERIPHERALS file (can be used by a GCS for file caching).</field>
+      <field type="char[100]" name="peripherals_metadata_uri">(Optional) Component definition URI for TYPE_PERIPHERALS. This must be a MAVLink FTP URI and the file might be compressed with xz.</field>
     </message>
     <message id="400" name="PLAY_TUNE_V2">
       <description>Play vehicle tone/tune (buzzer). Supersedes message PLAY_TUNE.</description>
