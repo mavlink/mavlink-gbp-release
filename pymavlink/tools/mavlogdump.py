@@ -52,6 +52,7 @@ parser.add_argument("--mav10", action='store_true', help="parse as MAVLink1")
 parser.add_argument("--reduce", type=int, default=0, help="reduce streaming messages")
 parser.add_argument("log", metavar="LOG")
 parser.add_argument("--profile", action='store_true', help="run the Yappi python profiler")
+parser.add_argument("--meta", action='store_true', help="output meta-data msgs even if not matching condition")
 
 args = parser.parse_args()
 
@@ -212,7 +213,8 @@ while True:
             output.write(struct.pack('>Q', int(timestamp*1.0e6)) + m.get_msgbuf())
             continue
 
-    if not mavutil.evaluate_condition(args.condition, mlog.messages):
+    if not mavutil.evaluate_condition(args.condition, mlog.messages) and (
+            not (m.get_type() in ['FMT', 'FMTU', 'MULT','PARM'] and args.meta)):
         continue
     if args.source_system is not None and args.source_system != m.get_srcSystem():
         continue
@@ -345,22 +347,7 @@ while True:
 
 # Export the .mat file
 if args.format == 'mat':
-    # Rearrange the dictionary so it exports correctly
-    MAT2 = {}
-    for packet_type in MAT:
-        vars = list(MAT[packet_type].keys())
-        data = []   # 2D list
-        i = 0
-        MAT2[packet_type+'_label'] = np.zeros((len(vars), 1), dtype=object)
-        for var in vars:
-            data.append(MAT[packet_type][var])
-            MAT2[packet_type+'_label'][i] = var
-            i += 1
-        # Transpose the list of lists
-        MAT2[packet_type] = list(map(list, zip(*data)))
-
-    # Save file
-    scipy.io.savemat(args.mat_file, MAT2, do_compression=args.compress)
+    scipy.io.savemat(args.mat_file, MAT, do_compression=args.compress)
 
 if args.show_types:
     for msgType in available_types:
