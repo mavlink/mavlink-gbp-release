@@ -1,3 +1,26 @@
+## mavlink (galactic) - 2021.5.5-1
+
+The packages in the `mavlink` repository were released into the `galactic` distro by running `/usr/bin/bloom-release -r galactic mavlink` on `Wed, 05 May 2021 09:12:30 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `null`
+- new version: `2021.5.5-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.7`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.20.1`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (foxy) - 2021.5.5-1
 
 The packages in the `mavlink` repository were released into the `foxy` distro by running `/usr/bin/bloom-release -r foxy mavlink` on `Wed, 05 May 2021 09:05:59 -0000`
