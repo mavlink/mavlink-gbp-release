@@ -70,7 +70,7 @@ tracks:
       :{release_inc} --os-name rhel
     devel_branch: master
     last_release: master
-    last_version: 2021.5.5
+    last_version: 2021.6.6
     name: upstream
     patches: patch
     release_inc: '1'
