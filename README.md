@@ -1,3 +1,26 @@
+## mavlink (noetic) - 2021.7.7-1
+
+The packages in the `mavlink` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic mavlink` on `Wed, 07 Jul 2021 09:49:20 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2021.6.6-1`
+- old version: `2021.6.6-1`
+- new version: `2021.7.7-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.7`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.20.1`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (melodic) - 2021.7.7-1
 
 The packages in the `mavlink` repository were released into the `melodic` distro by running `/usr/bin/bloom-release -r melodic mavlink` on `Wed, 07 Jul 2021 09:31:30 -0000`
