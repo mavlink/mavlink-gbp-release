@@ -219,7 +219,7 @@ tracks:
       :{release_inc} --os-name rhel
     devel_branch: master
     last_release: master
-    last_version: 2021.8.8
+    last_version: 2021.9.9
     name: upstream
     patches: patch
     release_inc: '1'
