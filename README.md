@@ -1,3 +1,26 @@
+## mavlink (melodic) - 2021.9.9-1
+
+The packages in the `mavlink` repository were released into the `melodic` distro by running `/usr/bin/bloom-release -r melodic mavlink` on `Thu, 09 Sep 2021 12:03:37 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2021.8.8-1`
+- old version: `2021.8.8-1`
+- new version: `2021.9.9-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.7`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.21.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (galactic) - 2021.8.8-1
 
 The packages in the `mavlink` repository were released into the `galactic` distro by running `/usr/bin/bloom-release -r galactic mavlink` on `Sun, 08 Aug 2021 13:33:32 -0000`
