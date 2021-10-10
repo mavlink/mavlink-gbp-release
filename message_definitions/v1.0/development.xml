@@ -89,6 +89,47 @@
         <param index="1" label="Action" enum="FENCE_ACTION">Fence action on breach.</param>
       </entry>
     </enum>
+    <enum name="CELLULAR_NETWORK_RADIO_TYPE">
+      <description>Cellular network radio type</description>
+      <entry value="0" name="CELLULAR_NETWORK_RADIO_TYPE_NONE"/>
+      <entry value="1" name="CELLULAR_NETWORK_RADIO_TYPE_GSM"/>
+      <entry value="2" name="CELLULAR_NETWORK_RADIO_TYPE_CDMA"/>
+      <entry value="3" name="CELLULAR_NETWORK_RADIO_TYPE_WCDMA"/>
+      <entry value="4" name="CELLULAR_NETWORK_RADIO_TYPE_LTE"/>
+    </enum>
+    <enum name="CELLULAR_NETWORK_FAILED_REASON">
+      <description>These flags are used to diagnose the failure state of CELLULAR_STATUS</description>
+      <entry value="0" name="CELLULAR_NETWORK_FAILED_REASON_NONE">
+        <description>No error</description>
+      </entry>
+      <entry value="1" name="CELLULAR_NETWORK_FAILED_REASON_UNKNOWN">
+        <description>Error state is unknown</description>
+      </entry>
+      <entry value="2" name="CELLULAR_NETWORK_FAILED_REASON_SIM_MISSING">
+        <description>SIM is required for the modem but missing</description>
+      </entry>
+      <entry value="3" name="CELLULAR_NETWORK_FAILED_REASON_SIM_ERROR">
+        <description>SIM is available, but not usuable for connection</description>
+      </entry>
+    </enum>
+    <enum name="MAV_CMD">
+      <entry value="301" name="MAV_CMD_GROUP_START" hasLocation="false" isDestination="false">
+        <description>Define start of a group of mission items. When control reaches this command a GROUP_START message is emitted.
+          The end of a group is marked using MAV_CMD_GROUP_END with the same group id.
+          Group ids are expected, but not required, to iterate sequentially.
+          Groups can be nested.</description>
+        <param index="1" label="Group ID" minValue="0" maxValue="16777216" increment="1">Mission-unique group id.
+          Group id is limited because only 24 bit integer can be stored in 32 bit float.</param>
+      </entry>
+      <entry value="302" name="MAV_CMD_GROUP_END" hasLocation="false" isDestination="false">
+        <description>Define end of a group of mission items. When control reaches this command a GROUP_END message is emitted.
+          The start of the group is marked is marked using MAV_CMD_GROUP_START with the same group id.
+          Group ids are expected, but not required, to iterate sequentially.
+          Groups can be nested.</description>
+        <param index="1" label="Group ID" minValue="0" maxValue="16777216" increment="1">Mission-unique group id.
+          Group id is limited because only 24 bit integer can be stored in 32 bit float.</param>
+      </entry>
+    </enum>
   </enums>
   <messages>
     <!-- Transactions for parameter protocol -->
@@ -111,13 +152,15 @@
       <field type="uint8_t" name="mission_type" enum="MAV_MISSION_TYPE">Mission type.</field>
     </message>
     <message id="53" name="MISSION_CHECKSUM">
-      <description>Checksum for the current mission, rally points or geofence plan (a GCS can use this checksum to determine if it has a matching plan definition).
-        This message must be broadcast following any change to a plan (immediately after the MISSION_ACK that completes the plan upload sequence).
-        It may also be requested using MAV_CMD_REQUEST_MESSAGE, where param 2 indicates the plan type for which the hash is required.
+      <description>Checksum for the current mission, rally point or geofence plan, or for the "combined" plan (a GCS can use these checksums to determine if it has matching plans).
+        This message must be broadcast with the appropriate checksum following any change to a mission, geofence or rally point definition
+        (immediately after the MISSION_ACK that completes the upload sequence).
+        It may also be requested using MAV_CMD_REQUEST_MESSAGE, where param 2 indicates the plan type for which the checksum is required.
         The checksum must be calculated on the autopilot, but may also be calculated by the GCS.
         The checksum uses the same CRC32 algorithm as MAVLink FTP (https://mavlink.io/en/services/ftp.html#crc32-implementation).
-        It is run over each item in the plan in seq order (excluding the home location if present in the plan), and covers the following fields (in order):
+        The checksum for a mission, geofence or rally point definition is run over each item in the plan in seq order (excluding the home location if present in the plan), and covers the following fields (in order):
         frame, command, autocontinue, param1, param2, param3, param4, param5, param6, param7.
+        The checksum for the whole plan (MAV_MISSION_TYPE_ALL) is calculated using the same approach, running over each sub-plan in the following order: mission, geofence then rally point.
       </description>
       <field type="uint8_t" name="mission_type" enum="MAV_MISSION_TYPE">Mission type.</field>
       <field type="uint32_t" name="checksum">CRC32 checksum of current plan for specified type.</field>
