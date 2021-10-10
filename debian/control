@@ -1,0 +1,13 @@
+Source: ros-rolling-mavlink
+Section: misc
+Priority: optional
+Maintainer: Vladimir Ermakov <vooon341@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), cmake, python3-dev, python3-future, python3-lxml, ros-rolling-ament-cmake, ros-rolling-ros-environment, ros-rolling-ros-workspace
+Homepage: https://mavlink.io/en/
+Standards-Version: 3.9.2
+
+Package: ros-rolling-mavlink
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-ros-workspace
+Description: MAVLink message marshaling library.
+ This package provides C-headers and C++11 library for both 1.0 and 2.0 versions of protocol. For pymavlink use separate install via rosdep (python-pymavlink).
