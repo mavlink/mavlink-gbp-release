@@ -214,21 +214,30 @@
       <entry value="1073741824" name="MAV_SYS_STATUS_SENSOR_PROPULSION">
         <description>0x40000000 propulsion (actuator, esc, motor or propellor)</description>
       </entry>
+      <entry value="2147483648" name="MAV_SYS_STATUS_EXTENSION_USED">
+        <description>0x80000000 Extended bit-field are used for further sensor status bits (needs to be set in onboard_control_sensors_present only)</description>
+      </entry>
+    </enum>
+    <enum name="MAV_SYS_STATUS_SENSOR_EXTENDED" bitmask="true">
+      <description>These encode the sensors whose status is sent as part of the SYS_STATUS message in the extended fields.</description>
+      <entry value="1" name="MAV_SYS_STATUS_RECOVERY_SYSTEM">
+        <description>0x01 Recovery system (parachute, balloon, retracts etc)</description>
+      </entry>
     </enum>
     <enum name="MAV_FRAME">
       <description>Co-ordinate frames used by MAVLink. Not all frames are supported by all commands, messages, or vehicles.
       
       Global frames use the following naming conventions:
-      - `GLOBAL`: Global co-ordinate frame with WGS84 latitude/longitude and altitude positive over mean sea level (MSL) by default. 
-        The following modifiers may be used with `GLOBAL`:
-        - `RELATIVE_ALT`: Altitude is relative to the vehicle home position rather than MSL
-        - `TERRAIN_ALT`: Altitude is relative to ground level rather than MSL
-        - `INT`: Latitude/longitude (in degrees) are scaled by multiplying by 1E7  
+      - "GLOBAL": Global co-ordinate frame with WGS84 latitude/longitude and altitude positive over mean sea level (MSL) by default. 
+        The following modifiers may be used with "GLOBAL":
+        - "RELATIVE_ALT": Altitude is relative to the vehicle home position rather than MSL.
+        - "TERRAIN_ALT": Altitude is relative to ground level rather than MSL.
+        - "INT": Latitude/longitude (in degrees) are scaled by multiplying by 1E7.
 
       Local frames use the following naming conventions:
-      - `LOCAL`: Origin of local frame is fixed relative to earth. Unless otherwise specified this origin is the origin of the vehicle position-estimator ("EKF").
-      - `BODY`: Origin of local frame travels with the vehicle. NOTE, `BODY` does NOT indicate alignment of frame axis with vehicle attitude.
-      - `OFFSET`: Deprecated synonym for `BODY` (origin travels with the vehicle). Not to be used for new frames.
+      - "LOCAL": Origin of local frame is fixed relative to earth. Unless otherwise specified this origin is the origin of the vehicle position-estimator ("EKF").
+      - "BODY": Origin of local frame travels with the vehicle. NOTE, "BODY" does NOT indicate alignment of frame axis with vehicle attitude.
+      - "OFFSET": Deprecated synonym for "BODY" (origin travels with the vehicle). Not to be used for new frames.
 
       Some deprecated frames do not follow these conventions (e.g. MAV_FRAME_BODY_NED and MAV_FRAME_BODY_OFFSET_NED).
  </description>
@@ -713,9 +722,9 @@
       </entry>
     </enum>
     <enum name="STORAGE_USAGE_FLAG">
-      <description>Flags to indicate usage for a particular storage (see `STORAGE_INFORMATION.storage_usage` and `MAV_CMD_SET_STORAGE_USAGE`).</description>
+      <description>Flags to indicate usage for a particular storage (see STORAGE_INFORMATION.storage_usage and MAV_CMD_SET_STORAGE_USAGE).</description>
       <entry value="1" name="STORAGE_USAGE_FLAG_SET">
-        <description>Always set to 1 (indicates `STORAGE_INFORMATION.storage_usage` is supported).</description>
+        <description>Always set to 1 (indicates STORAGE_INFORMATION.storage_usage is supported).</description>
       </entry>
       <entry value="2" name="STORAGE_USAGE_FLAG_PHOTO">
         <description>Storage for saving photos.</description>
@@ -3611,6 +3620,15 @@
       <entry value="3" name="FOCUS_TYPE_METERS">
         <description>Focus value in metres. Note that there is no message to get the valid focus range of the camera, so this can type can only be used for cameras where the range is known (implying that this cannot reliably be used in a GCS for an arbitrary camera).</description>
       </entry>
+      <entry value="4" name="FOCUS_TYPE_AUTO">
+        <description>Focus automatically.</description>
+      </entry>
+      <entry value="5" name="FOCUS_TYPE_AUTO_SINGLE">
+        <description>Single auto focus. Mainly used for still pictures. Usually abbreviated as AF-S.</description>
+      </entry>
+      <entry value="6" name="FOCUS_TYPE_AUTO_CONTINUOUS">
+        <description>Continuous auto focus. Mainly used for dynamic scenes. Abbreviated as AF-C.</description>
+      </entry>
     </enum>
     <enum name="PARAM_ACK">
       <description>Result from PARAM_EXT_SET message (or a PARAM_SET within a transaction).</description>
@@ -4217,15 +4235,6 @@
         <description>Format is Modern Music Markup Language (MML): https://en.wikipedia.org/wiki/Music_Macro_Language#Modern_MML.</description>
       </entry>
     </enum>
-    <enum name="COMPONENT_CAP_FLAGS" bitmask="true">
-      <description>Component capability flags (Bitmap)</description>
-      <entry value="1" name="COMPONENT_CAP_FLAGS_PARAM">
-        <description>Component has parameters, and supports the parameter protocol (PARAM messages).</description>
-      </entry>
-      <entry value="2" name="COMPONENT_CAP_FLAGS_PARAM_EXT">
-        <description>Component has parameters, and supports the extended parameter protocol (PARAM_EXT messages).</description>
-      </entry>
-    </enum>
     <!-- AIS related enums-->
     <enum name="AIS_TYPE">
       <description>Type of AIS vessel, enum duplicated from AIS standard, https://gpsd.gitlab.io/gpsd/AIVDM.html</description>
@@ -4612,6 +4621,10 @@
       <field type="uint16_t" name="errors_count2">Autopilot-specific errors</field>
       <field type="uint16_t" name="errors_count3">Autopilot-specific errors</field>
       <field type="uint16_t" name="errors_count4">Autopilot-specific errors</field>
+      <extensions/>
+      <field type="uint32_t" name="onboard_control_sensors_present_extended" enum="MAV_SYS_STATUS_SENSOR_EXTENDED" display="bitmask" print_format="0x%04x">Bitmap showing which onboard controllers and sensors are present. Value of 0: not present. Value of 1: present.</field>
+      <field type="uint32_t" name="onboard_control_sensors_enabled_extended" enum="MAV_SYS_STATUS_SENSOR_EXTENDED" display="bitmask" print_format="0x%04x">Bitmap showing which onboard controllers and sensors are enabled:  Value of 0: not enabled. Value of 1: enabled.</field>
+      <field type="uint32_t" name="onboard_control_sensors_health_extended" enum="MAV_SYS_STATUS_SENSOR_EXTENDED" display="bitmask" print_format="0x%04x">Bitmap showing which onboard controllers and sensors have an error (or are operational). Value of 0: error. Value of 1: healthy.</field>
     </message>
     <message id="2" name="SYSTEM_TIME">
       <description>The system time is the time of the master clock, typically the computer clock of the main onboard computer.</description>
@@ -5031,7 +5044,7 @@
       <field type="float" name="rollspeed" units="rad/s">Roll angular speed</field>
       <field type="float" name="pitchspeed" units="rad/s">Pitch angular speed</field>
       <field type="float" name="yawspeed" units="rad/s">Yaw angular speed</field>
-      <field type="float[9]" name="covariance" invalid="[NaN,]">Row-major representation of a 3x3 attitude covariance matrix (states: roll, pitch, yaw; first three entries are the first ROW, next three entries are the second row, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[9]" name="covariance" invalid="[NaN:]">Row-major representation of a 3x3 attitude covariance matrix (states: roll, pitch, yaw; first three entries are the first ROW, next three entries are the second row, etc.). If unknown, assign NaN value to first element in the array.</field>
     </message>
     <message id="62" name="NAV_CONTROLLER_OUTPUT">
       <description>The state of the navigation and position controller.</description>
@@ -5055,7 +5068,7 @@
       <field type="float" name="vx" units="m/s">Ground X Speed (Latitude)</field>
       <field type="float" name="vy" units="m/s">Ground Y Speed (Longitude)</field>
       <field type="float" name="vz" units="m/s">Ground Z Speed (Altitude)</field>
-      <field type="float[36]" name="covariance" invalid="[NaN,]">Row-major representation of a 6x6 position and velocity 6x6 cross-covariance matrix (states: lat, lon, alt, vx, vy, vz; first six entries are the first ROW, next six entries are the second row, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[36]" name="covariance" invalid="[NaN:]">Row-major representation of a 6x6 position and velocity 6x6 cross-covariance matrix (states: lat, lon, alt, vx, vy, vz; first six entries are the first ROW, next six entries are the second row, etc.). If unknown, assign NaN value to first element in the array.</field>
     </message>
     <message id="64" name="LOCAL_POSITION_NED_COV">
       <description>The filtered local position (e.g. fused computer vision and accelerometers). Coordinate frame is right-handed, Z-axis down (aeronautical frame, NED / north-east-down convention)</description>
@@ -5070,7 +5083,7 @@
       <field type="float" name="ax" units="m/s/s">X Acceleration</field>
       <field type="float" name="ay" units="m/s/s">Y Acceleration</field>
       <field type="float" name="az" units="m/s/s">Z Acceleration</field>
-      <field type="float[45]" name="covariance" invalid="[NaN,]">Row-major representation of position, velocity and acceleration 9x9 cross-covariance matrix upper right triangle (states: x, y, z, vx, vy, vz, ax, ay, az; first nine entries are the first ROW, next eight entries are the second row, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[45]" name="covariance" invalid="[NaN:]">Row-major representation of position, velocity and acceleration 9x9 cross-covariance matrix upper right triangle (states: x, y, z, vx, vy, vz, ax, ay, az; first nine entries are the first ROW, next eight entries are the second row, etc.). If unknown, assign NaN value to first element in the array.</field>
     </message>
     <message id="65" name="RC_CHANNELS">
       <description>The PPM values of the RC channels received. The standard PPM modulation is as follows: 1000 microseconds: 0%, 2000 microseconds: 100%.  A value of UINT16_MAX implies the channel is unused. Individual receivers/transmitters might violate this specification.</description>
@@ -5425,7 +5438,7 @@
       <field type="float" name="pitch" units="rad">Pitch angle</field>
       <field type="float" name="yaw" units="rad">Yaw angle</field>
       <extensions/>
-      <field type="float[21]" name="covariance" invalid="[NaN,]">Row-major representation of pose 6x6 cross-covariance matrix upper right triangle (states: x_global, y_global, z_global, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[21]" name="covariance" invalid="[NaN:]">Row-major representation of pose 6x6 cross-covariance matrix upper right triangle (states: x_global, y_global, z_global, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
       <field type="uint8_t" name="reset_counter">Estimate reset counter. This should be incremented when the estimate resets in any of the dimensions (position, velocity, attitude, angular speed). This is designed to be used when e.g an external SLAM system detects a loop-closure and the estimate jumps.</field>
     </message>
     <message id="102" name="VISION_POSITION_ESTIMATE">
@@ -5438,7 +5451,7 @@
       <field type="float" name="pitch" units="rad">Pitch angle</field>
       <field type="float" name="yaw" units="rad">Yaw angle</field>
       <extensions/>
-      <field type="float[21]" name="covariance" invalid="[NaN,]">Row-major representation of pose 6x6 cross-covariance matrix upper right triangle (states: x, y, z, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[21]" name="covariance" invalid="[NaN:]">Row-major representation of pose 6x6 cross-covariance matrix upper right triangle (states: x, y, z, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
       <field type="uint8_t" name="reset_counter">Estimate reset counter. This should be incremented when the estimate resets in any of the dimensions (position, velocity, attitude, angular speed). This is designed to be used when e.g an external SLAM system detects a loop-closure and the estimate jumps.</field>
     </message>
     <message id="103" name="VISION_SPEED_ESTIMATE">
@@ -5448,7 +5461,7 @@
       <field type="float" name="y" units="m/s">Global Y speed</field>
       <field type="float" name="z" units="m/s">Global Z speed</field>
       <extensions/>
-      <field type="float[9]" name="covariance" invalid="[NaN,]">Row-major representation of 3x3 linear velocity covariance matrix (states: vx, vy, vz; 1st three entries - 1st row, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[9]" name="covariance" invalid="[NaN:]">Row-major representation of 3x3 linear velocity covariance matrix (states: vx, vy, vz; 1st three entries - 1st row, etc.). If unknown, assign NaN value to first element in the array.</field>
       <field type="uint8_t" name="reset_counter">Estimate reset counter. This should be incremented when the estimate resets in any of the dimensions (position, velocity, attitude, angular speed). This is designed to be used when e.g an external SLAM system detects a loop-closure and the estimate jumps.</field>
     </message>
     <message id="104" name="VICON_POSITION_ESTIMATE">
@@ -5461,7 +5474,7 @@
       <field type="float" name="pitch" units="rad">Pitch angle</field>
       <field type="float" name="yaw" units="rad">Yaw angle</field>
       <extensions/>
-      <field type="float[21]" name="covariance" invalid="[NaN,]">Row-major representation of 6x6 pose cross-covariance matrix upper right triangle (states: x, y, z, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[21]" name="covariance" invalid="[NaN:]">Row-major representation of 6x6 pose cross-covariance matrix upper right triangle (states: x, y, z, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
     </message>
     <message id="105" name="HIGHRES_IMU">
       <description>The IMU readings in SI units in NED body frame</description>
@@ -5850,7 +5863,7 @@
       <field type="float" name="y" units="m">Y position (NED)</field>
       <field type="float" name="z" units="m">Z position (NED)</field>
       <extensions/>
-      <field type="float[21]" name="covariance" invalid="[NaN,]">Row-major representation of a pose 6x6 cross-covariance matrix upper right triangle (states: x, y, z, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[21]" name="covariance" invalid="[NaN:]">Row-major representation of a pose 6x6 cross-covariance matrix upper right triangle (states: x, y, z, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
     </message>
     <message id="139" name="SET_ACTUATOR_CONTROL_TARGET">
       <description>Set the vehicle attitude and body angular rates.</description>
@@ -6336,7 +6349,7 @@
       <field type="char[32]" name="name">Textual storage name to be used in UI (microSD 1, Internal Memory, etc.) This is a NULL terminated string. If it is exactly 32 characters long, add a terminating NULL. If this string is empty, the generic type is shown to the user.</field>
       <field type="uint8_t" name="storage_usage" enum="STORAGE_USAGE_FLAG">Flags indicating whether this instance is preferred storage for photos, videos, etc.
         Note: Implementations should initially set the flags on the system-default storage id used for saving media (if possible/supported).
-        This setting can then be overridden using `MAV_CMD_SET_STORAGE_USAGE`.
+        This setting can then be overridden using MAV_CMD_SET_STORAGE_USAGE.
         If the media usage flags are not set, a GCS may assume storage ID 1 is the default storage for all media types.</field>
     </message>
     <message id="262" name="CAMERA_CAPTURE_STATUS">
@@ -6753,8 +6766,8 @@
       <field type="float" name="rollspeed" units="rad/s">Roll angular speed</field>
       <field type="float" name="pitchspeed" units="rad/s">Pitch angular speed</field>
       <field type="float" name="yawspeed" units="rad/s">Yaw angular speed</field>
-      <field type="float[21]" name="pose_covariance" invalid="[NaN,]">Row-major representation of a 6x6 pose cross-covariance matrix upper right triangle (states: x, y, z, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
-      <field type="float[21]" name="velocity_covariance" invalid="[NaN,]">Row-major representation of a 6x6 velocity cross-covariance matrix upper right triangle (states: vx, vy, vz, rollspeed, pitchspeed, yawspeed; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[21]" name="pose_covariance" invalid="[NaN:]">Row-major representation of a 6x6 pose cross-covariance matrix upper right triangle (states: x, y, z, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
+      <field type="float[21]" name="velocity_covariance" invalid="[NaN:]">Row-major representation of a 6x6 velocity cross-covariance matrix upper right triangle (states: vx, vy, vz, rollspeed, pitchspeed, yawspeed; first six entries are the first ROW, next five entries are the second ROW, etc.). If unknown, assign NaN value to first element in the array.</field>
       <extensions/>
       <field type="uint8_t" name="reset_counter">Estimate reset counter. This should be incremented when the estimate resets in any of the dimensions (position, velocity, attitude, angular speed). This is designed to be used when e.g an external SLAM system detects a loop-closure and the estimate jumps.</field>
       <field type="uint8_t" name="estimator_type" enum="MAV_ESTIMATOR_TYPE">Type of estimator that is providing the odometry.</field>
