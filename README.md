@@ -1,3 +1,26 @@
+## mavlink (foxy) - 2022.1.5-1
+
+The packages in the `mavlink` repository were released into the `foxy` distro by running `/usr/bin/bloom-release -r foxy mavlink` on `Wed, 05 Jan 2022 10:17:20 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2021.12.12-1`
+- old version: `2021.12.12-1`
+- new version: `2022.1.5-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.7`
+- catkin_pkg version: `0.4.24`
+- rosdep version: `0.21.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (noetic) - 2022.1.5-1
 
 The packages in the `mavlink` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic mavlink` on `Wed, 05 Jan 2022 10:05:03 -0000`
