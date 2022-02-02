@@ -137,6 +137,7 @@ class mavfile_state(object):
         self.flightmode = "UNKNOWN"
         self.vehicle_type = "UNKNOWN"
         self.mav_type = mavlink.MAV_TYPE_FIXED_WING
+        self.mav_autopilot = mavlink.MAV_AUTOPILOT_GENERIC
         self.base_mode = 0
         self.armed = False # canonical arm state for the vehicle as a whole
 
@@ -401,6 +402,8 @@ class mavfile(object):
                 self.mav_type = msg.type
                 self.base_mode = msg.base_mode
                 self.sysid_state[self.sysid].armed = (msg.base_mode & mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
+                self.sysid_state[self.sysid].mav_type = msg.type
+                self.sysid_state[self.sysid].mav_autopilot = msg.autopilot
 
         elif type == 'PARAM_VALUE':
             if not src_tuple in self.param_state:
@@ -625,8 +628,8 @@ class mavfile(object):
 
     def mode_mapping(self):
         '''return dictionary mapping mode names to numbers, or None if unknown'''
-        mav_type = self.field('HEARTBEAT', 'type', self.mav_type)
-        mav_autopilot = self.field('HEARTBEAT', 'autopilot', None)
+        mav_type = self.sysid_state[self.sysid].mav_type
+        mav_autopilot = self.sysid_state[self.sysid].mav_autopilot
         if mav_autopilot == mavlink.MAV_AUTOPILOT_PX4:
             return px4_map
         if mav_type is None:
@@ -807,7 +810,7 @@ class mavfile(object):
                 0) # param7
 
     def arducopter_disarm(self):
-        '''calibrate pressure'''
+        '''disarm motors (arducopter only)'''
         if self.mavlink10():
             self.mav.command_long_send(
                 self.target_system,  # target_system
@@ -1004,7 +1007,7 @@ class mavserial(mavfile):
 
 class mavudp(mavfile):
     '''a UDP mavlink socket'''
-    def __init__(self, device, input=True, broadcast=False, source_system=255, source_component=0, use_native=default_native):
+    def __init__(self, device, input=True, broadcast=False, source_system=255, source_component=0, use_native=default_native, timeout=0):
         a = device.split(':')
         if len(a) != 2:
             print("UDP ports must be specified as host:port")
@@ -1023,6 +1026,9 @@ class mavudp(mavfile):
         set_close_on_exec(self.port.fileno())
         self.port.setblocking(0)
         self.last_address = None
+        self.timeout = timeout
+        self.clients = set()
+        self.clients_last_alive = {}
         self.resolved_destination_addr = None
         mavfile.__init__(self, self.port.fileno(), device, source_system=source_system, source_component=source_component, input=input, use_native=use_native)
 
@@ -1036,15 +1042,26 @@ class mavudp(mavfile):
             if e.errno in [ errno.EAGAIN, errno.EWOULDBLOCK, errno.ECONNREFUSED ]:
                 return ""
             raise
-        if self.udp_server or self.broadcast:
+        if self.udp_server:
+            self.clients.add(new_addr)
+            self.clients_last_alive[new_addr] = time.time()
+        elif self.broadcast:
             self.last_address = new_addr
         return data
 
     def write(self, buf):
         try:
             if self.udp_server:
-                if self.last_address:
-                    self.port.sendto(buf, self.last_address)
+                current_time = time.time()
+                to_remove = set()
+                for address in self.clients:
+                    if len(self.clients) == 1 or self.timeout <= 0 or self.clients_last_alive[address] + self.timeout > current_time:
+                        self.port.sendto(buf, address)
+                    elif len(self.clients) > 1 and len(to_remove) < len(self.clients) - 1:
+                        # we keep always at least 1 client, so we don't break old behavior
+                        to_remove.add(address)
+                        self.clients_last_alive.pop(address)
+                self.clients -= to_remove
             else:
                 if self.last_address and self.broadcast:
                     self.destination_addr = self.last_address
@@ -1429,7 +1446,11 @@ class mavmmaplog(mavlogfile):
     def rewind(self):
         '''rewind to start of log'''
         self._rewind()
-        
+
+    def close(self):
+        super(mavmmaplog, self).close()
+        self.data_map.close()
+
     def init_arrays(self, progress_callback=None):
         '''initialise arrays for fast recv_match()'''
 
@@ -1496,7 +1517,11 @@ class mavmmaplog(mavlogfile):
             if mtype in self.instance_offsets:
                 # populate the messages array with a new instance. This assumes we can get the instance
                 # as a single byte integer
-                self.f.seek(ofs + data_ofs + self.instance_offsets[mtype])
+                instance_field_ofs = ofs + data_ofs + self.instance_offsets[mtype]
+                if instance_field_ofs >= self.data_len:
+                    # truncated log
+                    break
+                self.f.seek(instance_field_ofs)
                 b = self.f.read(1)
                 instance, = struct.unpack('b', b)
                 mname = self.id_to_name[mtype]
@@ -1637,7 +1662,8 @@ def mavlink_connection(device, baud=115200, source_system=255, source_component=
                        robust_parsing=True, notimestamps=False, input=True,
                        dialect=None, autoreconnect=False, zero_time_base=False,
                        retries=3, use_native=default_native,
-                       force_connected=False, progress_callback=None, **opts):
+                       force_connected=False, progress_callback=None,
+                       udp_timeout=0, **opts):
     '''open a serial, UDP, TCP or file mavlink connection'''
     global mavfile_global
 
@@ -1657,7 +1683,7 @@ def mavlink_connection(device, baud=115200, source_system=255, source_component=
     if device.startswith('tcpin:'):
         return mavtcpin(device[6:], source_system=source_system, source_component=source_component, retries=retries, use_native=use_native)
     if device.startswith('udpin:'):
-        return mavudp(device[6:], input=True, source_system=source_system, source_component=source_component, use_native=use_native)
+        return mavudp(device[6:], input=True, source_system=source_system, source_component=source_component, use_native=use_native, timeout=udp_timeout)
     if device.startswith('udpout:'):
         return mavudp(device[7:], input=False, source_system=source_system, source_component=source_component, use_native=use_native)
     if device.startswith('udpbcast:'):
@@ -1946,6 +1972,9 @@ mode_mapping_acm = {
     22 : 'FLOWHOLD',
     23 : 'FOLLOW',
     24 : 'ZIGZAG',
+    25 : 'SYSTEMID',
+    26 : 'AUTOROTATE',
+    27 : 'AUTO_RTL',
 }
 
 mode_mapping_rover = {
@@ -1985,6 +2014,13 @@ mode_mapping_sub = {
     19: 'MANUAL',
 }
 
+mode_mapping_blimp = {
+    0 : 'LAND',
+    1 : 'MANUAL',
+    2 : 'VELOCITY',
+    3 : 'LOITER',
+}
+
 AP_MAV_TYPE_MODE_MAP_DEFAULT = {
     # copter
     mavlink.MAV_TYPE_HELICOPTER:  mode_mapping_acm,
@@ -2005,6 +2041,8 @@ AP_MAV_TYPE_MODE_MAP_DEFAULT = {
     mavlink.MAV_TYPE_ANTENNA_TRACKER: mode_mapping_tracker,
     # sub
     mavlink.MAV_TYPE_SUBMARINE: mode_mapping_sub,
+    # blimp
+    mavlink.MAV_TYPE_AIRSHIP: mode_mapping_blimp,
 }
 
 
@@ -2172,13 +2210,13 @@ def mode_string_v10(msg):
     return "Mode(%u)" % msg.custom_mode
 
 def mode_string_apm(mode_number):
-    '''return mode string for APM:Plane'''
+    '''return mode string for ArduPlane'''
     if mode_number in mode_mapping_apm:
         return mode_mapping_apm[mode_number]
     return "Mode(%u)" % mode_number
 
 def mode_string_acm(mode_number):
-    '''return mode string for APM:Copter'''
+    '''return mode string for ArduCopter'''
     if mode_number in mode_mapping_acm:
         return mode_mapping_acm[mode_number]
     return "Mode(%u)" % mode_number
