@@ -582,13 +582,31 @@
     <enum name="WINCH_ACTIONS">
       <description>Winch actions.</description>
       <entry value="0" name="WINCH_RELAXED">
-        <description>Relax winch.</description>
+        <description>Allow motor to freewheel.</description>
       </entry>
       <entry value="1" name="WINCH_RELATIVE_LENGTH_CONTROL">
-        <description>Wind or unwind specified length of cable, optionally using specified rate.</description>
+        <description>Wind or unwind specified length of line, optionally using specified rate.</description>
       </entry>
       <entry value="2" name="WINCH_RATE_CONTROL">
-        <description>Wind or unwind cable at specified rate.</description>
+        <description>Wind or unwind line at specified rate.</description>
+      </entry>
+      <entry value="3" name="WINCH_LOCK">
+        <description>Perform the locking sequence to relieve motor while in the fully retracted position. Only action and instance command parameters are used, others are ignored.</description>
+      </entry>
+      <entry value="4" name="WINCH_DELIVER">
+        <description>Sequence of drop, slow down, touch down, reel up, lock. Only action and instance command parameters are used, others are ignored.</description>
+      </entry>
+      <entry value="5" name="WINCH_HOLD">
+        <description>Engage motor and hold current position. Only action and instance command parameters are used, others are ignored.</description>
+      </entry>
+      <entry value="6" name="WINCH_RETRACT">
+        <description>Return the reel to the fully retracted position. Only action and instance command parameters are used, others are ignored.</description>
+      </entry>
+      <entry value="7" name="WINCH_LOAD_LINE">
+        <description>Load the reel with line. The winch will calculate the total loaded length and stop when the tension exceeds a threshold. Only action and instance command parameters are used, others are ignored.</description>
+      </entry>
+      <entry value="8" name="WINCH_ABANDON_LINE">
+        <description>Spool out the entire length of the line. Only action and instance command parameters are used, others are ignored.</description>
       </entry>
     </enum>
     <!-- UAVCAN node health enumeration -->
@@ -2278,7 +2296,7 @@
         <description>Command to operate winch.</description>
         <param index="1" label="Instance" minValue="1" increment="1">Winch instance number.</param>
         <param index="2" label="Action" enum="WINCH_ACTIONS">Action to perform.</param>
-        <param index="3" label="Length" units="m">Length of cable to release (negative to wind).</param>
+        <param index="3" label="Length" units="m">Length of line to release (negative to wind).</param>
         <param index="4" label="Rate" units="m/s">Release rate (negative to wind).</param>
         <param index="5">Empty.</param>
         <param index="6">Empty.</param>
@@ -2930,20 +2948,23 @@
     <enum name="MAV_PROTOCOL_CAPABILITY" bitmask="true">
       <description>Bitmask of (optional) autopilot capabilities (64 bit). If a bit is set, the autopilot supports this capability.</description>
       <entry value="1" name="MAV_PROTOCOL_CAPABILITY_MISSION_FLOAT">
-        <description>Autopilot supports MISSION float message type.</description>
+        <description>Autopilot supports the MISSION_ITEM float message type.
+          Note that MISSION_ITEM is deprecated, and autopilots should use MISSION_INT instead.
+        </description>
       </entry>
       <entry value="2" name="MAV_PROTOCOL_CAPABILITY_PARAM_FLOAT">
         <description>Autopilot supports the new param float message type.</description>
       </entry>
       <entry value="4" name="MAV_PROTOCOL_CAPABILITY_MISSION_INT">
-        <deprecated since="2020-06" replaced_by="">This flag must always be set if missions are supported, because missions must always use MISSION_ITEM_INT (rather than MISSION_ITEM, which is deprecated).</deprecated>
-        <description>Autopilot supports MISSION_ITEM_INT scaled integer message type.</description>
+        <description>Autopilot supports MISSION_ITEM_INT scaled integer message type.
+          Note that this flag must always be set if missions are supported, because missions must always use MISSION_ITEM_INT (rather than MISSION_ITEM, which is deprecated).
+        </description>
       </entry>
       <entry value="8" name="MAV_PROTOCOL_CAPABILITY_COMMAND_INT">
         <description>Autopilot supports COMMAND_INT scaled integer message type.</description>
       </entry>
-      <entry value="16" name="MAV_PROTOCOL_CAPABILITY_PARAM_UNION">
-        <description>Autopilot supports the new param union message type.</description>
+      <entry value="16" name="MAV_PROTOCOL_CAPABILITY_RESERVED1">
+        <description>Reserved for future use.</description>
       </entry>
       <entry value="32" name="MAV_PROTOCOL_CAPABILITY_FTP">
         <description>Autopilot supports the new FILE_TRANSFER_PROTOCOL message type.</description>
@@ -2978,8 +2999,8 @@
       <entry value="32768" name="MAV_PROTOCOL_CAPABILITY_MISSION_RALLY">
         <description>Autopilot supports mission rally point protocol.</description>
       </entry>
-      <entry value="65536" name="MAV_PROTOCOL_CAPABILITY_FLIGHT_INFORMATION">
-        <description>Autopilot supports the flight information protocol.</description>
+      <entry value="65536" name="MAV_PROTOCOL_CAPABILITY_RESERVED2">
+        <description>Reserved for future use.</description>
       </entry>
     </enum>
     <enum name="MAV_MISSION_TYPE">
@@ -4492,13 +4513,34 @@
         <description>Winch is healthy</description>
       </entry>
       <entry value="2" name="MAV_WINCH_STATUS_FULLY_RETRACTED">
-        <description>Winch thread is fully retracted</description>
+        <description>Winch line is fully retracted</description>
       </entry>
       <entry value="4" name="MAV_WINCH_STATUS_MOVING">
         <description>Winch motor is moving</description>
       </entry>
       <entry value="8" name="MAV_WINCH_STATUS_CLUTCH_ENGAGED">
-        <description>Winch clutch is engaged allowing motor to move freely</description>
+        <description>Winch clutch is engaged allowing motor to move freely.</description>
+      </entry>
+      <entry value="16" name="MAV_WINCH_STATUS_LOCKED">
+        <description>Winch is locked by locking mechanism.</description>
+      </entry>
+      <entry value="32" name="MAV_WINCH_STATUS_DROPPING">
+        <description>Winch is gravity dropping payload.</description>
+      </entry>
+      <entry value="64" name="MAV_WINCH_STATUS_ARRESTING">
+        <description>Winch is arresting payload descent.</description>
+      </entry>
+      <entry value="128" name="MAV_WINCH_STATUS_GROUND_SENSE">
+        <description>Winch is using torque measurements to sense the ground.</description>
+      </entry>
+      <entry value="256" name="MAV_WINCH_STATUS_RETRACTING">
+        <description>Winch is returning to the fully retracted position.</description>
+      </entry>
+      <entry value="512" name="MAV_WINCH_STATUS_REDELIVER">
+        <description>Winch is redelivering the payload. This is a failover state if the line tension goes above a threshold during RETRACTING.</description>
+      </entry>
+      <entry value="1024" name="MAV_WINCH_STATUS_ABANDON_LINE">
+        <description>Winch is abandoning the line and possibly payload. Winch unspools the entire calculated line length. This is a failover state from REDELIVER if the number of attemps exceeds a threshold.</description>
       </entry>
     </enum>
     <enum name="MAG_CAL_STATUS">
@@ -6399,7 +6441,9 @@
       <field type="char[205]" name="file_url">URL of image taken. Either local storage or http://foo.jpg if camera provides an HTTP interface.</field>
     </message>
     <message id="264" name="FLIGHT_INFORMATION">
-      <description>Information about flight since last arming.</description>
+      <description>Information about flight since last arming.
+        This can be requested using MAV_CMD_REQUEST_MESSAGE.
+      </description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
       <field type="uint64_t" name="arming_time_utc" units="us" invalid="0">Timestamp at arming (time since UNIX epoch) in UTC, 0 for unknown</field>
       <field type="uint64_t" name="takeoff_time_utc" units="us" invalid="0">Timestamp at takeoff (time since UNIX epoch) in UTC, 0 for unknown</field>
@@ -6983,10 +7027,10 @@
       <!-- This message is work-in-progress it can therefore change, and should NOT be used in stable production environments -->
       <description>Information about a component. For camera components instead use CAMERA_INFORMATION, and for autopilots additionally use AUTOPILOT_VERSION. Components including GCSes should consider supporting requests of this message via MAV_CMD_REQUEST_MESSAGE.</description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
-      <field type="uint32_t" name="general_metadata_file_crc">CRC32 of the TYPE_GENERAL file (can be used by a GCS for file caching).</field>
+      <field type="uint32_t" name="general_metadata_file_crc">CRC32 of the TYPE_GENERAL file (can be used by a GCS for file caching). The general metadata file contains URLs to other files of different type according to COMP_METADATA_TYPE.</field>
       <field type="char[100]" name="general_metadata_uri">Component definition URI for TYPE_GENERAL. This must be a MAVLink FTP URI and the file might be compressed with xz.</field>
       <field type="uint32_t" name="peripherals_metadata_file_crc">CRC32 of the TYPE_PERIPHERALS file (can be used by a GCS for file caching).</field>
-      <field type="char[100]" name="peripherals_metadata_uri">(Optional) Component definition URI for TYPE_PERIPHERALS. This must be a MAVLink FTP URI and the file might be compressed with xz.</field>
+      <field type="char[100]" name="peripherals_metadata_uri">(Optional) Component definition URI for TYPE_PERIPHERALS. This must be a MAVLink FTP URI and the file might be compressed with xz. Peripherals are listed as a separate URL and not included in the general metadata file because it will likely be generated at runtime while the general (and other referenced files) might be generated at compile time.</field>
     </message>
     <message id="400" name="PLAY_TUNE_V2">
       <description>Play vehicle tone/tune (buzzer). Supersedes message PLAY_TUNE.</description>
