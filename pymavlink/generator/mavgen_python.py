@@ -91,7 +91,7 @@ def to_string(s):
         return s2
     except Exception:
         pass
-    # so its a nasty one. Let's grab as many characters as we can
+    # so it's a nasty one. Let's grab as many characters as we can
     r = ''
     try:
         for c in s:
@@ -709,7 +709,10 @@ class MAVLink(object):
         def check_signature(self, msgbuf, srcSystem, srcComponent):
             '''check signature on incoming message'''
             if isinstance(msgbuf, array.array):
-                msgbuf = msgbuf.tostring()
+                try:
+                    msgbuf = msgbuf.tostring()
+                except:
+                    msgbuf = msgbuf.tobytes()
             timestamp_buf = msgbuf[-12:-6]
             link_id = msgbuf[-13]
             (tlow, thigh) = self.mav_sign_unpacker.unpack(timestamp_buf)
