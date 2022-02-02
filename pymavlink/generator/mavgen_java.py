@@ -175,8 +175,8 @@ public class msg_${name_lower} extends MAVLinkMessage {
     @Override
     public MAVLinkPacket pack() {
         MAVLinkPacket packet = new MAVLinkPacket(MAVLINK_MSG_LENGTH,isMavlink2);
-        packet.sysid = 255;
-        packet.compid = 190;
+        packet.sysid = sysid;
+        packet.compid = compid;
         packet.msgid = MAVLINK_MSG_ID_${name};
         
         ${{base_fields:${packField}
@@ -469,7 +469,7 @@ public class MAVLinkPacket implements Serializable {
     }
 
     /**
-     * Return length of actual data after triming zeros at the end.
+     * Return length of actual data after trimming zeros at the end.
      * @param payload
      * @return minimum length of valid data
      */
@@ -717,7 +717,7 @@ def generate_one(basename, xml):
     }
 
     /**
-    * Gets the message, formated as a string
+    * Gets the message, formatted as a string
     */
     public String get%s() {
         StringBuffer buf = new StringBuffer();
