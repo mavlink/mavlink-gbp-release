@@ -5,7 +5,7 @@ jspack - library to pack primitives to octet arrays
 
 ## Disclaimer
 The jspack module and documentation are essentially ports of the
-Python struct module and documentation, with such changes as were necessary. The port was originaly made by Fair Oaks Labs, Inc. and published at http://code.google.com/p/jspack/
+Python struct module and documentation, with such changes as were necessary. The port was originally made by Fair Oaks Labs, Inc. and published at http://code.google.com/p/jspack/
 If any Python people are miffed that their documentation got ripped off, let me know,
 and I'll gladly revise them.
 
@@ -76,7 +76,7 @@ JavaScript values should be obvious given their types:
 
   **(1)** The "A" code simply returns a slice of the source octet array.  This is
   primarily useful when a data structure contains bytes which are subject to
-  multiple intepretations (e.g. unions), and the data structure is being
+  multiple interpretations (e.g. unions), and the data structure is being
   decoded in multiple passes.
 
   **(2)** The "c" and "s" codes handle strings with codepoints between 0 and 255,
@@ -97,7 +97,7 @@ JavaScript values should be obvious given their types:
   is stored, the source JavaScript number must be rounded.  This module applies
   correct rounding during this process.  Numbers with magnitude greater than or
   equal to 2^128-2^103 round to either positive or negative Infinity. The
-  rounding algorithm assumes that JavsScript is using exactly 64 bits of
+  rounding algorithm assumes that JavaScript is using exactly 64 bits of
   floating point precision; 128-bit floating point will result in subtle errors.
 
   **(5)** This module assumes that JavaScript is using 64 bits of floating point
