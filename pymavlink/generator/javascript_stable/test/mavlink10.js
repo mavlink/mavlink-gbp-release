@@ -159,7 +159,7 @@ describe("Generated MAVLink 1.0 protocol handler object", function() {
         // TODO: there is a option in python: robust_parsing. Maybe we should port this as well.
         // If robust_parsing is off, the following should be tested:
         // - (maybe) not returning subsequent errors for prefix errors
-        // - errors are thrown instead of catched inside
+        // - errors are thrown instead of caught inside
 
         // TODO: add tests for "try hard" parsing when implemented
 
@@ -186,7 +186,7 @@ describe("Generated MAVLink 1.0 protocol handler object", function() {
 
     describe("prefix decoder", function() {
  
-        it("consumes, unretrievably, the first byte of the buffer, if its a bad prefix", function() {
+        it("consumes, unretrievably, the first byte of the buffer, if it's a bad prefix", function() {
 
             var b = new Buffer.from([1, 254]);
             this.m.pushBuffer(b);
