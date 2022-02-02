@@ -80,6 +80,45 @@ def mag_heading(RAW_IMU, ATTITUDE, declination=None, SENSOR_OFFSETS=None, ofs=No
         heading += 360
     return heading
 
+def mag_field_df(MAG, ofs=None, diagonals=(1.0,1.0,1.0), offdiagonals=(0.0,0.0,0.0)):
+    '''calculate magnetic field strength from raw magnetometer for DF '''
+    mag = Vector3(MAG.MagX, MAG.MagY, MAG.MagZ)
+    if ofs is not None:
+        mag += Vector3(ofs[0],ofs[1],ofs[2]) - Vector3(MAG.OfsX, MAG.OfsY, MAG.OfsZ)
+        diagonals = Vector3(diagonals[0], diagonals[1], diagonals[2])
+        offdiagonals = Vector3(offdiagonals[0], offdiagonals[1], offdiagonals[2])
+        rot = Matrix3(Vector3(diagonals.x,    offdiagonals.x, offdiagonals.y),
+                      Vector3(offdiagonals.x, diagonals.y,    offdiagonals.z),
+                      Vector3(offdiagonals.y, offdiagonals.z, diagonals.z))
+        mag = rot * mag
+    return mag.length()
+
+def mag_heading_df(MAG, ATT, declination=None, ofs=None, diagonals=(1.0,1.0,1.0), offdiagonals=(0.0,0.0,0.0)):
+    '''calculate heading from raw magnetometer'''
+    if declination is None:
+        from pymavlink import mavutil
+        declination = degrees(mavutil.mavfile_global.param('COMPASS_DEC', 0))
+    mag = Vector3(MAG.MagX,MAG.MagY,MAG.MagZ)
+    if ofs is not None:
+        mag += Vector3(ofs[0],ofs[1],ofs[2]) - Vector3(MAG.OfsX, MAG.OfsY, MAG.OfsZ)
+        diagonals = Vector3(diagonals[0], diagonals[1], diagonals[2])
+        offdiagonals = Vector3(offdiagonals[0], offdiagonals[1], offdiagonals[2])
+        rot = Matrix3(Vector3(diagonals.x,    offdiagonals.x, offdiagonals.y),
+                      Vector3(offdiagonals.x, diagonals.y,    offdiagonals.z),
+                      Vector3(offdiagonals.y, offdiagonals.z, diagonals.z))
+        mag = rot * mag
+
+    # go via a DCM matrix to match the APM calculation
+    dcm_matrix = rotation_df(ATT)
+    cos_pitch_sq = 1.0-(dcm_matrix.c.x*dcm_matrix.c.x)
+    headY = mag.y * dcm_matrix.c.z - mag.z * dcm_matrix.c.y
+    headX = mag.x * cos_pitch_sq - dcm_matrix.c.x * (mag.y * dcm_matrix.c.y + mag.z * dcm_matrix.c.z)
+
+    heading = degrees(atan2(-headY,headX)) + declination
+    if heading < 0:
+        heading += 360
+    return heading
+
 def gps_time_to_epoch(week, msec):
     '''convert GPS week and TOW to a time in seconds since 1970'''
     epoch = 86400*(10*365 + int((1980-1969)/4) + 1 + 6 - 2)
@@ -290,6 +329,33 @@ def delta(var, key, tusec=None):
     last_delta[key] = (var, tnow, ret)
     return ret
 
+last_sum = {}
+
+def sum(var, key):
+    '''sum variable'''
+    global last_sum
+    ret = 0
+    if not key in last_sum:
+        last_sum[key] = 0
+    last_sum[key] += var
+    return last_sum[key]
+
+last_integral = {}
+
+def integral(var, key, timeus):
+    '''integrate variable'''
+    global last_integral
+    ret = 0
+    if not key in last_integral:
+        last_integral[key] = (0,timeus)
+    (lastsum,lastt) = last_integral[key]
+    dt = (timeus - lastt) * 1.0e-6
+    dv = var * dt
+    newv = lastsum + dv
+    last_integral[key] = (newv,timeus)
+    return newv
+
+
 def delta_angle(var, key, tusec=None):
     '''calculate slope of an angle'''
     global last_delta
@@ -425,29 +491,57 @@ def pitch_sim(SIMSTATE, GPS_RAW):
         return -0
     return degrees(-asin(xacc/zacc))
 
-def distance_two(GPS_RAW1, GPS_RAW2, horizontal=True):
-    '''distance between two points'''
-    if hasattr(GPS_RAW1, 'Lat'):
-        lat1 = radians(GPS_RAW1.Lat)
-        lat2 = radians(GPS_RAW2.Lat)
-        lon1 = radians(GPS_RAW1.Lng)
-        lon2 = radians(GPS_RAW2.Lng)
-        alt1 = GPS_RAW1.Alt
-        alt2 = GPS_RAW2.Alt
-    elif hasattr(GPS_RAW1, 'cog'):
-        lat1 = radians(GPS_RAW1.lat)*1.0e-7
-        lat2 = radians(GPS_RAW2.lat)*1.0e-7
-        lon1 = radians(GPS_RAW1.lon)*1.0e-7
-        lon2 = radians(GPS_RAW2.lon)*1.0e-7
-        alt1 = GPS_RAW1.alt*0.001
-        alt2 = GPS_RAW2.alt*0.001
+ORGN = None
+
+def get_origin():
+  global ORGN
+  if ORGN is not None:
+      return ORGN
+  from . import mavutil
+  self = mavutil.mavfile_global
+  ret = self.messages.get('ORGN', None)
+  if ret is None:
+      ret = self.messages.get('GPS', None)
+      if ret.Status < 3:
+          return None
+  ORGN = ret
+  return ret
+
+# graph distance_two(GPS,XKF1[0])
+
+def get_lat_lon_alt(MSG):
+    '''gets lat and lon in radians and alt in meters from a position msg'''
+    if hasattr(MSG, 'Lat'):
+        lat = radians(MSG.Lat)
+        lon = radians(MSG.Lng)
+        alt = MSG.Alt
+    elif hasattr(MSG, 'cog'):
+        lat = radians(MSG.lat)*1.0e-7
+        lon = radians(MSG.lon)*1.0e-7
+        alt = MSG.alt*0.001
+    elif hasattr(MSG,'lat'):
+        lat = radians(MSG.lat)
+        lon = radians(MSG.lon)
+        alt = MSG.alt*0.001
+    elif hasattr(MSG, 'PN'):
+        # origin relative position from EKF
+        global ORGN
+        if ORGN is None:
+            ORGN = get_origin()
+        if ORGN is None:
+            return None
+        (lat,lon) = gps_offset(ORGN.Lat, ORGN.Lng, MSG.PN, MSG.PE)
+        lat = radians(lat)
+        lon = radians(lon)
+        alt = ORGN.Alt - MSG.PD
     else:
-        lat1 = radians(GPS_RAW1.lat)
-        lat2 = radians(GPS_RAW2.lat)
-        lon1 = radians(GPS_RAW1.lon)
-        lon2 = radians(GPS_RAW2.lon)
-        alt1 = GPS_RAW1.alt*0.001
-        alt2 = GPS_RAW2.alt*0.001
+        return None
+    return (lat, lon, alt)
+
+def _distance_two(MSG1, MSG2, horizontal=True):
+    '''distance between two points'''
+    (lat1, lon1, alt1) = get_lat_lon_alt(MSG1)
+    (lat2, lon2, alt2) = get_lat_lon_alt(MSG2)
     dLat = lat2 - lat1
     dLon = lon2 - lon1
 
@@ -458,6 +552,13 @@ def distance_two(GPS_RAW1, GPS_RAW2, horizontal=True):
         return ground_dist
     return sqrt(ground_dist**2 + (alt2-alt1)**2)
 
+def distance_two(MSG1, MSG2, horizontal=True):
+    '''distance between two points'''
+    try:
+        return _distance_two(MSG1, MSG2)
+    except Exception as ex:
+        print(ex)
+        return None
 
 first_fix = None
 
@@ -1264,6 +1365,30 @@ def expected_mag(GPS,ATT,roll_adjust=0,pitch_adjust=0,yaw_adjust=0):
 
     return field
 
+def expected_mag_latlon(lat,lon,ATT,roll_adjust=0,pitch_adjust=0,yaw_adjust=0):
+    '''return expected magnetic field for a location and attitude'''
+    global earth_field
+
+    expected_earth_field_lat_lon(lat,lon)
+    if earth_field is None:
+        return Vector3(0,0,0)
+
+    if hasattr(ATT,'roll'):
+        roll = degrees(ATT.roll)+roll_adjust
+        pitch = degrees(ATT.pitch)+pitch_adjust
+        yaw = degrees(ATT.yaw)+yaw_adjust
+    else:
+        roll = ATT.Roll+roll_adjust
+        pitch = ATT.Pitch+pitch_adjust
+        yaw = ATT.Yaw+yaw_adjust
+
+    rot = Matrix3()
+    rot.from_euler(radians(roll), radians(pitch), radians(yaw))
+
+    field = rot.transposed() * earth_field
+
+    return field
+
 def mag_yaw(GPS,ATT,MAG):
     '''calculate heading from raw magnetometer'''
     ef = expected_earth_field(GPS)
@@ -1393,10 +1518,14 @@ def reset_state_data():
     global first_fix
     global dcm_state
     global earth_field
+    global last_sum
+    global last_integral
     average_data.clear()
     derivative_data.clear()
     lowpass_data.clear()
     last_delta.clear()
+    last_sum.clear()
+    last_integral.clear()
     first_fix = None
     dcm_state = None
     earth_field = None
