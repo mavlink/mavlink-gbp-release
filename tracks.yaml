@@ -278,8 +278,7 @@ tracks:
     patches: patch
     release_inc: '2'
     release_repo_url: git@github.com:mavlink/mavlink-gbp-release.git
-    release_tag: master
-    release_tag_saved: :{ask}
+    release_tag: :{ask}
     ros_distro: rolling
     vcs_type: git
     vcs_uri: https://github.com/mavlink/mavlink.git
