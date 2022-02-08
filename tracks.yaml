@@ -283,5 +283,4 @@ tracks:
     ros_distro: rolling
     vcs_type: git
     vcs_uri: https://github.com/mavlink/mavlink.git
-    version: 2022.2.2
-    version_saved: :{ask}
+    version: :{ask}
