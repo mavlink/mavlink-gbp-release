@@ -14,6 +14,8 @@ import copy
 import re
 from pymavlink import mavexpression
 
+is_py3 = sys.version_info >= (3,0)
+
 # adding these extra imports allows pymavlink to be used directly with pyinstaller
 # without having complex spec files. To allow for installs that don't have ardupilotmega
 # at all we avoid throwing an exception if it isn't installed
@@ -66,7 +68,9 @@ def evaluate_condition(condition, vars):
     return v
 
 def u_ord(c):
-	return ord(c) if sys.version_info.major < 3 else c
+    if is_py3:
+        return c
+    return ord(c)
 
 class location(object):
     '''represent a GPS coordinate'''
@@ -404,6 +408,17 @@ class mavfile(object):
                 self.sysid_state[self.sysid].armed = (msg.base_mode & mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
                 self.sysid_state[self.sysid].mav_type = msg.type
                 self.sysid_state[self.sysid].mav_autopilot = msg.autopilot
+        elif type == 'HIGH_LATENCY2':
+            if self.sysid == 0:
+                # lock onto id tuple of first vehicle heartbeat
+                self.sysid = src_system
+            self.flightmode = mode_string_v10(msg)
+            self.mav_type = msg.type
+            if msg.autopilot == mavlink.MAV_AUTOPILOT_ARDUPILOTMEGA:
+                self.base_mode = msg.custom0
+                self.sysid_state[self.sysid].armed = (msg.custom0 & mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
+            self.sysid_state[self.sysid].mav_type = msg.type
+            self.sysid_state[self.sysid].mav_autopilot = msg.autopilot
 
         elif type == 'PARAM_VALUE':
             if not src_tuple in self.param_state:
@@ -446,7 +461,10 @@ class mavfile(object):
 
             if numnew != 0:
                 if self.logfile_raw:
-                    self.logfile_raw.write(str(s))
+                    if is_py3:
+                        self.logfile_raw.write(s)
+                    else:
+                        self.logfile_raw.write(str(s))
                 if self.first_byte:
                     self.auto_mavlink_version(s)
 
@@ -456,7 +474,10 @@ class mavfile(object):
             if msg:
                 if self.logfile and  msg.get_type() != 'BAD_DATA' :
                     usec = int(time.time() * 1.0e6) & ~3
-                    self.logfile.write(str(struct.pack('>Q', usec) + msg.get_msgbuf()))
+                    if is_py3:
+                        self.logfile.write(struct.pack('>Q', usec) + msg.get_msgbuf())
+                    else:
+                        self.logfile.write(str(struct.pack('>Q', usec) + msg.get_msgbuf()))
                 self.post_message(msg)
                 return msg
             else:
@@ -507,11 +528,11 @@ class mavfile(object):
         '''return True if using MAVLink 2.0 or later'''
         return float(self.WIRE_PROTOCOL_VERSION) >= 2
 
-    def setup_logfile(self, logfile, mode='w'):
+    def setup_logfile(self, logfile, mode='wb'):
         '''start logging to the given logfile, with timestamps'''
         self.logfile = open(logfile, mode=mode)
 
-    def setup_logfile_raw(self, logfile, mode='w'):
+    def setup_logfile_raw(self, logfile, mode='wb'):
         '''start logging raw bytes to the given logfile, without timestamps'''
         self.logfile_raw = open(logfile, mode=mode)
 
@@ -1945,6 +1966,7 @@ mode_mapping_apm = {
     22 : 'QAUTOTUNE',
     23 : 'QACRO',
     24 : 'THERMAL',
+    25 : 'LOITERALTQLAND',
 }
 
 mode_mapping_acm = {
@@ -2201,7 +2223,7 @@ def mode_string_v10(msg):
     '''mode string for 1.0 protocol, from heartbeat'''
     if msg.autopilot == mavlink.MAV_AUTOPILOT_PX4:
         return interpret_px4_mode(msg.base_mode, msg.custom_mode)
-    if not msg.base_mode & mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
+    if msg.get_type() != 'HIGH_LATENCY2' and not msg.base_mode & mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
         return "Mode(0x%08x)" % msg.base_mode
 
     mode_map = mode_mapping_bynumber(msg.type)
