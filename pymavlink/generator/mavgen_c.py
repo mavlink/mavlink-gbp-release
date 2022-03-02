@@ -49,7 +49,7 @@ def generate_mavlink_h(directory, xml):
 #ifndef MAVLINK_H
 #define MAVLINK_H
 
-#define MAVLINK_PRIMARY_XML_IDX ${xml_idx}
+#define MAVLINK_PRIMARY_XML_HASH ${xml_hash}
 
 #ifndef MAVLINK_STX
 #define MAVLINK_STX ${protocol_marker}
@@ -94,8 +94,8 @@ def generate_main_h(directory, xml):
     #error Wrong include order: MAVLINK_${basename_upper}.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#undef MAVLINK_THIS_XML_IDX
-#define MAVLINK_THIS_XML_IDX ${xml_idx}
+#undef MAVLINK_THIS_XML_HASH
+#define MAVLINK_THIS_XML_HASH ${xml_hash}
 
 #ifdef __cplusplus
 extern "C" {
@@ -148,10 +148,10 @@ ${{message:#include "./mavlink_msg_${name_lower}.h"
 ${{include_list:#include "../${base}/${base}.h"
 }}
 
-#undef MAVLINK_THIS_XML_IDX
-#define MAVLINK_THIS_XML_IDX ${xml_idx}
+#undef MAVLINK_THIS_XML_HASH
+#define MAVLINK_THIS_XML_HASH ${xml_hash}
 
-#if MAVLINK_THIS_XML_IDX == MAVLINK_PRIMARY_XML_IDX
+#if MAVLINK_THIS_XML_HASH == MAVLINK_PRIMARY_XML_HASH
 # define MAVLINK_MESSAGE_INFO {${message_info_array}}
 # define MAVLINK_MESSAGE_NAMES {${message_name_array}}
 # if MAVLINK_COMMAND_24BIT
@@ -418,7 +418,7 @@ def generate_testsuite_h(directory, xml):
     t.write(f, '''
 /** @file
  *    @brief MAVLink comm protocol testsuite generated from ${basename}.xml
- *    @see http://qgroundcontrol.org/mavlink/
+ *    @see https://mavlink.io/en/
  */
 #pragma once
 #ifndef ${basename_upper}_TESTSUITE_H
@@ -499,6 +499,11 @@ static void mavlink_test_${name_lower}(uint8_t system_id, uint8_t component_id, 
     mavlink_msg_${name_lower}_send(MAVLINK_COMM_1 ${{arg_fields:, packet1.${name} }});
     mavlink_msg_${name_lower}_decode(last_msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
+
+#ifdef MAVLINK_HAVE_GET_MESSAGE_INFO
+    MAVLINK_ASSERT(mavlink_get_message_info_by_name("${name}") != NULL);
+    MAVLINK_ASSERT(mavlink_get_message_info_by_id(MAVLINK_MSG_ID_${name}) != NULL);
+#endif
 }
 }}
 
@@ -711,6 +716,6 @@ def generate(basename, xml_list):
 
     for idx in range(len(xml_list)):
         xml = xml_list[idx]
-        xml.xml_idx = idx
+        xml.xml_hash = hash(xml.basename)        
         generate_one(basename, xml)
     copy_fixed_headers(basename, xml_list[0])
