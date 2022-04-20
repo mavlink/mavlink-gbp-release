@@ -1,1 +1,2 @@
-'''Python MAVLink library - see http://www.qgroundcontrol.org/mavlink/start'''
+'''Python MAVLink library - see https://mavlink.io/en/'''
+__version__ = '2.4.25'
