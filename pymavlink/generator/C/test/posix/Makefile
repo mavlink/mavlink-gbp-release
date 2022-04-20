@@ -2,7 +2,7 @@
 # errors in the generator, but without it, we can't run the tests to completion. 
 # particular issues are with pointers to arrays right now. TODO - fix the generator and remove this.
 CFLAGS = -g -Wall -Werror -O0 -Wno-address-of-packed-member
-TESTPROTOCOL = common
+TESTPROTOCOL = ardupilotmega
 ALLPROTOCOLS = minimal test common pixhawk ardupilotmega slugs ualberta
 
 all: 
@@ -38,6 +38,15 @@ testmav1.0_ardupilotmega: testmav.c
 
 testmav2.0_ardupilotmega: testmav.c
 	$(CC) $(CFLAGS) -I../../include_v2.0 -I../../include_v2.0/ardupilotmega -o $@ testmav.c
+
+testmav1.0_common: testmav.c
+	$(CC) $(CFLAGS) -I../../include_v1.0 -I../../include_v1.0/common -o $@ testmav.c
+
+testmav2.0_common: testmav.c
+	$(CC) $(CFLAGS) -I../../include_v2.0 -I../../include_v2.0/common -o $@ testmav.c
+
+testmav2.0_minimal: testmav.c
+	$(CC) $(CFLAGS) -I../../include_v2.0 -I../../include_v2.0/minimal -o $@ testmav.c
 
 sha256_test: sha256_test.c
 	$(CC) $(CFLAGS) -I../../include_v2.0 -o $@ sha256_test.c
