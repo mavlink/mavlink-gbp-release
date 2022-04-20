@@ -80,6 +80,33 @@ tracks:
     vcs_type: git
     vcs_uri: https://github.com/mavlink/mavlink.git
     version: :{ask}
+  humble:
+    actions:
+    - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
+      :{vcs_uri} --name :{name} --output-dir :{archive_dir_path}
+    - git-bloom-import-upstream :{archive_path} :{patches} --release-version :{version}
+      --replace
+    - git-bloom-generate -y rosrelease :{ros_distro} --source upstream -i :{release_inc}
+    - git-bloom-generate -y rosdebian --prefix release/:{ros_distro} :{ros_distro}
+      -i :{release_inc} --os-name ubuntu
+    - git-bloom-generate -y rosdebian --prefix release/:{ros_distro} :{ros_distro}
+      -i :{release_inc} --os-name debian --os-not-required
+    - git-bloom-generate -y rosrpm --prefix release/:{ros_distro} :{ros_distro} -i
+      :{release_inc} --os-name fedora
+    - git-bloom-generate -y rosrpm --prefix release/:{ros_distro} :{ros_distro} -i
+      :{release_inc} --os-name rhel
+    devel_branch: master
+    last_release: master
+    last_version: 2022.2.2
+    name: upstream
+    patches: patch
+    release_inc: '2'
+    release_repo_url: git@github.com:mavlink/mavlink-gbp-release.git
+    release_tag: :{ask}
+    ros_distro: humble
+    vcs_type: git
+    vcs_uri: https://github.com/mavlink/mavlink.git
+    version: :{ask}
   hydro:
     actions:
     - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
