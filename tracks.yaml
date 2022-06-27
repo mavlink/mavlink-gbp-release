@@ -97,10 +97,10 @@ tracks:
       :{release_inc} --os-name rhel
     devel_branch: master
     last_release: master
-    last_version: 2022.2.2
+    last_version: 2022.6.27
     name: upstream
     patches: patch
-    release_inc: '3'
+    release_inc: '1'
     release_repo_url: git@github.com:mavlink/mavlink-gbp-release.git
     release_tag: :{ask}
     ros_distro: humble
