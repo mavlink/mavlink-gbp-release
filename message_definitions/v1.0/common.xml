@@ -225,10 +225,10 @@
       </entry>
     </enum>
     <enum name="MAV_FRAME">
-      <description>Co-ordinate frames used by MAVLink. Not all frames are supported by all commands, messages, or vehicles.
+      <description>Coordinate frames used by MAVLink. Not all frames are supported by all commands, messages, or vehicles.
       
       Global frames use the following naming conventions:
-      - "GLOBAL": Global co-ordinate frame with WGS84 latitude/longitude and altitude positive over mean sea level (MSL) by default. 
+      - "GLOBAL": Global coordinate frame with WGS84 latitude/longitude and altitude positive over mean sea level (MSL) by default. 
         The following modifiers may be used with "GLOBAL":
         - "RELATIVE_ALT": Altitude is relative to the vehicle home position rather than MSL.
         - "TERRAIN_ALT": Altitude is relative to ground level rather than MSL.
@@ -251,7 +251,10 @@
         <description>NOT a coordinate frame, indicates a mission command.</description>
       </entry>
       <entry value="3" name="MAV_FRAME_GLOBAL_RELATIVE_ALT">
-        <description>Global (WGS84) coordinate frame + altitude relative to the home position. First value / x: latitude, second value / y: longitude, third value / z: positive altitude with 0 being at the altitude of the home location.</description>
+        <description>
+          Global (WGS84) coordinate frame + altitude relative to the home position.
+          First value / x: latitude, second value / y: longitude, third value / z: positive altitude with 0 being at the altitude of the home position.
+        </description>
       </entry>
       <entry value="4" name="MAV_FRAME_LOCAL_ENU">
         <description>ENU local tangent frame (x: East, y: North, z: Up) with origin fixed relative to earth.</description>
@@ -260,14 +263,17 @@
         <description>Global (WGS84) coordinate frame (scaled) + MSL altitude. First value / x: latitude in degrees*1E7, second value / y: longitude in degrees*1E7, third value / z: positive altitude over mean sea level (MSL).</description>
       </entry>
       <entry value="6" name="MAV_FRAME_GLOBAL_RELATIVE_ALT_INT">
-        <description>Global (WGS84) coordinate frame (scaled) + altitude relative to the home position. First value / x: latitude in degrees*1E7, second value / y: longitude in degrees*1E7, third value / z: positive altitude with 0 being at the altitude of the home location.</description>
+        <description>
+          Global (WGS84) coordinate frame (scaled) + altitude relative to the home position.
+          First value / x: latitude in degrees*1E7, second value / y: longitude in degrees*1E7, third value / z: positive altitude with 0 being at the altitude of the home position.
+        </description>
       </entry>
       <entry value="7" name="MAV_FRAME_LOCAL_OFFSET_NED">
         <description>NED local tangent frame (x: North, y: East, z: Down) with origin that travels with the vehicle.</description>
       </entry>
       <entry value="8" name="MAV_FRAME_BODY_NED">
         <deprecated since="2019-08" replaced_by="MAV_FRAME_BODY_FRD"/>
-        <description>Same as MAV_FRAME_LOCAL_NED when used to represent position values. Same as MAV_FRAME_BODY_FRD when used with velocity/accelaration values.</description>
+        <description>Same as MAV_FRAME_LOCAL_NED when used to represent position values. Same as MAV_FRAME_BODY_FRD when used with velocity/acceleration values.</description>
       </entry>
       <entry value="9" name="MAV_FRAME_BODY_OFFSET_NED">
         <deprecated since="2019-08" replaced_by="MAV_FRAME_BODY_FRD"/>
@@ -415,7 +421,7 @@
         <description>Gimbal tracks system with specified system ID</description>
       </entry>
       <entry value="6" name="MAV_MOUNT_MODE_HOME_LOCATION">
-        <description>Gimbal tracks home location</description>
+        <description>Gimbal tracks home position</description>
       </entry>
     </enum>
     <enum name="GIMBAL_DEVICE_CAP_FLAGS" bitmask="true">
@@ -827,7 +833,7 @@
       </entry>
     </enum>
     <enum name="COMP_METADATA_TYPE">
-      <description>Supported component metadata types. These are used in the "general" metadata file returned by COMPONENT_INFORMATION to provide information about supported metadata types. The types are not used directly in MAVLink messages.</description>
+      <description>Supported component metadata types. These are used in the "general" metadata file returned by COMPONENT_METADATA to provide information about supported metadata types. The types are not used directly in MAVLink messages.</description>
       <entry value="0" name="COMP_METADATA_TYPE_GENERAL">
         <description>General information about the component. General metadata includes information about other metadata types supported by the component. Files of this type must be supported, and must be downloadable from vehicle using a MAVLink FTP URI.</description>
       </entry>
@@ -983,6 +989,42 @@
       </entry>
       <entry value="4" name="AUTOTUNE_AXIS_YAW">
         <description>Autotune yaw axis.</description>
+      </entry>
+    </enum>
+    <enum name="PREFLIGHT_STORAGE_PARAMETER_ACTION">
+      <description>
+        Actions for reading/writing parameters between persistent and volatile storage when using MAV_CMD_PREFLIGHT_STORAGE.
+        (Commonly parameters are loaded from persistent storage (flash/EEPROM) into volatile storage (RAM) on startup and written back when they are changed.)
+      </description>
+      <entry value="0" name="PARAM_READ_PERSISTENT">
+        <description>Read all parameters from persistent storage. Replaces values in volatile storage.</description>
+      </entry>
+      <entry value="1" name="PARAM_WRITE_PERSISTENT">
+        <description>Write all parameter values to persistent storage (flash/EEPROM)</description>
+      </entry>
+      <entry value="2" name="PARAM_RESET_CONFIG_DEFAULT">
+        <description>Reset all user configurable parameters to their default value (including airframe selection, sensor calibration data, safety settings, and so on). Does not reset values that contain operation counters and vehicle computed statistics.</description>
+      </entry>
+      <entry value="3" name="PARAM_RESET_SENSOR_DEFAULT">
+        <description>Reset only sensor calibration parameters to factory defaults (or firmware default if not available)</description>
+      </entry>
+      <entry value="4" name="PARAM_RESET_ALL_DEFAULT">
+        <description>Reset all parameters, including operation counters, to default values</description>
+      </entry>
+    </enum>
+    <enum name="PREFLIGHT_STORAGE_MISSION_ACTION">
+      <description>
+        Actions for reading and writing plan information (mission, rally points, geofence) between persistent and volatile storage when using MAV_CMD_PREFLIGHT_STORAGE.
+        (Commonly missions are loaded from persistent storage (flash/EEPROM) into volatile storage (RAM) on startup and written back when they are changed.)
+      </description>
+      <entry value="0" name="MISSION_READ_PERSISTENT">
+        <description>Read current mission data from persistent storage</description>
+      </entry>
+      <entry value="1" name="MISSION_WRITE_PERSISTENT">
+        <description>Write current mission data to persistent storage</description>
+      </entry>
+      <entry value="2" name="MISSION_RESET_DEFAULT">
+        <description>Erase all mission data stored on the vehicle (both persistent and volatile storage)</description>
       </entry>
     </enum>
     <!-- The MAV_CMD enum entries describe either: -->
@@ -1313,13 +1355,18 @@
         <param index="1" label="Speed Type" minValue="0" maxValue="3" increment="1">Speed type (0=Airspeed, 1=Ground Speed, 2=Climb Speed, 3=Descent Speed)</param>
         <param index="2" label="Speed" units="m/s" minValue="-1">Speed (-1 indicates no change)</param>
         <param index="3" label="Throttle" units="%" minValue="-1">Throttle (-1 indicates no change)</param>
-        <param index="4" label="Relative" minValue="0" maxValue="1" increment="1">0: absolute, 1: relative</param>
-        <param index="5">Empty</param>
-        <param index="6">Empty</param>
-        <param index="7">Empty</param>
+        <param index="4" reserved="true" default="0"/>
+        <param index="5" reserved="true" default="0"/>
+        <param index="6" reserved="true" default="0"/>
+        <param index="7" reserved="true" default="0"/>
       </entry>
       <entry value="179" name="MAV_CMD_DO_SET_HOME" hasLocation="true" isDestination="false">
-        <description>Changes the home location either to the current location or a specified location.</description>
+        <description>
+          Sets the home position to either to the current position or a specified position.
+          The home position is the default position that the system will return to and land on.
+          The position is set automatically by the system during the takeoff (and may also be set using this command).
+          Note: the current home position may be emitted in a HOME_POSITION message on request (using MAV_CMD_REQUEST_MESSAGE with param1=242).      
+        </description>
         <param index="1" label="Use Current" minValue="0" maxValue="1" increment="1">Use current (1=use current location, 0=use specified location)</param>
         <param index="2">Empty</param>
         <param index="3">Empty</param>
@@ -1449,7 +1496,7 @@
         <description>Reposition the vehicle to a specific WGS84 global position.</description>
         <param index="1" label="Speed" units="m/s" minValue="-1">Ground speed, less than 0 (-1) for default</param>
         <param index="2" label="Bitmask" enum="MAV_DO_REPOSITION_FLAGS">Bitmask of option flags.</param>
-        <param index="3">Reserved</param>
+        <param index="3" label="Radius" units="m">Loiter radius for planes. Positive values only, direction is controlled by Yaw value. A value of zero or NaN is ignored. </param>
         <param index="4" label="Yaw" units="deg">Yaw heading. NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.). For planes indicates loiter direction (0: clockwise, 1: counter clockwise)</param>
         <param index="5" label="Latitude">Latitude</param>
         <param index="6" label="Longitude">Longitude</param>
@@ -1761,8 +1808,8 @@
       </entry>
       <entry value="245" name="MAV_CMD_PREFLIGHT_STORAGE" hasLocation="false" isDestination="false">
         <description>Request storage of different parameter values and logs. This command will be only accepted if in pre-flight mode.</description>
-        <param index="1" label="Parameter Storage" minValue="0" maxValue="3" increment="1">Parameter storage: 0: Read from flash/EEPROM, 1: Write current parameter data to flash/EEPROM, 2: Reset to defaults, 3: Reset sensor calibration parameter data to factory default (or firmware default if not available)</param>
-        <param index="2" label="Mission Storage" minValue="0" maxValue="2" increment="1">Mission storage: 0: Read from FLASH/EEPROM, 1: Write current data to flash/EEPROM, 2: Reset to defaults</param>
+        <param index="1" label="Parameter Storage" enum="PREFLIGHT_STORAGE_PARAMETER_ACTION">Action to perform on the persistent parameter storage</param>
+        <param index="2" label="Mission Storage" enum="PREFLIGHT_STORAGE_MISSION_ACTION">Action to perform on the persistent mission storage</param>
         <param index="3" label="Logging Rate" units="Hz" minValue="-1" increment="1">Onboard logging: 0: Ignore, 1: Start default rate logging, -1: Stop logging, &gt; 1: logging rate (e.g. set to 1000 for 1000 Hz logging)</param>
         <param index="4">Reserved</param>
         <param index="5">Empty</param>
@@ -1831,7 +1878,12 @@
         <param index="2" label="Force" minValue="0" maxValue="21196" increment="21196">0: arm-disarm unless prevented by safety checks (i.e. when landed), 21196: force arming/disarming (e.g. allow arming to override preflight checks and disarming in flight)</param>
       </entry>
       <entry value="401" name="MAV_CMD_RUN_PREARM_CHECKS" hasLocation="false" isDestination="false">
-        <description>Instructs system to run pre-arm checks. This command should return MAV_RESULT_TEMPORARILY_REJECTED in the case the system is armed, otherwise MAV_RESULT_ACCEPTED. Note that the return value from executing this command does not indicate whether the vehicle is armable or not, just whether the system has successfully run/is currently running the checks.  The result of the checks is reflected in the SYS_STATUS message.</description>
+        <description>Instructs a target system to run pre-arm checks.
+          This allows preflight checks to be run on demand, which may be useful on systems that normally run them at low rate, or which do not trigger checks when the armable state might have changed.
+          This command should return MAV_RESULT_ACCEPTED if it will run the checks.
+          The results of the checks are usually then reported in SYS_STATUS messages (this is system-specific).
+          The command should return MAV_RESULT_TEMPORARILY_REJECTED if the system is already armed.
+        </description>
       </entry>
       <entry value="405" name="MAV_CMD_ILLUMINATOR_ON_OFF" hasLocation="false" isDestination="false">
         <wip/>
@@ -1840,7 +1892,9 @@
         <param index="1" label="Enable" minValue="0" maxValue="1" increment="1">0: Illuminators OFF, 1: Illuminators ON</param>
       </entry>
       <entry value="410" name="MAV_CMD_GET_HOME_POSITION" hasLocation="false" isDestination="false">
-        <description>Request the home position from the vehicle.</description>
+        <deprecated since="2022-04" replaced_by="MAV_CMD_REQUEST_MESSAGE"/>
+        <description>Request the home position from the vehicle.
+	  The vehicle will ACK the command and then emit the HOME_POSITION message.</description>
         <param index="1">Reserved</param>
         <param index="2">Reserved</param>
         <param index="3">Reserved</param>
@@ -1861,7 +1915,11 @@
         <param index="2" label="RC Type" enum="RC_TYPE">RC type.</param>
       </entry>
       <entry value="510" name="MAV_CMD_GET_MESSAGE_INTERVAL" hasLocation="false" isDestination="false">
-        <description>Request the interval between messages for a particular MAVLink message ID. The receiver should ACK the command and then emit its response in a MESSAGE_INTERVAL message.</description>
+        <deprecated since="2022-04" replaced_by="MAV_CMD_REQUEST_MESSAGE"/>
+        <description>
+          Request the interval between messages for a particular MAVLink message ID.
+          The receiver should ACK the command and then emit its response in a MESSAGE_INTERVAL message.
+        </description>
         <param index="1" label="Message ID" minValue="0" maxValue="16777215" increment="1">The MAVLink message ID</param>
       </entry>
       <entry value="511" name="MAV_CMD_SET_MESSAGE_INTERVAL" hasLocation="false" isDestination="false">
@@ -2970,6 +3028,7 @@
         </description>
       </entry>
       <entry value="2" name="MAV_PROTOCOL_CAPABILITY_PARAM_FLOAT">
+        <deprecated since="2022-03" replaced_by="MAV_PROTOCOL_CAPABILITY_PARAM_ENCODE_C_CAST"/>
         <description>Autopilot supports the new param float message type.</description>
       </entry>
       <entry value="4" name="MAV_PROTOCOL_CAPABILITY_MISSION_INT">
@@ -2980,8 +3039,10 @@
       <entry value="8" name="MAV_PROTOCOL_CAPABILITY_COMMAND_INT">
         <description>Autopilot supports COMMAND_INT scaled integer message type.</description>
       </entry>
-      <entry value="16" name="MAV_PROTOCOL_CAPABILITY_PARAM_UNION">
-        <description>Autopilot supports the new param union message type.</description>
+      <entry value="16" name="MAV_PROTOCOL_CAPABILITY_PARAM_ENCODE_BYTEWISE">
+        <description>Parameter protocol uses byte-wise encoding of parameter values into param_value (float) fields: https://mavlink.io/en/services/parameter.html#parameter-encoding.
+          Note that either this flag or MAV_PROTOCOL_CAPABILITY_PARAM_ENCODE_BYTEWISE should be set if the parameter protocol is supported.
+        </description>
       </entry>
       <entry value="32" name="MAV_PROTOCOL_CAPABILITY_FTP">
         <description>Autopilot supports the File Transfer Protocol v1: https://mavlink.io/en/services/ftp.html.</description>
@@ -3018,6 +3079,11 @@
       </entry>
       <entry value="65536" name="MAV_PROTOCOL_CAPABILITY_RESERVED2">
         <description>Reserved for future use.</description>
+      </entry>
+      <entry value="131072" name="MAV_PROTOCOL_CAPABILITY_PARAM_ENCODE_C_CAST">
+        <description>Parameter protocol uses C-cast of parameter values to set the param_value (float) fields: https://mavlink.io/en/services/parameter.html#parameter-encoding.
+          Note that either this flag or MAV_PROTOCOL_CAPABILITY_PARAM_ENCODE_BYTEWISE should be set if the parameter protocol is supported.
+        </description>
       </entry>
     </enum>
     <enum name="MAV_MISSION_TYPE">
@@ -3656,7 +3722,7 @@
         <description>Zoom value as proportion of full camera range (a value between 0.0 and 100.0)</description>
       </entry>
       <entry value="3" name="ZOOM_TYPE_FOCAL_LENGTH">
-        <description>Zoom value/variable focal length in milimetres. Note that there is no message to get the valid zoom range of the camera, so this can type can only be used for cameras where the zoom range is known (implying that this cannot reliably be used in a GCS for an arbitrary camera)</description>
+        <description>Zoom value/variable focal length in millimetres. Note that there is no message to get the valid zoom range of the camera, so this can type can only be used for cameras where the zoom range is known (implying that this cannot reliably be used in a GCS for an arbitrary camera)</description>
       </entry>
     </enum>
     <enum name="SET_FOCUS_TYPE">
@@ -3695,7 +3761,7 @@
         <description>Parameter failed to set</description>
       </entry>
       <entry value="3" name="PARAM_ACK_IN_PROGRESS">
-        <description>Parameter value received but not yet set/accepted. A subsequent PARAM_ACK_TRANSACTION or PARAM_EXT_ACK with the final result will follow once operation is completed. This is returned immediately for parameters that take longer to set, indicating taht the the parameter was recieved and does not need to be resent.</description>
+        <description>Parameter value received but not yet set/accepted. A subsequent PARAM_ACK_TRANSACTION or PARAM_EXT_ACK with the final result will follow once operation is completed. This is returned immediately for parameters that take longer to set, indicating that the the parameter was received and does not need to be resent.</description>
       </entry>
     </enum>
     <enum name="CAMERA_MODE">
@@ -3899,7 +3965,7 @@
         <description>SIM is required for the modem but missing</description>
       </entry>
       <entry value="3" name="CELLULAR_NETWORK_FAILED_REASON_SIM_ERROR">
-        <description>SIM is available, but not usuable for connection</description>
+        <description>SIM is available, but not usable for connection</description>
       </entry>
     </enum>
     <enum name="CELLULAR_NETWORK_RADIO_TYPE">
@@ -4049,6 +4115,9 @@
       </entry>
       <entry value="3" name="MAV_ODID_STATUS_EMERGENCY">
         <description>The UA is having an emergency.</description>
+      </entry>
+      <entry value="4" name="MAV_ODID_STATUS_REMOTE_ID_SYSTEM_FAILURE">
+        <description>The remote ID system is failing or unreliable in some way.</description>
       </entry>
     </enum>
     <enum name="MAV_ODID_HEIGHT_REF">
@@ -4212,18 +4281,24 @@
     </enum>
     <enum name="MAV_ODID_DESC_TYPE">
       <entry value="0" name="MAV_ODID_DESC_TYPE_TEXT">
-        <description>Free-form text description of the purpose of the flight.</description>
+        <description>Optional free-form text description of the purpose of the flight.</description>
+      </entry>
+      <entry value="1" name="MAV_ODID_DESC_TYPE_EMERGENCY">
+        <description>Optional additional clarification when status == MAV_ODID_STATUS_EMERGENCY.</description>
+      </entry>
+      <entry value="2" name="MAV_ODID_DESC_TYPE_EXTENDED_STATUS">
+        <description>Optional additional clarification when status != MAV_ODID_STATUS_EMERGENCY.</description>
       </entry>
     </enum>
     <enum name="MAV_ODID_OPERATOR_LOCATION_TYPE">
       <entry value="0" name="MAV_ODID_OPERATOR_LOCATION_TYPE_TAKEOFF">
-        <description>The location of the operator is the same as the take-off location.</description>
+        <description>The location/altitude of the operator is the same as the take-off location.</description>
       </entry>
       <entry value="1" name="MAV_ODID_OPERATOR_LOCATION_TYPE_LIVE_GNSS">
-        <description>The location of the operator is based on live GNSS data.</description>
+        <description>The location/altitude of the operator is dynamic. E.g. based on live GNSS data.</description>
       </entry>
       <entry value="2" name="MAV_ODID_OPERATOR_LOCATION_TYPE_FIXED">
-        <description>The location of the operator is a fixed location.</description>
+        <description>The location/altitude of the operator are fixed values.</description>
       </entry>
     </enum>
     <enum name="MAV_ODID_CLASSIFICATION_TYPE">
@@ -4434,7 +4509,6 @@
       </entry>
     </enum>
     <enum name="AIS_FLAGS" bitmask="true">
-      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>These flags are used in the AIS_VESSEL.fields bitmask to indicate validity of data in the other message fields. When set, the data is valid.</description>
       <entry value="1" name="AIS_FLAGS_POSITION_ACCURACY">
         <description>1 = Position accuracy less than 10m, 0 = position accuracy greater than 10m.</description>
@@ -4521,7 +4595,7 @@
         </description>
       </entry>
       <entry value="2" name="NAV_VTOL_LAND_OPTIONS_HOVER_DESCENT">
-        <description>Land in multicopter mode on reaching the landing co-ordinates (the whole landing is by "hover descent").</description>
+        <description>Land in multicopter mode on reaching the landing coordinates (the whole landing is by "hover descent").</description>
       </entry>
     </enum>
     <enum name="MAV_WINCH_STATUS_FLAG" bitmask="true">
@@ -4557,7 +4631,7 @@
         <description>Winch is redelivering the payload. This is a failover state if the line tension goes above a threshold during RETRACTING.</description>
       </entry>
       <entry value="1024" name="MAV_WINCH_STATUS_ABANDON_LINE">
-        <description>Winch is abandoning the line and possibly payload. Winch unspools the entire calculated line length. This is a failover state from REDELIVER if the number of attemps exceeds a threshold.</description>
+        <description>Winch is abandoning the line and possibly payload. Winch unspools the entire calculated line length. This is a failover state from REDELIVER if the number of attempts exceeds a threshold.</description>
       </entry>
     </enum>
     <enum name="MAG_CAL_STATUS">
@@ -4682,6 +4756,100 @@
       <entry value="0" name="CAN_FILTER_REPLACE"/>
       <entry value="1" name="CAN_FILTER_ADD"/>
       <entry value="2" name="CAN_FILTER_REMOVE"/>
+    </enum>
+    <enum name="MAV_FTP_ERR">
+      <description>MAV FTP error codes (https://mavlink.io/en/services/ftp.html)</description>
+      <entry value="0" name="MAV_FTP_ERR_NONE">
+        <description>None: No error</description>
+      </entry>
+      <entry value="1" name="MAV_FTP_ERR_FAIL">
+        <description>Fail: Unknown failure</description>
+      </entry>
+      <entry value="2" name="MAV_FTP_ERR_FAILERRNO">
+        <description>FailErrno: Command failed, Err number sent back in PayloadHeader.data[1].
+		This is a file-system error number understood by the server operating system.</description>
+      </entry>
+      <entry value="3" name="MAV_FTP_ERR_INVALIDDATASIZE">
+        <description>InvalidDataSize: Payload size is invalid</description>
+      </entry>
+      <entry value="4" name="MAV_FTP_ERR_INVALIDSESSION">
+        <description>InvalidSession: Session is not currently open</description>
+      </entry>
+      <entry value="5" name="MAV_FTP_ERR_NOSESSIONSAVAILABLE">
+        <description>NoSessionsAvailable: All available sessions are already in use</description>
+      </entry>
+      <entry value="6" name="MAV_FTP_ERR_EOF">
+        <description>EOF: Offset past end of file for ListDirectory and ReadFile commands</description>
+      </entry>
+      <entry value="7" name="MAV_FTP_ERR_UNKNOWNCOMMAND">
+        <description>UnknownCommand: Unknown command / opcode</description>
+      </entry>
+      <entry value="8" name="MAV_FTP_ERR_FILEEXISTS">
+        <description>FileExists: File/directory already exists</description>
+      </entry>
+      <entry value="9" name="MAV_FTP_ERR_FILEPROTECTED">
+        <description>FileProtected: File/directory is write protected</description>
+      </entry>
+      <entry value="10" name="MAV_FTP_ERR_FILENOTFOUND">
+        <description>FileNotFound: File/directory not found</description>
+      </entry>
+    </enum>
+    <enum name="MAV_FTP_OPCODE">
+      <description>MAV FTP opcodes: https://mavlink.io/en/services/ftp.html</description>
+      <entry value="0" name="MAV_FTP_OPCODE_NONE">
+        <description>None. Ignored, always ACKed</description>
+      </entry>
+      <entry value="1" name="MAV_FTP_OPCODE_TERMINATESESSION">
+        <description>TerminateSession: Terminates open Read session</description>
+      </entry>
+      <entry value="2" name="MAV_FTP_OPCODE_RESETSESSION">
+        <description>ResetSessions: Terminates all open read sessions</description>
+      </entry>
+      <entry value="3" name="MAV_FTP_OPCODE_LISTDIRECTORY">
+        <description>ListDirectory. List files and directories in path from offset</description>
+      </entry>
+      <entry value="4" name="MAV_FTP_OPCODE_OPENFILERO">
+        <description>OpenFileRO: Opens file at path for reading, returns session</description>
+      </entry>
+      <entry value="5" name="MAV_FTP_OPCODE_READFILE">
+        <description>ReadFile: Reads size bytes from offset in session</description>
+      </entry>
+      <entry value="6" name="MAV_FTP_OPCODE_CREATEFILE">
+        <description>CreateFile: Creates file at path for writing, returns session</description>
+      </entry>
+      <entry value="7" name="MAV_FTP_OPCODE_WRITEFILE">
+        <description>WriteFile: Writes size bytes to offset in session</description>
+      </entry>
+      <entry value="8" name="MAV_FTP_OPCODE_REMOVEFILE">
+        <description>RemoveFile: Remove file at path</description>
+      </entry>
+      <entry value="9" name="MAV_FTP_OPCODE_CREATEDIRECTORY">
+        <description>CreateDirectory: Creates directory at path</description>
+      </entry>
+      <entry value="10" name="MAV_FTP_OPCODE_REMOVEDIRECTORY">
+        <description>RemoveDirectory: Removes directory at path. The directory must be empty.</description>
+      </entry>
+      <entry value="11" name="MAV_FTP_OPCODE_OPENFILEWO">
+        <description>OpenFileWO: Opens file at path for writing, returns session</description>
+      </entry>
+      <entry value="12" name="MAV_FTP_OPCODE_TRUNCATEFILE">
+        <description>TruncateFile: Truncate file at path to offset length</description>
+      </entry>
+      <entry value="13" name="MAV_FTP_OPCODE_RENAME">
+        <description>Rename: Rename path1 to path2</description>
+      </entry>
+      <entry value="14" name="MAV_FTP_OPCODE_CALCFILECRC">
+        <description>CalcFileCRC32: Calculate CRC32 for file at path</description>
+      </entry>
+      <entry value="15" name="MAV_FTP_OPCODE_BURSTREADFILE">
+        <description>BurstReadFile: Burst download session file</description>
+      </entry>
+      <entry value="128" name="MAV_FTP_OPCODE_ACK">
+        <description>ACK: ACK response</description>
+      </entry>
+      <entry value="129" name="MAV_FTP_OPCODE_NAK">
+        <description>NAK: NAK response</description>
+      </entry>
     </enum>
   </enums>
   <messages>
@@ -5057,7 +5225,7 @@
       <field type="uint8_t" name="mission_type" enum="MAV_MISSION_TYPE">Mission type.</field>
     </message>
     <message id="48" name="SET_GPS_GLOBAL_ORIGIN">
-      <description>Sets the GPS co-ordinates of the vehicle local origin (0,0,0) position. Vehicle should emit GPS_GLOBAL_ORIGIN irrespective of whether the origin is changed. This enables transform between the local coordinate frame and the global (GPS) coordinate frame, which may be necessary when (for example) indoor and outdoor settings are connected and the MAV should move from in- to outdoor.</description>
+      <description>Sets the GPS coordinates of the vehicle local origin (0,0,0) position. Vehicle should emit GPS_GLOBAL_ORIGIN irrespective of whether the origin is changed. This enables transform between the local coordinate frame and the global (GPS) coordinate frame, which may be necessary when (for example) indoor and outdoor settings are connected and the MAV should move from in- to outdoor.</description>
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84)</field>
@@ -5066,7 +5234,7 @@
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
     </message>
     <message id="49" name="GPS_GLOBAL_ORIGIN">
-      <description>Publishes the GPS co-ordinates of the vehicle local origin (0,0,0) position. Emitted whenever a new GPS-Local position mapping is requested or set - e.g. following SET_GPS_GLOBAL_ORIGIN message.</description>
+      <description>Publishes the GPS coordinates of the vehicle local origin (0,0,0) position. Emitted whenever a new GPS-Local position mapping is requested or set - e.g. following SET_GPS_GLOBAL_ORIGIN message.</description>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84)</field>
       <field type="int32_t" name="altitude" units="mm">Altitude (MSL). Positive for up.</field>
@@ -5636,7 +5804,7 @@
     </message>
     <message id="109" name="RADIO_STATUS">
       <description>Status generated by radio and injected into MAVLink stream.</description>
-      <field type="uint8_t" name="rssi" invalid="UINT8_MAX">Local (message sender) recieved signal strength indication in device-dependent units/scale. Values: [0-254], UINT8_MAX: invalid/unknown.</field>
+      <field type="uint8_t" name="rssi" invalid="UINT8_MAX">Local (message sender) received signal strength indication in device-dependent units/scale. Values: [0-254], UINT8_MAX: invalid/unknown.</field>
       <field type="uint8_t" name="remrssi" invalid="UINT8_MAX">Remote (message receiver) signal strength indication in device-dependent units/scale. Values: [0-254], UINT8_MAX: invalid/unknown.</field>
       <field type="uint8_t" name="txbuf" units="%">Remaining free transmitter buffer space.</field>
       <field type="uint8_t" name="noise" invalid="UINT8_MAX">Local background noise level. These are device dependent RSSI values (scale as approx 2x dB on SiK radios). Values: [0-254], UINT8_MAX: invalid/unknown.</field>
@@ -5663,7 +5831,7 @@
     </message>
     <message id="113" name="HIL_GPS">
       <description>The global position, as returned by the Global Positioning System (GPS). This is
-                 NOT the global position estimate of the sytem, but rather a RAW sensor value. See message GLOBAL_POSITION_INT for the global position estimate.</description>
+                 NOT the global position estimate of the system, but rather a RAW sensor value. See message GLOBAL_POSITION_INT for the global position estimate.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
       <field type="uint8_t" name="fix_type">0-1: no fix, 2: 2D fix, 3: 3D fix. Some applications will not use the value of this field unless it is at least two, so always correctly fill in the fix.</field>
       <field type="int32_t" name="lat" units="degE7">Latitude (WGS84)</field>
@@ -5771,6 +5939,7 @@
       <field type="uint8_t" name="target_component">Component ID</field>
     </message>
     <message id="123" name="GPS_INJECT_DATA">
+      <deprecated since="2022-05" replaced_by="GPS_RTCM_DATA"/>
       <description>Data for injecting into the onboard GPS (used for DGPS)</description>
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="uint8_t" name="target_component">Component ID</field>
@@ -6125,6 +6294,8 @@
       <field type="float" name="exhaust_gas_temperature" units="degC">Exhaust gas temperature</field>
       <field type="float" name="throttle_out" units="%">Output throttle</field>
       <field type="float" name="pt_compensation">Pressure/temperature compensation</field>
+      <extensions/>
+      <field type="float" name="ignition_voltage" units="V">Supply voltage to EFI sparking system.  Zero in this value means "unknown", so if the supply voltage really is zero volts use 0.0001 instead.</field>
     </message>
     <!-- MESSAGE IDs 180 - 229: Space for custom messages in individual projectname_messages.xml files -->
     <message id="230" name="ESTIMATOR_STATUS">
@@ -6141,16 +6312,16 @@
       <field type="float" name="pos_vert_accuracy" units="m">Vertical position 1-STD accuracy relative to the EKF local origin</field>
     </message>
     <message id="231" name="WIND_COV">
-      <description>Wind covariance estimate from vehicle.</description>
+      <description>Wind estimate from vehicle. Note that despite the name, this message does not actually contain any covariances but instead variability and accuracy fields in terms of standard deviation (1-STD).</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
-      <field type="float" name="wind_x" units="m/s">Wind in X (NED) direction</field>
-      <field type="float" name="wind_y" units="m/s">Wind in Y (NED) direction</field>
-      <field type="float" name="wind_z" units="m/s">Wind in Z (NED) direction</field>
-      <field type="float" name="var_horiz" units="m/s">Variability of the wind in XY. RMS of a 1 Hz lowpassed wind estimate.</field>
-      <field type="float" name="var_vert" units="m/s">Variability of the wind in Z. RMS of a 1 Hz lowpassed wind estimate.</field>
-      <field type="float" name="wind_alt" units="m">Altitude (MSL) that this measurement was taken at</field>
-      <field type="float" name="horiz_accuracy" units="m">Horizontal speed 1-STD accuracy</field>
-      <field type="float" name="vert_accuracy" units="m">Vertical speed 1-STD accuracy</field>
+      <field type="float" name="wind_x" units="m/s" invalid="NaN">Wind in North (NED) direction (NAN if unknown)</field>
+      <field type="float" name="wind_y" units="m/s" invalid="NaN">Wind in East (NED) direction (NAN if unknown)</field>
+      <field type="float" name="wind_z" units="m/s" invalid="NaN">Wind in down (NED) direction (NAN if unknown)</field>
+      <field type="float" name="var_horiz" units="m/s" invalid="NaN">Variability of wind in XY, 1-STD estimated from a 1 Hz lowpassed wind estimate (NAN if unknown)</field>
+      <field type="float" name="var_vert" units="m/s" invalid="NaN">Variability of wind in Z, 1-STD estimated from a 1 Hz lowpassed wind estimate (NAN if unknown)</field>
+      <field type="float" name="wind_alt" units="m" invalid="NaN">Altitude (MSL) that this measurement was taken at (NAN if unknown)</field>
+      <field type="float" name="horiz_accuracy" units="m/s" invalid="0">Horizontal speed 1-STD accuracy (0 if unknown)</field>
+      <field type="float" name="vert_accuracy" units="m/s" invalid="0">Vertical speed 1-STD accuracy (0 if unknown)</field>
     </message>
     <message id="232" name="GPS_INPUT">
       <description>GPS sensor input message.  This is a raw sensor value sent by the GPS. This is NOT the global position estimate of the system.</description>
@@ -6250,7 +6421,15 @@
       <field type="uint32_t" name="clipping_2">third accelerometer clipping count</field>
     </message>
     <message id="242" name="HOME_POSITION">
-      <description>This message can be requested by sending the MAV_CMD_GET_HOME_POSITION command. The position the system will return to and land on. The position is set automatically by the system during the takeoff in case it was not explicitly set by the operator before or after. The global and local positions encode the position in the respective coordinate frames, while the q parameter encodes the orientation of the surface. Under normal conditions it describes the heading and terrain slope, which can be used by the aircraft to adjust the approach. The approach 3D vector describes the point to which the system should fly in normal flight mode and then perform a landing sequence along the vector.</description>
+      <description>
+	Contains the home position.
+	The home position is the default position that the system will return to and land on.
+	The position must be set automatically by the system during the takeoff, and may also be explicitly set using MAV_CMD_DO_SET_HOME.
+	The global and local positions encode the position in the respective coordinate frames, while the q parameter encodes the orientation of the surface.
+	Under normal conditions it describes the heading and terrain slope, which can be used by the aircraft to adjust the approach.
+	The approach 3D vector describes the point to which the system should fly in normal flight mode and then perform a landing sequence along the vector.
+        Note: this message can be requested by sending the MAV_CMD_REQUEST_MESSAGE with param1=242 (or the deprecated MAV_CMD_GET_HOME_POSITION command).
+      </description>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84)</field>
       <field type="int32_t" name="altitude" units="mm">Altitude (MSL). Positive for up.</field>
@@ -6265,8 +6444,16 @@
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
     </message>
     <message id="243" name="SET_HOME_POSITION">
-      <deprecated since="2022-02" replaced_by="MAV_CMD_DO_SET_HOME">This message is being superseded by MAV_CMD_DO_SET_HOME.  Using the command protocols allows a GCS to detect setting of the home position has failed.</deprecated>
-      <description>The position the system will return to and land on. The position is set automatically by the system during the takeoff in case it was not explicitly set by the operator before or after. The global and local positions encode the position in the respective coordinate frames, while the q parameter encodes the orientation of the surface. Under normal conditions it describes the heading and terrain slope, which can be used by the aircraft to adjust the approach. The approach 3D vector describes the point to which the system should fly in normal flight mode and then perform a landing sequence along the vector.</description>
+      <deprecated since="2022-02" replaced_by="MAV_CMD_DO_SET_HOME">The command protocol version (MAV_CMD_DO_SET_HOME) allows a GCS to detect when setting the home position has failed.</deprecated>
+      <description>
+        Sets the home position.
+	The home position is the default position that the system will return to and land on.
+        The position is set automatically by the system during the takeoff (and may also be set using this message).
+        The global and local positions encode the position in the respective coordinate frames, while the q parameter encodes the orientation of the surface.
+        Under normal conditions it describes the heading and terrain slope, which can be used by the aircraft to adjust the approach.
+        The approach 3D vector describes the point to which the system should fly in normal flight mode and then perform a landing sequence along the vector.
+        Note: the current home position may be emitted in a HOME_POSITION message on request (using MAV_CMD_REQUEST_MESSAGE with param1=242).
+      </description>
       <field type="uint8_t" name="target_system">System ID.</field>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84)</field>
@@ -6282,7 +6469,11 @@
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
     </message>
     <message id="244" name="MESSAGE_INTERVAL">
-      <description>The interval between messages for a particular MAVLink message ID. This message is the response to the MAV_CMD_GET_MESSAGE_INTERVAL command. This interface replaces DATA_STREAM.</description>
+      <description>
+        The interval between messages for a particular MAVLink message ID.
+        This message is sent in response to the MAV_CMD_REQUEST_MESSAGE command with param1=244 (this message) and param2=message_id (the id of the message for which the interval is required).
+	It may also be sent in response to MAV_CMD_GET_MESSAGE_INTERVAL.
+	This interface replaces DATA_STREAM.</description>
       <field type="uint16_t" name="message_id">The ID of the requested MAVLink message. v1.0 is limited to 254 messages.</field>
       <field type="int32_t" name="interval_us" units="us">The interval between two messages. A value of -1 indicates this stream is disabled, 0 indicates it is not available, &gt; 0 indicates the interval at which it is sent.</field>
     </message>
@@ -6742,8 +6933,6 @@
       <field type="int8_t" name="response" enum="WIFI_CONFIG_AP_RESPONSE">Message acceptance response (sent back to GS).</field>
     </message>
     <message id="301" name="AIS_VESSEL">
-      <wip/>
-      <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>The location and information of an AIS vessel</description>
       <field type="uint32_t" name="MMSI">Mobile Marine Service Identifier, 9 decimal digits</field>
       <field type="int32_t" name="lat" units="degE7">Latitude</field>
@@ -6853,6 +7042,7 @@
       <extensions/>
       <field type="uint8_t" name="reset_counter">Estimate reset counter. This should be incremented when the estimate resets in any of the dimensions (position, velocity, attitude, angular speed). This is designed to be used when e.g an external SLAM system detects a loop-closure and the estimate jumps.</field>
       <field type="uint8_t" name="estimator_type" enum="MAV_ESTIMATOR_TYPE">Type of estimator that is providing the odometry.</field>
+      <field type="int8_t" name="quality" units="%" invalid="0">Optional odometry quality metric as a percentage. -1 = odometry has failed, 0 = unknown/unset quality, 1 = worst quality, 100 = best quality</field>
     </message>
     <message id="332" name="TRAJECTORY_REPRESENTATION_WAYPOINTS">
       <description>Describe a trajectory using an array of up-to 5 waypoints in the local frame (MAV_FRAME_LOCAL_NED).</description>
@@ -7055,23 +7245,34 @@
       <field type="uint32_t[6]" name="link_rx_max" units="KiB/s" invalid="[UINT32_MAX]">Network capacity to the component system. A value of UINT32_MAX implies the field is unused.</field>
     </message>
     <message id="395" name="COMPONENT_INFORMATION">
-      <wip/>
-      <!-- This message is work-in-progress it can therefore change, and should NOT be used in stable production environments -->
+      <deprecated since="2022-04" replaced_by="COMPONENT_METADATA"/>
       <description>
         Component information message, which may be requested using MAV_CMD_REQUEST_MESSAGE.
-        
-        This contains MAVLink FTP URIs for the component's general and peripherals metadata files along with their CRCs (which can be used for file caching).
-        The files must be hosted on the component, and may be xz compressed.
-        The general metadata file can be read to get the locations of additional metadata files (COMP_METADATA_TYPE), which may be hosted either on the vehicle or the Internet.
-        For more information see: https://mavlink.io/en/services/component_information.html.
-        
-        Note: Camera components should use CAMERA_INFORMATION instead, and autopilots may use both this message and AUTOPILOT_VERSION.
       </description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
       <field type="uint32_t" name="general_metadata_file_crc">CRC32 of the general metadata file (general_metadata_uri).</field>
       <field type="char[100]" name="general_metadata_uri">MAVLink FTP URI for the general metadata file (COMP_METADATA_TYPE_GENERAL), which may be compressed with xz. The file contains general component metadata, and may contain URI links for additional metadata (see COMP_METADATA_TYPE). The information is static from boot, and may be generated at compile time. The string needs to be zero terminated.</field>
       <field type="uint32_t" name="peripherals_metadata_file_crc">CRC32 of peripherals metadata file (peripherals_metadata_uri).</field>
       <field type="char[100]" name="peripherals_metadata_uri">(Optional) MAVLink FTP URI for the peripherals metadata file (COMP_METADATA_TYPE_PERIPHERALS), which may be compressed with xz. This contains data about "attached components" such as UAVCAN nodes. The peripherals are in a separate file because the information must be generated dynamically at runtime. The string needs to be zero terminated.</field>
+    </message>
+    <message id="397" name="COMPONENT_METADATA">
+      <wip/>
+      <!-- This message is work-in-progress it can therefore change, and should NOT be used in stable production environments -->
+      <description>
+        Component metadata message, which may be requested using MAV_CMD_REQUEST_MESSAGE.
+        
+        This contains the MAVLink FTP URI and CRC for the component's general metadata file.
+        The file must be hosted on the component, and may be xz compressed.
+        The file CRC can be used for file caching.
+        
+        The general metadata file can be read to get the locations of other metadata files (COMP_METADATA_TYPE) and translations, which may be hosted either on the vehicle or the internet.
+        For more information see: https://mavlink.io/en/services/component_information.html.
+        
+        Note: Camera components should use CAMERA_INFORMATION instead, and autopilots may use both this message and AUTOPILOT_VERSION.
+      </description>
+      <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
+      <field type="uint32_t" name="file_crc">CRC32 of the general metadata file.</field>
+      <field type="char[100]" name="uri">MAVLink FTP URI for the general metadata file (COMP_METADATA_TYPE_GENERAL), which may be compressed with xz. The file contains general component metadata, and may contain URI links for additional metadata (see COMP_METADATA_TYPE). The information is static from boot, and may be generated at compile time. The string needs to be zero terminated.</field>
     </message>
     <message id="400" name="PLAY_TUNE_V2">
       <description>Play vehicle tone/tune (buzzer). Supersedes message PLAY_TUNE.</description>
@@ -7135,7 +7336,7 @@
       <field type="uint8_t[64]" name="data">Frame data</field>
     </message>
     <message id="388" name="CAN_FILTER_MODIFY">
-      <description>Modify the filter of what CAN messages to forward over the mavlink. This can be used to make CAN forwarding work well on low bandwith links. The filtering is applied on bits 8 to 24 of the CAN id (2nd and 3rd bytes) which corresponds to the DroneCAN message ID for DroneCAN. Filters with more than 16 IDs can be constructed by sending multiple CAN_FILTER_MODIFY messages.</description>
+      <description>Modify the filter of what CAN messages to forward over the mavlink. This can be used to make CAN forwarding work well on low bandwidth links. The filtering is applied on bits 8 to 24 of the CAN id (2nd and 3rd bytes) which corresponds to the DroneCAN message ID for DroneCAN. Filters with more than 16 IDs can be constructed by sending multiple CAN_FILTER_MODIFY messages.</description>
       <field type="uint8_t" name="target_system">System ID.</field>
       <field type="uint8_t" name="target_component">Component ID.</field>
       <field type="uint8_t" name="bus">bus number</field>
@@ -7164,7 +7365,7 @@
     <message id="12900" name="OPEN_DRONE_ID_BASIC_ID">
       <wip/>
       <!-- This message is work-in-progress and it can therefore change, and should NOT be used in stable production environments -->
-      <description>Data for filling the OpenDroneID Basic ID message. This and the below messages are primarily meant for feeding data to/from an OpenDroneID implementation. E.g. https://github.com/opendroneid/opendroneid-core-c. These messages are compatible with the ASTM Remote ID standard at https://www.astm.org/Standards/F3411.htm and the ASD-STAN Direct Remote ID standard. The usage of these messages is documented at https://mavlink.io/en/services/opendroneid.html.</description>
+      <description>Data for filling the OpenDroneID Basic ID message. This and the below messages are primarily meant for feeding data to/from an OpenDroneID implementation. E.g. https://github.com/opendroneid/opendroneid-core-c. These messages are compatible with the ASTM F3411 Remote ID standard and the ASD-STAN prEN 4709-002 Direct Remote ID standard. Additional information and usage of these messages is documented at https://mavlink.io/en/services/opendroneid.html.</description>
       <field type="uint8_t" name="target_system">System ID (0 for broadcast).</field>
       <field type="uint8_t" name="target_component">Component ID (0 for broadcast).</field>
       <field type="uint8_t[20]" name="id_or_mac">Only used for drone ID data received from other UAs. See detailed description at https://mavlink.io/en/services/opendroneid.html. </field>
@@ -7199,7 +7400,7 @@
     <message id="12902" name="OPEN_DRONE_ID_AUTHENTICATION">
       <wip/>
       <!-- This message is work-in-progress and it can therefore change, and should NOT be used in stable production environments -->
-      <description>Data for filling the OpenDroneID Authentication message. The Authentication Message defines a field that can provide a means of authenticity for the identity of the UAS (Unmanned Aircraft System). The Authentication message can have two different formats. Five data pages are supported. For data page 0, the fields PageCount, Length and TimeStamp are present and AuthData is only 17 bytes. For data page 1 through 15, PageCount, Length and TimeStamp are not present and the size of AuthData is 23 bytes.</description>
+      <description>Data for filling the OpenDroneID Authentication message. The Authentication Message defines a field that can provide a means of authenticity for the identity of the UAS (Unmanned Aircraft System). The Authentication message can have two different formats. For data page 0, the fields PageCount, Length and TimeStamp are present and AuthData is only 17 bytes. For data page 1 through 15, PageCount, Length and TimeStamp are not present and the size of AuthData is 23 bytes.</description>
       <field type="uint8_t" name="target_system">System ID (0 for broadcast).</field>
       <field type="uint8_t" name="target_component">Component ID (0 for broadcast).</field>
       <field type="uint8_t[20]" name="id_or_mac">Only used for drone ID data received from other UAs. See detailed description at https://mavlink.io/en/services/opendroneid.html. </field>
@@ -7213,7 +7414,7 @@
     <message id="12903" name="OPEN_DRONE_ID_SELF_ID">
       <wip/>
       <!-- This message is work-in-progress and it can therefore change, and should NOT be used in stable production environments -->
-      <description>Data for filling the OpenDroneID Self ID message. The Self ID Message is an opportunity for the operator to (optionally) declare their identity and purpose of the flight. This message can provide additional information that could reduce the threat profile of a UA (Unmanned Aircraft) flying in a particular area or manner.</description>
+      <description>Data for filling the OpenDroneID Self ID message. The Self ID Message is an opportunity for the operator to (optionally) declare their identity and purpose of the flight. This message can provide additional information that could reduce the threat profile of a UA (Unmanned Aircraft) flying in a particular area or manner. This message can also be used to provide optional additional clarification in an emergency/remote ID system failure situation.</description>
       <field type="uint8_t" name="target_system">System ID (0 for broadcast).</field>
       <field type="uint8_t" name="target_component">Component ID (0 for broadcast).</field>
       <field type="uint8_t[20]" name="id_or_mac">Only used for drone ID data received from other UAs. See detailed description at https://mavlink.io/en/services/opendroneid.html. </field>
@@ -7223,7 +7424,7 @@
     <message id="12904" name="OPEN_DRONE_ID_SYSTEM">
       <wip/>
       <!-- This message is work-in-progress and it can therefore change, and should NOT be used in stable production environments -->
-      <description>Data for filling the OpenDroneID System message. The System Message contains general system information including the operator location and possible aircraft group information.</description>
+      <description>Data for filling the OpenDroneID System message. The System Message contains general system information including the operator location/altitude and possible aircraft group and/or category/class information.</description>
       <field type="uint8_t" name="target_system">System ID (0 for broadcast).</field>
       <field type="uint8_t" name="target_component">Component ID (0 for broadcast).</field>
       <field type="uint8_t[20]" name="id_or_mac">Only used for drone ID data received from other UAs. See detailed description at https://mavlink.io/en/services/opendroneid.html. </field>
@@ -7238,6 +7439,7 @@
       <field type="uint8_t" name="category_eu" enum="MAV_ODID_CATEGORY_EU">When classification_type is MAV_ODID_CLASSIFICATION_TYPE_EU, specifies the category of the UA.</field>
       <field type="uint8_t" name="class_eu" enum="MAV_ODID_CLASS_EU">When classification_type is MAV_ODID_CLASSIFICATION_TYPE_EU, specifies the class of the UA.</field>
       <field type="float" name="operator_altitude_geo" units="m" invalid="-1000">Geodetic altitude of the operator relative to WGS84. If unknown: -1000 m.</field>
+      <field type="uint32_t" name="timestamp" units="s">32 bit Unix Timestamp in seconds since 00:00:00 01/01/2019.</field>
     </message>
     <message id="12905" name="OPEN_DRONE_ID_OPERATOR_ID">
       <wip/>
@@ -7253,11 +7455,11 @@
     <message id="12915" name="OPEN_DRONE_ID_MESSAGE_PACK">
       <wip/>
       <!-- This message is work-in-progress and it can therefore change, and should NOT be used in stable production environments -->
-      <description>An OpenDroneID message pack is a container for multiple encoded OpenDroneID messages (i.e. not in the format given for the above messages descriptions but after encoding into the compressed OpenDroneID byte format). Used e.g. when transmitting on Bluetooth 5.0 Long Range/Extended Advertising or on WiFi Neighbor Aware Networking.</description>
+      <description>An OpenDroneID message pack is a container for multiple encoded OpenDroneID messages (i.e. not in the format given for the above message descriptions but after encoding into the compressed OpenDroneID byte format). Used e.g. when transmitting on Bluetooth 5.0 Long Range/Extended Advertising or on WiFi Neighbor Aware Networking or on WiFi Beacon.</description>
       <field type="uint8_t" name="target_system">System ID (0 for broadcast).</field>
       <field type="uint8_t" name="target_component">Component ID (0 for broadcast).</field>
       <field type="uint8_t[20]" name="id_or_mac">Only used for drone ID data received from other UAs. See detailed description at https://mavlink.io/en/services/opendroneid.html. </field>
-      <field type="uint8_t" name="single_message_size" units="bytes">This field must currently always be equal to 25 (bytes), since all encoded OpenDroneID messages are specificed to have this length.</field>
+      <field type="uint8_t" name="single_message_size" units="bytes">This field must currently always be equal to 25 (bytes), since all encoded OpenDroneID messages are specified to have this length.</field>
       <field type="uint8_t" name="msg_pack_size">Number of encoded messages in the pack (not the number of bytes). Allowed range is 1 - 9.</field>
       <field type="uint8_t[225]" name="messages">Concatenation of encoded OpenDroneID messages. Shall be filled with nulls in the unused portion of the field.</field>
     </message>
