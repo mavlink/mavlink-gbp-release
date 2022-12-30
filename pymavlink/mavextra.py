@@ -8,6 +8,7 @@ Released under GNU GPL version 3 or later
 from __future__ import print_function
 from __future__ import absolute_import
 from builtins import object
+from builtins import sum as builtin_sum
 
 from math import *
 
@@ -220,9 +221,10 @@ def average(var, key, N):
     if not key in average_data:
         average_data[key] = [var]*N
         return var
-    average_data[key].pop(0)
-    average_data[key].append(var)
-    return sum(average_data[key])/N
+    l = average_data[key]
+    l.pop(0)
+    l.append(var)
+    return builtin_sum(l) / N
 
 derivative_data = {}
 
@@ -623,6 +625,43 @@ def EAS2TAS(ARSP,GPS,BARO,ground_temp=25):
     tempK = ground_temp + 273.15 - 0.0065 * GPS.Alt
     return sqrt(1.225 / (BARO.Press / (287.26 * tempK)))
 
+SSL_AIR_DENSITY = 1.225
+C_TO_KELVIN = 273.15
+ISA_LAPSE_RATE = 0.0065
+ISA_GAS_CONSTANT = 287.26
+SSL_AIR_TEMPERATURE = 288.15
+SSL_AIR_PRESSURE = 101325.01576
+
+def SimpleAtmosphere(alt_km):
+    REARTH = 6369.0
+    GMR    = 34.163195
+
+    # geometric to geopotential altitude
+    h = alt_km*REARTH/(alt_km+REARTH)
+
+    if (h < 11.0):
+        # Troposphere
+        theta = (SSL_AIR_TEMPERATURE - 6.5 * h) / SSL_AIR_TEMPERATURE
+        delta = pow(theta, GMR / 6.5)
+    else:
+        # Stratosphere
+        theta = 216.65 / SSL_AIR_TEMPERATURE
+        delta = 0.2233611 * exp(-GMR * (h - 11.0) / 216.65)
+
+    sigma = delta/theta
+    return (sigma, delta, theta)
+
+def eas2tas(alt_m, groundtemp=25.0):
+    '''eas2tas from altitude in meters AMSL'''
+    (sigma, delta, theta) = SimpleAtmosphere(alt_m*0.001)
+    pressure = SSL_AIR_PRESSURE * delta
+    tempK = groundtemp + C_TO_KELVIN - ISA_LAPSE_RATE * alt_m
+    eas2tas_squared = SSL_AIR_DENSITY / (pressure / (ISA_GAS_CONSTANT * tempK))
+    return sqrt(eas2tas_squared)
+
+def airspeed_tas(VFR_HUD,GLOBAL_POSITION_INT):
+    '''airspeed as true airspeed from VFR_HUD and GLOBAL_POSITION_INT'''
+    return eas2tas(GLOBAL_POSITION_INT.alt*0.001) * VFR_HUD.airspeed
 
 def airspeed_ratio(VFR_HUD):
     '''recompute airspeed with a different ARSPD_RATIO'''
@@ -1024,19 +1063,21 @@ def gps_offset(lat, lon, east, north):
   distance = math.sqrt(east**2 + north**2)
   return gps_newpos(lat, lon, bearing, distance)
 
-ekf_home = None
+ekf_origin = None
 
 def ekf1_pos(EKF1):
   '''calculate EKF position when EKF disabled'''
-  global ekf_home
+  global ekf_origin
   from . import mavutil
   self = mavutil.mavfile_global
-  if ekf_home is None:
-      if not 'GPS' in self.messages or self.messages['GPS'].Status != 3:
+  if getattr(EKF1,'C',0) != 0:
+      return None
+  if ekf_origin is None:
+      if not 'ORGN' in self.messages:
           return None
-      ekf_home = self.messages['GPS']
-      (ekf_home.Lat, ekf_home.Lng) = gps_offset(ekf_home.Lat, ekf_home.Lng, -EKF1.PE, -EKF1.PN)
-  (lat,lon) = gps_offset(ekf_home.Lat, ekf_home.Lng, EKF1.PE, EKF1.PN)
+      ekf_origin = self.messages['ORGN']
+      (ekf_origin.Lat, ekf_origin.Lng) = (ekf_origin.Lat, ekf_origin.Lng)
+  (lat,lon) = gps_offset(ekf_origin.Lat, ekf_origin.Lng, EKF1.PE, EKF1.PN)
   return (lat, lon)
 
 def quat_to_euler(q):
@@ -1529,3 +1570,82 @@ def reset_state_data():
     first_fix = None
     dcm_state = None
     earth_field = None
+
+# terrain functions, using MAVProxy elevation module
+EleModel = None
+
+def terrain_height(lat,lon):
+    '''get terrain height'''
+    global EleModel
+    if EleModel is None:
+        from MAVProxy.modules.mavproxy_map.mp_elevation import ElevationModel
+        EleModel = ElevationModel("srtm",offline=1)
+    return EleModel.GetElevation(lat,lon)
+
+def terrain_margin_lat_lon(lat1,lon1,alt1,lat2,lon2,alt2):
+    '''
+    return minimum height above terrain on path between two positions (AMSL)
+    '''
+    distance = distance_lat_lon(lat1, lon1, lat2, lon2)
+    steps = distance / 10
+    dlat = (lat2-lat1) / steps
+    dlon = (lon2-lon1) / steps
+    dalt = (alt2-alt1) / steps
+    min_margin = None
+
+    for i in range(max(1,int(steps))):
+        talt = terrain_height(lat1,lon1)
+        margin = alt1 - talt
+        if min_margin is None or margin < min_margin:
+            min_margin = margin
+        lat1 += dlat
+        lon1 += dlon
+        alt1 += dalt
+    return min_margin
+
+def terrain_margin(TERR,lat,lon,antenna_height):
+    '''
+    return minimum height above terrain on path between two positions (AMSL)
+    '''
+    alt = terrain_height(lat,lon)+antenna_height
+    return terrain_margin_lat_lon(TERR.Lat,TERR.Lng,TERR.CHeight+TERR.TerrH,lat,lon,alt)
+
+def radio_margin(TERR,lat,lon,antenna_height):
+    '''
+    return how much height we could lose and still have line of sight from an antenna at antenna_height
+    above ground at lat/lon
+    '''
+    ant_alt = terrain_height(lat,lon)+antenna_height
+    if hasattr(TERR,'CHeight'):
+        alt = TERR.CHeight+TERR.TerrH
+    else:
+        # allow for GPS messages
+        alt = TERR.Alt
+    low = -alt
+    high = 0
+    while high > low+1:
+        test = 0.5*(low+high)
+        m = terrain_margin_lat_lon(TERR.Lat,TERR.Lng,alt+test,lat,lon,ant_alt)
+        if m > 0:
+            high = test
+        elif m < 0:
+            low = test
+        else:
+            low = test
+            high = test
+    return -high
+    
+def mm_curr(RCOU,BAT,PWM_MIN,PWM_MAX,Mfirst,Mlast):
+    '''
+    motor model to predict current draw given PWM to VTOL motors
+    returned value should be proportional to expected total current draw
+    '''
+    total_curr = 0.0
+    voltage = BAT.Volt
+    for m in range(Mfirst,Mlast+1):
+        pwm = getattr(RCOU,'C%u'%m,None)
+        if pwm is None:
+            return 0.0
+        command = voltage*max(pwm - PWM_MIN,0)/(PWM_MAX-PWM_MIN)
+        total_curr += command**2
+    return total_curr
