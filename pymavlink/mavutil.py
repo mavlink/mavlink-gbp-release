@@ -356,6 +356,10 @@ class mavfile(object):
                         mavlink.MAV_TYPE_ADSB,
                         mavlink.MAV_TYPE_ONBOARD_CONTROLLER):
             return False
+        if msg.autopilot in frozenset([
+                mavlink.MAV_AUTOPILOT_INVALID
+                ]):
+            return False
         return True
 
     def post_message(self, msg):
@@ -791,16 +795,20 @@ class mavfile(object):
             MAV_ACTION_CALIBRATE_PRESSURE = 20
             self.mav.action_send(self.target_system, self.target_component, MAV_ACTION_CALIBRATE_PRESSURE)
 
-    def reboot_autopilot(self, hold_in_bootloader=False):
+    def reboot_autopilot(self, hold_in_bootloader=False, force=False):
         '''reboot the autopilot'''
         if self.mavlink10():
             if hold_in_bootloader:
                 param1 = 3
             else:
                 param1 = 1
+            if force:
+                param6 = 20190226
+            else:
+                param6 = 0
             self.mav.command_long_send(self.target_system, self.target_component,
                                        mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN, 0,
-                                       param1, 0, 0, 0, 0, 0, 0)
+                                       param1, 0, 0, 0, 0, param6, 0)
 
     def wait_gps_fix(self):
         self.recv_match(type='VFR_HUD', blocking=True)
@@ -920,7 +928,7 @@ class mavfile(object):
         self.mav.signing.timestamp = 0
 
 def set_close_on_exec(fd):
-    '''set the clone on exec flag on a file descriptor. Ignore exceptions'''
+    '''set the close on exec flag on a file descriptor. Ignore exceptions'''
     try:
         import fcntl
         flags = fcntl.fcntl(fd, fcntl.F_GETFD)
@@ -1321,6 +1329,8 @@ class mavtcpin(mavfile):
         self.port = None
 
     def close(self):
+        if self.port is not None:
+            self.port.close()
         self.listen.close()
 
     def recv(self,n=None):
