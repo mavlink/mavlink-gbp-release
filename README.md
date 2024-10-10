@@ -1,3 +1,26 @@
+## mavlink (noetic) - 2024.10.10-1
+
+The packages in the `mavlink` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic mavlink` on `Thu, 10 Oct 2024 07:12:21 -0000`
+
+The `mavlink` package was released.
+
+Version of package(s) in repository `mavlink`:
+
+- upstream repository: https://github.com/mavlink/mavlink.git
+- release repository: https://github.com/mavlink/mavlink-gbp-release.git
+- rosdistro version: `2024.6.6-1`
+- old version: `2024.6.6-1`
+- new version: `2024.10.10-1`
+
+Versions of tools used:
+
+- bloom version: `0.12.0`
+- catkin_pkg version: `1.0.0`
+- rosdep version: `0.25.1`
+- rosdistro version: `0.9.1`
+- vcstools version: `0.1.42`
+
+
 ## mavlink (noetic) - 2024.6.6-1
 
 The packages in the `mavlink` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic mavlink` on `Thu, 06 Jun 2024 12:04:41 -0000`
