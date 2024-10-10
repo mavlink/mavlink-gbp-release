@@ -297,16 +297,6 @@ AND are likely to be implemented in a compatible way.
 The original definitions are defined in [standard.xml](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/standard.xml).
     """
 
-        elif filename == 'ardupilotmega':
-            insert_text += """
-# Dialect: ArduPilotMega
-
-These messages define the ArduPilot specific message set, which is custom to [http://ardupilot.org](http://ardupilot.org).
-
-This topic is a human-readable form of the XML definition file: [ardupilotmega.xml](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/ardupilotmega.xml).
-
-> **Warning** The ArduPilot MAVLink fork of [ardupilotmega.xml](https://github.com/ArduPilot/mavlink/blob/master/message_definitions/v1.0/ardupilotmega.xml) may contain messages that have not yet been merged into this documentation.
-    """
         elif filename == 'development':
             insert_text += """
 # Dialect: development
@@ -316,11 +306,19 @@ They should be considered a 'work in progress' and not included in production bu
 
 This topic is a human-readable form of the XML definition file: [development.xml](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/development.xml).
 """
+        elif filename == 'test':
+            insert_text += """
+# Dialect: test
+
+The test dialect is used for testing XML file parsing.
+
+This topic is a human-readable form of the XML definition file: [test.xml](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/test.xml).
+"""
         elif filename == 'all':
             insert_text += """
 # Dialect: all
 
-This dialect is intended to `include` all other [dialects](../messages/README.md) in the mavlink/mavlink repository (including [external dialects](https://github.com/mavlink/mavlink/tree/master/external/dialects#mavlink-external-dialects)).
+This dialect is intended to `include` all other [dialects](../messages/README.md) in the [mavlink/mavlink](https://github.com/mavlink/mavlink) repository (including [external dialects](https://github.com/mavlink/mavlink/tree/master/external/dialects#mavlink-external-dialects)).
 
 Dialects that are in **all.xml** are guaranteed to not have clashes in messages, enums, enum ids, and MAV_CMDs.
 This ensure that:
@@ -328,15 +326,54 @@ This ensure that:
 - Systems based on these dialects can co-exist on the same MAVLink network.
 - A Ground Station might (optionally) use libraries generated from **all.xml** to communicate using any of the dialects.
 
-> **Warning** New dialect files in the official repository must be added to **all.xml** and restrict themselves to using ids in their own allocated range.
-A few older dialects are not included because these operate in completely closed networks or because they are only used for tests.
+> **Warning**
+>
+> - New dialect files in the official repository must be added to **all.xml** and restrict themselves to using ids in their own allocated range.
+> - Dialects should push changes to mavlink/mavlink in order to avoid potential clashes from changes to other dialects.
+>
+> A few older dialects are not included because these operate in completely closed networks or because they are only used for tests.
 
 This topic is a human-readable form of the XML definition file: [all.xml](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/all.xml).
 """
+
+        elif filename == 'ardupilotmega':
+            insert_text += """
+# Dialect: ArduPilotMega
+
+> **Warning** [ardupilotmega.xml](https://github.com/ArduPilot/mavlink/blob/master/message_definitions/v1.0/ardupilotmega.xml) contains the accurate and up-to-date documentation for this dialect.
+> The documentation below may not be accurate if the dialect owner has not pushed changes.
+
+These messages define the [ArduPilot](http://ardupilot.org) specific dialect (as pushed to the [mavlink/mavlink](https://github.com/mavlink/mavlink) GitHub repository by the dialect owner).
+
+This topic is a human-readable form of the XML definition file: [ardupilotmega.xml](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/ardupilotmega.xml).
+
+    """
+
+        elif filename == 'cubepilot':
+            insert_text += """
+# Dialect: cubepilot
+
+> **Warning** [cubepilot.xml](https://github.com/CubePilot/mavlink/blob/master/message_definitions/v1.0/cubepilot.xml) contains the accurate and up-to-date documentation for this dialect.
+> The documentation below may not be accurate if the dialect owner has not pushed changes.
+
+These messages define the [CubePilot](http://www.cubepilot.com) specific dialect (as pushed to the [mavlink/mavlink](https://github.com/mavlink/mavlink) GitHub repository by the dialect owner).
+
+This topic is a human-readable form of the XML definition file: [cubepilot.xml](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/cubepilot.xml).
+
+    """
+
+
         else:
-            insert_text += '\n# Dialect: %s' % filename.rsplit('.', 1)[0]
-            insert_text += '\n\n*This is a human-readable form of the XML definition file: [%s](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/%s).*' % (
-                filename, filename)
+            dialectName = filename.rsplit('.', 1)[0]
+            filenameXML = f'{dialectName}.xml'
+            insert_text += f"""
+# Dialect: {dialectName}
+
+> **Warning** This topic documents the version of the dialect file in the [mavlink/mavlink](https://github.com/mavlink/mavlink) Github repository, which may not be up to date with the file in the source repository (it is up to the dialect owner to push changes when needed).
+> The source repo should be listed in the comments at the top of the XML definition file listed below (but may not be).
+
+This topic is a human-readable form of the XML definition file: [{filenameXML}](https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/{filenameXML}).
+"""
         insert_text += """
 
 <span id="mav2_extension_field"></span>
@@ -356,7 +393,6 @@ span.warning {
 """
 
         return insert_text
-
 
 class MAVDeprecated(object):
     def __init__(self, soup):
@@ -417,6 +453,7 @@ class MAVField(object):
         self.default = None
         self.minValue = None
         self.maxValue = None
+        self.multiplier = None
         self.extension = extension
         for attr, value in soup.attrs.items():
             # We do it this way to catch all of them. New additions will throw debug
@@ -442,6 +479,8 @@ class MAVField(object):
                 self.minValue = value
             elif attr == 'maxValue':
                 self.maxValue = value
+            elif attr == 'multiplier':
+                self.multiplier = value
             else:
                 print(
                     f"Debug: MAVField: Unexpected attribute: {attr}, Value: {value}")
@@ -481,12 +520,13 @@ class MAVField(object):
             parent.fieldnames.add('default')
         if self.invalid:
             parent.fieldnames.add('invalid')
-
+        if self.multiplier:
+            parent.fieldnames.add('multiplier')
         # self.debug()
 
     def debug(self):
         print(
-            f"Debug_Field- name ({self.name}), type ({self.type}), desc({self.description}), units({self.units}), display({self.display}), instance({self.instance})")
+            f"Debug_Field- name ({self.name}), type ({self.type}), desc({self.description}), units({self.units}), display({self.display}), instance({self.instance}), multiplier({self.multiplier})")
         # TODO - display, instance, are not output.
 
 
@@ -560,8 +600,11 @@ class MAVMessage(object):
             # message+=f"Included from [{self.basename}](../messages/{self.basename}.md#{self.name})\n\n"  # With basename (dialect name) test
         message += ' {#' + self.name + '}\n\n'
 
-        # If dialect, that's it. After this is assuming current dialect
-        if self.basename is not currentDialect:
+        # If it is common we include everything.
+        # But for any other dialect we don't include the reset of the message
+        if currentDialect == 'common':
+            pass
+        elif self.basename is not currentDialect:
             return message
 
         if self.deprecated:
@@ -579,9 +622,13 @@ class MAVMessage(object):
         tableHeadings.append('Type')
         valueHeading = False
         unitsHeading = False
+        multiplierHeading = False
         if any(field in self.fieldnames for field in ('units',)):
             unitsHeading = True
             tableHeadings.append('Units')
+        if any(field in self.fieldnames for field in ('multiplier',)):
+            multiplierHeading = True
+            tableHeadings.append('Multiplier')
         if any(field in self.fieldnames for field in ('enum', 'invalid, maxValue, minValue, default')):
             valueHeading = True
             tableHeadings.append('Values')
@@ -595,7 +642,8 @@ class MAVMessage(object):
             row.append(f"`{field.type}`")
             if unitsHeading:
                 row.append(f"{field.units if field.units else ''}")
-
+            if multiplierHeading:
+                row.append(f"{field.multiplier if field.multiplier else ''}")
             if valueHeading:
                 # Values: #invalid, default, minValue, maxValue.
                 values = []
@@ -652,7 +700,7 @@ class MAVEnumEntry(object):
 
     def getMarkdown(self, currentDialect):
         """Return markdown for an enum entry"""
-        deprString = f"<b>{self.deprecated.getMarkdown()}" if self.deprecated else ""
+        deprString = f"{self.deprecated.getMarkdown()}" if self.deprecated else ""
         if self.wip:
             print(f"TODO: WIP in Enum Entry: {self.name}")
         importedNote = ""
@@ -723,8 +771,11 @@ class MAVEnum(object):
             # message+=f"Included from [{self.basename}](../messages/{self.basename}.md#{self.name})\n\n"  # With basename (dialect name) test
         string += ' {#' + self.name + '}\n\n'
 
-        # If dialect, that's it. After this is assuming current dialect
-        if self.basename is not currentDialect:
+        # If it is common we include everything.
+        # But for any other dialect we don't include the reset of the message
+        if currentDialect == 'common':
+            pass
+        elif self.basename is not currentDialect:
             return string
 
         if self.deprecated:
@@ -767,6 +818,7 @@ class MAVCommandParam(object):
         self.description = None
         self.reserved = None
         self.default = None
+        self.multiplier = None
 
         for attr, value in soup.attrs.items():
             # We do it this way to catch all of them. New additions will throw debug
@@ -788,6 +840,8 @@ class MAVCommandParam(object):
                 self.reserved = True  # TODO is it ever reserved by default, and if so make happen
             elif attr == 'default':
                 self.default = value  # TODO is it ever default by default, and if so make happen?
+            elif attr == 'multiplier':
+                self.multiplier = value
             else:
                 print(
                     f"Debug: MAVCommandParam: Unexpected attribute: {attr}, Value: {value}")
@@ -813,7 +867,8 @@ class MAVCommandParam(object):
             parent.param_fieldnames.add('increment')
         if self.enum:
             parent.param_fieldnames.add('enum')
-
+        if self.multiplier:
+            parent.param_fieldnames.add('multiplier')
 
 class MAVCommand(object):
     def __init__(self, soup, basename):
@@ -861,9 +916,13 @@ class MAVCommand(object):
             string += " [WIP]"
         string += ' {#' + self.name + '}\n\n'
 
-        # If dialect, that's it. After this is assuming current dialect
-        if self.basename is not currentDialect:
+        # If it is common we include everything.
+        # But for any other dialect we don't include the reset of the message
+        if currentDialect == 'common':
+            pass
+        elif self.basename is not currentDialect:
             return string
+
 
         if self.deprecated:
             string += self.deprecated.getMarkdown() + "\n\n"
@@ -876,12 +935,16 @@ class MAVCommand(object):
         tableHeadings.append('Description')
         valueHeading = False
         unitsHeading = False
+        multiplierHeading = False
         if any(field in self.param_fieldnames for field in ('enum', 'minValue', 'maxValue', 'increment')):
             valueHeading = True
             tableHeadings.append('Values')
         if 'units' in self.param_fieldnames:
             unitsHeading = True
             tableHeadings.append('Units')
+        if 'multiplier' in self.param_fieldnames:
+            multiplierHeading = True
+            tableHeadings.append('Multiplier')
         tableRows = []
 
         for param in self.params:
@@ -909,6 +972,12 @@ class MAVCommand(object):
                 if param.units:
                     unitsString = param.units
                 row.append(unitsString)
+
+            if multiplierHeading:
+                multiplierString = " "
+                if param.multiplier:
+                    multiplierString = param.multiplier
+                row.append(multiplierString)
 
             tableRows.append(row)
 
