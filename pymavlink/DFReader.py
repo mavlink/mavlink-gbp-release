@@ -327,30 +327,26 @@ class DFMessage(object):
                 if bit_offset > highest:
                     highest = bit_offset
 
-            for i in range(bit_offset):
+            for i in range(highest+1):
                 bit_value = 1 << i
+                if val & bit_value:
+                    bang = " "
+                else:
+                    bang = "!"
                 done = False
                 for bit in bitmask.bit:
                     if bit["value"] != bit_value:
                         continue
-                    if val & bit_value:
-                        bang = ""
-                    else:
-                        bang = "!"
                     bit_name = bit.get('name')
-                    bit_desc = None
-                    try:
-                        bit_desc = bit["description"]
-                    except KeyError:
-                        pass
-                    if bit_desc is None:
-                        f.write("        %s%s\n" % (bang, bit_name,))
+                    f.write("      %s %s" % (bang, bit_name,))
+                    if hasattr(bit, 'description'):
+                        f.write(" (%s)\n" % bit["description"])
                     else:
-                        f.write("        %s%s (%s)\n" % (bang, bit_name, bit_desc))
+                        f.write("\n")
                     done = True
                     break
                 if not done:
-                    f.write("        %{s}UNKNOWN_BIT%s\n" % (bang, str(i)))
+                    f.write("      %s UNKNOWN_BIT%d\n" % (bang, i))
         except Exception as e:
             # print(e)
             pass
@@ -386,17 +382,32 @@ class DFMessage(object):
                     f.write("    %s: %s" % (c, val))
                 except UnicodeDecodeError:
                     f.write("    %s: %s" % (c, to_string(val)))
+
+            # see if this is an enumeration entry, emit enumeration
+            # entry name if it is
+            if c in field_metadata_by_name:
+                fm = field_metadata_by_name[c]
+                fm_enum = getattr(fm, "enum", None)
+                if fm_enum is not None:
+                    enum_entry_name = "?????"  # default, "not found" value
+                    for entry in fm_enum.iterchildren():
+                        if int(entry.value) == int(val):
+                            enum_entry_name = entry.get('name')
+                            break
+
+                    f.write(f" ({enum_entry_name})")
+
             # Append the unit to the output
             unit = self.fmt.get_unit(c)
-            if unit == "":
-                # No unit specified - just output the newline
-                f.write("\n")
-            elif unit.startswith("rad"):
+            if unit.startswith("rad"):
                 # For rad or rad/s, add the degrees conversion too
-                f.write(" %s (%s %s)\n" % (unit, math.degrees(val), unit.replace("rad","deg")))
+                f.write(" %s (%s %s)" % (unit, math.degrees(val), unit.replace("rad","deg")))
             else:
                 # Append the unit
-                f.write(" %s\n" % (unit))
+                f.write(" %s" % (unit))
+
+            # output the newline
+            f.write("\n")
 
             # if this is a bitmask then print out all bits set:
             if c in field_metadata_by_name:
