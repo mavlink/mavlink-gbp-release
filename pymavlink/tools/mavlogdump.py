@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 example program that dumps a Mavlink log file. The log file is
@@ -116,7 +116,6 @@ reduction_count = {}
 
 def reduce_msg(mtype, reduction_ratio):
     '''return True if this msg should be discarded by reduction'''
-    global reduction_count, reduction_msgs, reduction_yes, reduction_no
     if mtype in reduction_no:
         return False
     if not mtype in reduction_yes:
@@ -138,7 +137,6 @@ last_msg_rate_t = {}
 
 def reduce_rate_msg(m, reduction_rate):
     '''return True if this msg should be discarded by reduction'''
-    global last_msg_rate_t
     mtype = m.get_type()
     if mtype in ['PARM','MSG','FMT','FMTU','MULT','MODE','EVT','UNIT', 'VER']:
         return False
@@ -260,7 +258,7 @@ while True:
             continue
 
     if not mavutil.evaluate_condition(args.condition, mlog.messages) and (
-            not (m_type in ['FMT', 'FMTU', 'MULT', 'PARM', 'MODE', 'UNIT', 'VER'] and args.meta)):
+            not (m_type in ['FMT', 'FMTU', 'MULT', 'PARM', 'MODE', 'UNIT', 'VER','CMD','MAVC','MSG','EV'] and args.meta)):
         continue
     if args.source_system is not None and args.source_system != m.get_srcSystem():
         continue
