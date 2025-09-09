@@ -39,7 +39,7 @@ def check_enum(enum, file_name):
         elif attr == 'bitmask':
             bitmask = True
 
-    if name == None:
+    if name is None:
         raise Exception("%s: No name for Enum: %s" % (file_name, enum))
 
     values = []
@@ -66,7 +66,7 @@ def check_enum(enum, file_name):
         bitmask_values.remove(0)
 
     if len(bitmask_values) > 2:
-        if bitmask == None:
+        if bitmask is None:
             bitmask = False
 
         overlap = False
@@ -95,14 +95,14 @@ def check_field(file_name, msg_name, field, enums):
     units = field.get('units')
 
     # Enum with units doesn't make sense
-    if (enum != None) and (units != None):
+    if enum is not None and units is not None:
         print("%s: Message %s field %s has both units and enum" %
               (file_name, msg_name, name))
         warning_count += 1
 
-    if (enum != None):
+    if enum is not None:
         # Enum should exist
-        if not (enum in enums):
+        if enum not in enums:
             print("%s: Message %s field %s enum %s does not exist" %
                   (file_name, msg_name, name, enum))
             warning_count += 1
@@ -110,7 +110,7 @@ def check_field(file_name, msg_name, field, enums):
 
         enums[enum]["used"] = True
         bitmask = enums[enum]["bitmask"]
-        if bitmask != None:
+        if bitmask is not None:
             # Bitmask should match underlying enum
             display_bitmask = field.get("display") == "bitmask"
 
@@ -126,7 +126,7 @@ def check_field(file_name, msg_name, field, enums):
 
         # Enum should fit in given type
         type = field.get('type').split('[')[0]
-        if not (type in types):
+        if type not in types:
             print("%s: Message %s field %s enum %s unexpected type: %s" %
                   (file_name, msg_name, name, enum, type))
             warning_count += 1
@@ -144,14 +144,14 @@ def check_cmd_param(file_name, cmd_name, entry, enums):
     units = entry.get('units')
 
     # Enum with units doesn't make sense
-    if (enum != None) and (units != None):
+    if enum is not None and units is not None:
         print("%s: Command %s param %s has both units and enum" %
               (file_name, cmd_name, index))
         warning_count += 1
 
-    if (enum != None):
+    if enum is not None:
         # Enum should exist
-        if not (enum in enums):
+        if enum not in enums:
             print("%s: Command %s param %s enum %s does not exist" %
                   (file_name, cmd_name, index, enum))
             warning_count += 1
@@ -168,7 +168,7 @@ def check_cmd_param(file_name, cmd_name, entry, enums):
     #        print("%s: Command %s param %s should be marked reserved=\"true\"" % (file_name, cmd_name, index))
 
 
-description = f"""
+description = """
 XML consistency parser.
 
 Checks XML definition files in ../message_definitions/v1.0/.
@@ -278,7 +278,7 @@ for key in xml:
 
 # Check for unused enums
 for key in all_enums:
-    if all_enums[key]["used"] == False:
+    if all_enums[key]["used"] is False:
         print("%s: Enum: %s is unused" %
               (all_enums[key]['file'], all_enums[key]["name"]))
         warning_count += 1
